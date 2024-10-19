@@ -25,7 +25,7 @@ public:
         vm->load(appClass);
         vm->load(frameClass);
 
-        frameClass->methods["new"] = uva::lang::Method("new", uva::lang::method_storage_type::instance_method, {}, [](uva::lang::Object* object, const var& params) {
+        frameClass->methods["new"] = uva::lang::Method("new", uva::lang::method_storage_type::instance_method, {}, [](uva::lang::object* object, const var& params) {
             std::string title;
             if(params) {
                 if(params["title"]) {
@@ -48,7 +48,7 @@ public:
             return nullptr;
         });
 
-        frameClass->methods["show"] = uva::lang::Method("show", uva::lang::method_storage_type::instance_method, {}, [](uva::lang::Object* object, const var& params) {
+        frameClass->methods["show"] = uva::lang::Method("show", uva::lang::method_storage_type::instance_method, {}, [](uva::lang::object* object, const var& params) {
             wxFrame* frame = (wxFrame*)(object->native);
             frame->Show();
             return nullptr;

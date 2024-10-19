@@ -44,7 +44,7 @@ std::shared_ptr<uva::lang::Class> parser::parse(const std::filesystem::path &pat
     return c;
 }
 
-uva::lang::Object::~Object()
+uva::lang::object::~object()
 {
     uva::console::log_debug("{}#{} destroyed", cls->name, (void*)this);
 }

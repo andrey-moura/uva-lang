@@ -12,8 +12,8 @@ namespace uva
         struct vm_context
         {
             std::shared_ptr<Class> cls;
-            std::shared_ptr<Object> self;
-            std::map<std::string, std::shared_ptr<Object>> variables;
+            std::shared_ptr<uva::lang::object> self;
+            std::map<std::string, std::shared_ptr<uva::lang::object>> variables;
             std::shared_ptr<vm_context> parent;
         };
         // This class is responsible of storing all resources needed by an uvalang program.
@@ -43,9 +43,9 @@ namespace uva
             /// @param cls The class to instantiate.
             /// @param name The name of the instancieted object.
             /// @return The instancieted object
-            std::shared_ptr<Object> instantiate(std::shared_ptr<Class> cls, const std::string& name);
+            std::shared_ptr<uva::lang::object> instantiate(std::shared_ptr<Class> cls, const std::string& name);
 
-            std::shared_ptr<Object> call(std::shared_ptr<Object> object, const Method& method, const var& params = var());
+            std::shared_ptr<uva::lang::object> call(std::shared_ptr<uva::lang::object> object, const Method& method, const var& params = var());
         protected:
             /// @brief The global context stack.
             vm_context global_context;

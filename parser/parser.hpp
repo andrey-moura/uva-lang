@@ -14,14 +14,14 @@
 namespace uva
 {
     namespace lang {
-        struct Object
+        struct object
         {
-            Object(std::shared_ptr<uva::lang::Class> c) : cls(c) {};
-            ~Object();
+            object(std::shared_ptr<uva::lang::Class> c) : cls(c) {};
+            ~object();
             std::shared_ptr<uva::lang::Class> cls;
             void* native = nullptr;
-            std::shared_ptr<Object> base_instance = nullptr;
-            Object* derived_instance = nullptr;
+            std::shared_ptr<object> base_instance = nullptr;
+            object* derived_instance = nullptr;
         };
     }
     class parser

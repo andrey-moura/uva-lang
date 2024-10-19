@@ -14,16 +14,16 @@ void uva::lang::vm::load(std::shared_ptr<uva::lang::Class> cls)
     classes.push_back(cls);
 }
 
-std::shared_ptr<uva::lang::Object> uva::lang::vm::instantiate(std::shared_ptr<uva::lang::Class> cls, const std::string &name)
+std::shared_ptr<uva::lang::object> uva::lang::vm::instantiate(std::shared_ptr<uva::lang::Class> cls, const std::string &name)
 {
-    auto obj = std::make_shared<uva::lang::Object>(cls);
+    auto obj = std::make_shared<uva::lang::object>(cls);
 
     global_context.variables[name] = obj;
 
     return obj;
 }
 
-std::shared_ptr<uva::lang::Object> uva::lang::vm::call(std::shared_ptr<uva::lang::Object> object, const Method &method, const var &params)
+std::shared_ptr<uva::lang::object> uva::lang::vm::call(std::shared_ptr<uva::lang::object> object, const Method &method, const var &params)
 {
     if(method.block.size()) {
         for(auto& statment : method.block_cursor.children()) {
@@ -63,9 +63,9 @@ std::shared_ptr<uva::lang::Object> uva::lang::vm::call(std::shared_ptr<uva::lang
                 std::string_view return_value = statment.value();
 
                 if(return_value == "true") {
-                    return std::make_shared<Object>(True);
+                    return std::make_shared<uva::lang::object>(True);
                 } else if(return_value == "false") {
-                    return std::make_shared<Object>(False);
+                    return std::make_shared<uva::lang::object>(False);
                 }
             }
                 break;
@@ -97,12 +97,12 @@ void uva::lang::vm::init()
     // std class
     Std = std::make_shared<uva::lang::Class>("std");
 
-    Std->methods["print"] = Method("print", method_storage_type::instance_method, {"message"}, [](Object* object, const var& params) {
+    Std->methods["print"] = Method("print", method_storage_type::instance_method, {"message"}, [](uva::lang::object* object, const var& params) {
         std::cout << params[0].to_s();
         return nullptr;
     });
 
-    Std->methods["puts"] = Method("puts", method_storage_type::instance_method, {"message"}, [](Object* object, const var& params) {
+    Std->methods["puts"] = Method("puts", method_storage_type::instance_method, {"message"}, [](uva::lang::object* object, const var& params) {
         std::cout << params[0].to_s() << std::endl;
         return nullptr;
     });

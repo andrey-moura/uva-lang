@@ -7,7 +7,7 @@
 
 namespace uva {
     namespace lang {
-        class Object;
+        class object;
         enum class method_storage_type {
             instance_method,
             class_method,
@@ -19,7 +19,7 @@ namespace uva {
             uva::lang::source_cursor block_cursor;
             method_storage_type storage_type;
             std::vector<std::string> params;
-            std::function<std::shared_ptr<Object>(Object* object, const var& params)> function;
+            std::function<std::shared_ptr<uva::lang::object>(uva::lang::object* object, const var& params)> function;
 
             Method() = default;
 
@@ -28,13 +28,13 @@ namespace uva {
 
             };
 
-            Method(const std::string& name, method_storage_type __storage_type, std::vector<std::string> params, std::function<std::shared_ptr<Object>(Object* object, const var& params)> fn)
+            Method(const std::string& name, method_storage_type __storage_type, std::vector<std::string> params, std::function<std::shared_ptr<uva::lang::object>(uva::lang::object* object, const var& params)> fn)
                 : name(name), function(fn), storage_type(__storage_type), params(std::move(params)) {
 
             }
 
-            std::shared_ptr<Object> call(Object* o);
-            std::shared_ptr<Object> call(uva::lang::Class* c);
+            std::shared_ptr<uva::lang::object> call(uva::lang::object* o);
+            std::shared_ptr<uva::lang::object> call(uva::lang::Class* c);
         };
     }
 }
