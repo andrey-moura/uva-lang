@@ -331,21 +331,26 @@ void uva::lang::lexer::cursor::lexer_dectype() {
         // The symbol need to starts with a letter and can contain letters, numbers,
         // underscores and '::' (which means its from a class or namespace).
         
-        const char& c = extend();
+        const char& c = m_buffer.front();
         
-        if(m_content.size() == 1) {
-            // first letter
+        if(!m_content.size()) {
+            // first character must be a letter
             if(!isalpha(c)) {
                 throw_unexpected_token_at_current_position(c);
             }
         } else {
+            // other characters can be letters, numbers, underscores or '::'
+
             if(!isalnum(c) && c != '_') {
-                if(c == ':' && (!isalnum(m_content.back()) && m_content.back() == ':')) {
+                if(c == ':' && m_buffer.starts_with("::")) {
+                    extend();
+                } else {
                     throw_unexpected_token_at_current_position(c);
                 }
-                
             }
         }
+
+        extend();
     }
 }
 
