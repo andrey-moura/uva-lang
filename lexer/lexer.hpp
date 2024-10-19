@@ -1,8 +1,9 @@
 #include <vector>
 #include <memory>
+#include <map>
+#include <utility>
 
-#include <parser/parser.hpp>
-#include <uva/var.hpp>
+#include "cursor.hpp"
 
 namespace uva
 {
@@ -10,7 +11,7 @@ namespace uva
     {
         namespace lexer
         {
-
+            extern std::vector<std::pair<std::string_view, cursor_type>> cursor_type_from_string_map;
         };
     };
 }; // namespace uva

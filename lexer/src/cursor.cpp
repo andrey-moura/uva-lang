@@ -1,4 +1,5 @@
 #include <lexer/cursor.hpp>
+#include <lexer/lexer.hpp>
 
 #include <ctype.h>
 #include <string.h>
@@ -145,155 +146,135 @@ void uva::lang::lexer::cursor::parse()
         return;
     }
 
+    if(m_type == cursor_type::cursor_undefined) {
+        // If we don't know what it is, we need to figure out.
+        for(auto& [token, type] : uva::lang::lexer::cursor_type_from_string_map) {
+            if(m_buffer.starts_with(token)) {
+                m_type = type;
+                break;
+            }
+        }
+    }
+
     switch(m_type) {
         // Cusor initialized by a source code, we have no idea of what it is.
-        case cursor_type::cursor_undefined:
-            if(m_buffer.starts_with("//")) {
-                m_type = cursor_type::cursor_comment;
+        case cursor_type::cursor_comment: {
+            // Read the comment
+            extend_untill_token_or_eof('\n');
+        }
+        break;
+        case cursor_type::cursor_block: {
+            extend();
+            extend_whitespaces();
 
-                // Read the comment
-                extend_untill_token_or_eof('\n');
-            } else if(m_buffer.starts_with("class")) {
-                m_type = cursor_type::cursor_class;
-
-                uva::lang::lexer::cursor dctype_cursor = init_next();
-                dctype_cursor.m_type = cursor_type::cursor_dectype;
-                dctype_cursor.parse();
-                m_children.push_back(dctype_cursor);
-
-                // Read the class name
-                uva::lang::lexer::cursor decname_cursor = dctype_cursor.init_next();
-                decname_cursor.m_type = cursor_type::cursor_decname;
-                decname_cursor.parse();
-                m_children.push_back(decname_cursor);
-
-                if(decname_cursor.content().empty()) {
-                    throw_error_at_current_position("expected class name");
-                }
-
-                // read the next token
-                uva::lang::lexer::cursor block_cursor = decname_cursor.init_next();
+            if(m_buffer.starts_with('}')) {
+                extend();
+            } else {                
+                uva::lang::lexer::cursor block_cursor = init_next();
                 block_cursor.parse();
 
-                if(block_cursor.content().empty() || block_cursor.type() != cursor_type::cursor_block) {
-                    throw_error_at_current_position("expected '{' after class name");
-                }
+                while(!block_cursor.eof()) {
+                    m_children.push_back(block_cursor);
+                    block_cursor = block_cursor.parse_next();
 
-                m_children.push_back(block_cursor);
-
-                m_end = block_cursor.end();
-                m_content = std::string_view(m_source.begin() + m_start.offset, m_end.offset - m_start.offset);
-            } else if(m_buffer.starts_with('{')) {
-                m_type = cursor_type::cursor_block;
-
-                extend();
-                extend_whitespaces();
-
-                if(m_buffer.starts_with('}')) {
-                    extend();
-                } else {                
-                    uva::lang::lexer::cursor block_cursor = init_next();
-                    block_cursor.parse();
-
-                    while(!block_cursor.eof()) {
-                        m_children.push_back(block_cursor);
-                        block_cursor = block_cursor.parse_next();
-
-                        if(block_cursor.type() == cursor_type::cursor_undefined) {
-                            if(block_cursor.m_buffer.starts_with('}')) {
-                                break;
-                            }
+                    if(block_cursor.type() == cursor_type::cursor_undefined) {
+                        if(block_cursor.m_buffer.starts_with('}')) {
+                            break;
                         }
                     }
-
-                    extend_by(block_cursor);
                 }
 
-                if(!m_buffer.ends_with('}')) {
-                    throw_error_at_current_position("expected '}'");
-                }
+                extend_by(block_cursor);
+            }
 
+            if(!m_buffer.ends_with('}')) {
+                throw_error_at_current_position("expected '}'");
+            }
+
+            extend();
+        }
+        break;
+        case cursor_type::cursor_function: {
+            uva::lang::lexer::cursor dctype_cursor = init_next();
+            dctype_cursor.m_type = cursor_type::cursor_dectype;
+            dctype_cursor.parse();
+            m_children.push_back(dctype_cursor);
+
+            // Read the function name
+            uva::lang::lexer::cursor decname_cursor = dctype_cursor.init_next();
+            decname_cursor.m_type = cursor_type::cursor_decname;
+            decname_cursor.parse();
+            m_children.push_back(decname_cursor);
+
+            if(decname_cursor.content().empty()) {
+                throw_error_at_current_position("expected function name");
+            }
+
+            // read the params
+            uva::lang::lexer::cursor params_cursor = decname_cursor.init_next();
+            params_cursor.m_type = cursor_type::cursor_decfnparams;
+            params_cursor.parse();
+            m_children.push_back(params_cursor);
+
+            // read block
+            uva::lang::lexer::cursor block_cursor = params_cursor.init_next();
+            block_cursor.parse();
+            m_children.push_back(block_cursor);
+
+            if(block_cursor.type() != cursor_type::cursor_block) {
+                throw_error_at_current_position("expected '{' after function name");
+            }
+
+            m_end = block_cursor.end();
+            m_content = std::string_view(m_source.begin() + m_start.offset, m_end.offset - m_start.offset);
+        }
+        break;
+        case cursor_type::cursor_return: {
+            m_type = cursor_type::cursor_return;
+
+            // Read the return keyword
+            while(m_buffer.size() && !isspace(m_buffer.front())) {
                 extend();
-            } else if(m_buffer.starts_with("function")) {
-                m_type = cursor_type::cursor_function;
-
-                uva::lang::lexer::cursor dctype_cursor = init_next();
-                dctype_cursor.m_type = cursor_type::cursor_dectype;
-                dctype_cursor.parse();
-                m_children.push_back(dctype_cursor);
-
-                // Read the function name
-                uva::lang::lexer::cursor decname_cursor = dctype_cursor.init_next();
-                decname_cursor.m_type = cursor_type::cursor_decname;
-                decname_cursor.parse();
-                m_children.push_back(decname_cursor);
-
-                if(decname_cursor.content().empty()) {
-                    throw_error_at_current_position("expected function name");
-                }
-
-                // read the params
-                uva::lang::lexer::cursor params_cursor = decname_cursor.init_next();
-                params_cursor.m_type = cursor_type::cursor_decfnparams;
-                params_cursor.parse();
-                m_children.push_back(params_cursor);
-
-                // read block
-                uva::lang::lexer::cursor block_cursor = params_cursor.init_next();
-                block_cursor.parse();
-                m_children.push_back(block_cursor);
-
-                if(block_cursor.type() != cursor_type::cursor_block) {
-                    throw_error_at_current_position("expected '{' after function name");
-                }
-
-                m_end = block_cursor.end();
-                m_content = std::string_view(m_source.begin() + m_start.offset, m_end.offset - m_start.offset);
-            } else if(m_buffer.starts_with("return")) {
-                m_type = cursor_type::cursor_return;
-
-                // Read the return keyword
-                while(m_buffer.size() && !isspace(m_buffer.front())) {
-                    extend();
-                }
-
-                // Read the return value
-                uva::lang::lexer::cursor return_cursor = init_next();
-                return_cursor.m_type = cursor_type::cursor_value;
-                return_cursor.parse();
-                m_children.push_back(return_cursor);
-
-                extend_by(return_cursor);
             }
-            else {
-                while(m_buffer.size() && (isalnum(m_buffer.front()) || m_buffer.front() == '_')) {
-                    extend();
-                }
 
-                if(m_buffer.size() && !isspace(m_buffer.front())) {
-                    // Can be so many things
+            // Read the return value
+            uva::lang::lexer::cursor return_cursor = init_next();
+            return_cursor.m_type = cursor_type::cursor_value;
+            return_cursor.parse();
+            m_children.push_back(return_cursor);
 
-                    switch(m_buffer.front()) {
-                        case '(': {
-                            // A function declaration can't be here, so it must be a function call
-                            m_type = cursor_type::cursor_fncall;
+            extend_by(return_cursor);
+        }
+        break;
+        case cursor_type::cursor_class: {
+            uva::lang::lexer::cursor dctype_cursor = init_next();
+            dctype_cursor.m_type = cursor_type::cursor_dectype;
+            dctype_cursor.parse();
+            m_children.push_back(dctype_cursor);
 
-                            // The current cursor is the function name.
-                            uva::lang::lexer::cursor decname_cursor = *this;
-                            decname_cursor.m_type = cursor_type::cursor_decname;
-                            m_children.push_back(decname_cursor);
+            // Read the class name
+            uva::lang::lexer::cursor decname_cursor = dctype_cursor.init_next();
+            decname_cursor.m_type = cursor_type::cursor_decname;
+            decname_cursor.parse();
+            m_children.push_back(decname_cursor);
 
-                            uva::lang::lexer::cursor params_cursor = decname_cursor.init_next();
-                            params_cursor.m_type = cursor_type::cursor_fncallparams;
-                            params_cursor.parse();
-                            m_children.push_back(params_cursor);
-
-                            extend_by(params_cursor);
-                        }
-                        break;
-                    }
-                }
+            if(decname_cursor.content().empty()) {
+                throw_error_at_current_position("expected class name");
             }
+
+            // read the next token
+            uva::lang::lexer::cursor block_cursor = decname_cursor.init_next();
+            block_cursor.parse();
+
+            if(block_cursor.content().empty() || block_cursor.type() != cursor_type::cursor_block) {
+                throw_error_at_current_position("expected '{' after class name");
+            }
+
+            m_children.push_back(block_cursor);
+
+            m_end = block_cursor.end();
+            m_content = std::string_view(m_source.begin() + m_start.offset, m_end.offset - m_start.offset);
+        }
         break;
         case cursor_type::cursor_dectype: {
             // A cursor that represents a declaration type, like class, function, variable, etc.
@@ -367,6 +348,7 @@ void uva::lang::lexer::cursor::parse()
                 throw_unexpected_eof();
             }
         }
+        break;
         case cursor_type::cursor_value: {
             // A cursor that represents a value
 
@@ -421,6 +403,37 @@ void uva::lang::lexer::cursor::parse()
 
             extend();
         }
+        break;
+        case cursor_type::cursor_undefined: {
+            while(m_buffer.size() && (isalnum(m_buffer.front()) || m_buffer.front() == '_')) {
+                extend();
+            }
+
+            if(m_buffer.size() && !isspace(m_buffer.front())) {
+                // Can be so many things
+
+                switch(m_buffer.front()) {
+                    case '(': {
+                        // A function declaration can't be here, so it must be a function call
+                        m_type = cursor_type::cursor_fncall;
+
+                        // The current cursor is the function name.
+                        uva::lang::lexer::cursor decname_cursor = *this;
+                        decname_cursor.m_type = cursor_type::cursor_decname;
+                        m_children.push_back(decname_cursor);
+
+                        uva::lang::lexer::cursor params_cursor = decname_cursor.init_next();
+                        params_cursor.m_type = cursor_type::cursor_fncallparams;
+                        params_cursor.parse();
+                        m_children.push_back(params_cursor);
+
+                        extend_by(params_cursor);
+                    }
+                    break;
+                }
+            }
+        }
+        break;
     }
 }
 
