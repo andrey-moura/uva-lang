@@ -80,6 +80,8 @@ const char &uva::lang::lexer::cursor::extend_untill_token(const char &token)
     if(!m_buffer.starts_with(token)) {
         throw_unexpected_eof();
     }
+
+    return m_buffer.front();
 }
 
 void uva::lang::lexer::cursor::discard_whitespaces()
