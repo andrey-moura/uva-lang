@@ -14,7 +14,7 @@
 namespace uva
 {
     namespace lang {
-        struct Object : public std::enable_shared_from_this<Object>
+        struct Object
         {
             Object(std::shared_ptr<uva::lang::Class> c) : cls(c) {};
             ~Object();
