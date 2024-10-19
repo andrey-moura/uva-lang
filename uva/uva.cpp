@@ -26,8 +26,8 @@ public:
 
 wxIMPLEMENT_APP(RomHexEditorApp);
 
-std::shared_ptr<Class> application_class;
-std::shared_ptr<Object> application;
+std::shared_ptr<uva::lang::Class> application_class;
+std::shared_ptr<uva::lang::Object> application;
 
 std::vector<uva::lang::extension*> extensions;
 
@@ -46,9 +46,9 @@ bool RomHexEditorApp::OnInit()
             throw std::runtime_error("init method not defined in class Application");
         }
         
-        application = std::make_shared<Object>(application_class);
+        application = std::make_shared<uva::lang::Object>(application_class);
 
-        std::shared_ptr<Object> ret = vm_instance->call(application, it->second);
+        std::shared_ptr<uva::lang::Object> ret = vm_instance->call(application, it->second);
 
         if(!ret || ret->cls != vm_instance->True) {
             std::cout << "init not returned true. Exiting..." << std::endl;

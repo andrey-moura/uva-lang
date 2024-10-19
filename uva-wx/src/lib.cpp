@@ -19,13 +19,13 @@ public:
     virtual void load_in_vm(uva::lang::vm* vm) override {
         // This is called when the VM is ready to load classes and objects.
         
-        std::shared_ptr<uva::Class> appClass = std::make_shared<uva::Class>("wx::App");
-        std::shared_ptr<uva::Class> frameClass = std::make_shared<uva::Class>("wx::Frame");
+        std::shared_ptr<uva::lang::Class> appClass = std::make_shared<uva::lang::Class>("wx::App");
+        std::shared_ptr<uva::lang::Class> frameClass = std::make_shared<uva::lang::Class>("wx::Frame");
 
         vm->load(appClass);
         vm->load(frameClass);
 
-        frameClass->methods["new"] = uva::Method("new", uva::method_storage_type::instance_method, {}, [](uva::Object* object, const var& params) {
+        frameClass->methods["new"] = uva::lang::Method("new", uva::lang::method_storage_type::instance_method, {}, [](uva::lang::Object* object, const var& params) {
             std::string title;
             if(params) {
                 if(params["title"]) {
@@ -48,7 +48,7 @@ public:
             return nullptr;
         });
 
-        frameClass->methods["show"] = uva::Method("show", uva::method_storage_type::instance_method, {}, [](uva::Object* object, const var& params) {
+        frameClass->methods["show"] = uva::lang::Method("show", uva::lang::method_storage_type::instance_method, {}, [](uva::lang::Object* object, const var& params) {
             wxFrame* frame = (wxFrame*)(object->native);
             frame->Show();
             return nullptr;
