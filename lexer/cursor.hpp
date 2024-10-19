@@ -5,6 +5,7 @@
 #include <string_view>
 #include <vector>
 #include <stdexcept>
+#include <map>
 
 namespace uva
 {
@@ -78,6 +79,8 @@ namespace uva
                 std::vector<uva::lang::lexer::cursor> m_children;
 
                 cursor_type m_type = cursor_type::cursor_undefined;
+
+                static std::map<uva::lang::lexer::cursor_type, void(uva::lang::lexer::cursor::*)()> s_lexers;
             //parsing
             protected:
                 void parse();
@@ -105,7 +108,19 @@ namespace uva
 
                 void extend_by(const uva::lang::lexer::cursor& cursor);
                 void extend_by_last_child_if_exists();
-            //parsing
+
+                void lexer_comment();
+                void lexer_block();
+                void lexer_function();
+                void lexer_return();
+                void lexer_class();
+                void lexer_dectype();
+                void lexer_decname();
+                void lexer_decfnparams();
+                void lexer_value();
+                void lexer_fncallparams();
+                void lexer_undefined();
+            //parsing public interface
             public:
                 uva::lang::lexer::cursor parse_next();
 
