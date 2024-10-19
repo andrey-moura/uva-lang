@@ -44,9 +44,9 @@ std::shared_ptr<uva::lang::object> uva::lang::vm::call(std::shared_ptr<uva::lang
 
                     var params_to_call = var::array();
 
-                    uva::lang::lexer::cursor params_cursor = statment.fncallparams();
+                    const uva::lang::lexer::cursor* params_cursor = statment.fncallparams();
 
-                    for(auto& param : params_cursor.children()) {
+                    for(auto& param : params_cursor->children()) {
                         std::string_view content = param.content();
                         if(content.starts_with("\"") && content.ends_with("\"")) {
                             content.remove_prefix(1);
