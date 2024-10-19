@@ -13,25 +13,25 @@ using namespace uva;
 
 std::shared_ptr<uva::lang::vm> vm_instance;
 
-class RomHexEditorApp : public wxApp
+class wxUvaApp : public wxApp
 {
 private:
     parser p;
 public:
-	RomHexEditorApp() = default;
-	~RomHexEditorApp() = default;
+	wxUvaApp() = default;
+	~wxUvaApp() = default;
 
 	virtual bool OnInit();
 };
 
-wxIMPLEMENT_APP(RomHexEditorApp);
+wxIMPLEMENT_APP(wxUvaApp);
 
 std::shared_ptr<uva::lang::Class> application_class;
 std::shared_ptr<uva::lang::Object> application;
 
 std::vector<uva::lang::extension*> extensions;
 
-bool RomHexEditorApp::OnInit()
+bool wxUvaApp::OnInit()
 {
     try {
         vm_instance = std::make_shared<uva::lang::vm>();
