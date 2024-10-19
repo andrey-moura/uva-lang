@@ -1,8 +1,10 @@
 #include <vector>
 #include <memory>
 
-#include <parser/parser.hpp>
 #include <uva/var.hpp>
+#include <parser/class.hpp>
+#include <parser/method.hpp>
+#include <parser/object.hpp>
 
 namespace uva
 {
