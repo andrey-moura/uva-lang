@@ -11,4 +11,4 @@ add_library(uva-vm
     ${CMAKE_CURRENT_LIST_DIR}/src/vm.cpp
 )
 
-target_link_libraries(uva-vm)
+target_link_libraries(uva-vm uva-lexer uva-parser uva-extension)

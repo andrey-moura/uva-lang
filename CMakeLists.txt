@@ -56,8 +56,9 @@ include_directories(include/fmt/include)
 
 add_library(uva-parser
     parser/parser.cpp
-	parser/source_cursor.cpp
 )
+
+target_link_libraries(uva-parser uva-lexer)
 
 add_library(uva-extension
     extension/src/extension.cpp
@@ -65,10 +66,11 @@ add_library(uva-extension
 
 include("languanizer/CMakeLists.txt")
 include("vm/CMakeLists.txt")
+include("lexer/CMakeLists.txt")
 
 add_executable(uva
     uva/uva.cpp
     uva-wx/src/lib.cpp
 )
 
-target_link_libraries(uva uva-parser uva-vm uva-core uva-console uva-file uva-extension uva-string ${wxWidgets_LIBRARIES})
+target_link_libraries(uva uva-vm uva-core uva-console uva-file uva-string ${wxWidgets_LIBRARIES})

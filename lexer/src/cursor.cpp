@@ -1,17 +1,17 @@
-#include "source_cursor.hpp"
+#include <lexer/cursor.hpp>
 
 #include <ctype.h>
 #include <string.h>
 
-uva::lang::source_cursor::source_cursor(std::string_view source)
+uva::lang::lexer::cursor::cursor(std::string_view source)
     : m_source(source), m_buffer(source), m_start(), m_end(), m_type(cursor_type::cursor_undefined)
 {
     parse();
 }
 
-uva::lang::source_cursor uva::lang::source_cursor::init_next()
+uva::lang::lexer::cursor uva::lang::lexer::cursor::init_next()
 {
-    uva::lang::source_cursor sc;
+    uva::lang::lexer::cursor sc;
     sc.m_source = m_source;
     sc.m_buffer = m_source.substr(m_end.offset);
     sc.m_start  = m_end;
@@ -20,15 +20,15 @@ uva::lang::source_cursor uva::lang::source_cursor::init_next()
     return sc;
 }
 
-uva::lang::source_cursor uva::lang::source_cursor::parse_next()
+uva::lang::lexer::cursor uva::lang::lexer::cursor::parse_next()
 {
-    source_cursor sc = init_next();
+    uva::lang::lexer::cursor sc = init_next();
     sc.parse();
 
     return sc;
 }
 
-const char &uva::lang::source_cursor::discard()
+const char &uva::lang::lexer::cursor::discard()
 {
     const char& c = m_buffer.front();
 
@@ -46,7 +46,7 @@ const char &uva::lang::source_cursor::discard()
     return c;
 }
 
-const char& uva::lang::source_cursor::extend()
+const char& uva::lang::lexer::cursor::extend()
 {
     const char& c = m_buffer.front();
 
@@ -62,7 +62,7 @@ const char& uva::lang::source_cursor::extend()
     return c;
 }
 
-const char &uva::lang::source_cursor::extend_untill_token_or_eof(const char &token)
+const char &uva::lang::lexer::cursor::extend_untill_token_or_eof(const char &token)
 {
     while(m_buffer.size() && m_buffer.front() != token) {
         extend();
@@ -71,7 +71,7 @@ const char &uva::lang::source_cursor::extend_untill_token_or_eof(const char &tok
     return m_buffer.front();
 }
 
-const char &uva::lang::source_cursor::extend_untill_token(const char &token)
+const char &uva::lang::lexer::cursor::extend_untill_token(const char &token)
 {
     extend_untill_token_or_eof(token);
 
@@ -81,21 +81,21 @@ const char &uva::lang::source_cursor::extend_untill_token(const char &token)
     }
 }
 
-void uva::lang::source_cursor::discard_whitespaces()
+void uva::lang::lexer::cursor::discard_whitespaces()
 {
     while(m_buffer.size() && (isspace(m_buffer.front()) || m_buffer.starts_with(';'))) {
         discard();
     }
 }
 
-void uva::lang::source_cursor::extend_whitespaces()
+void uva::lang::lexer::cursor::extend_whitespaces()
 {
     while(m_buffer.size() && (isspace(m_buffer.front()) || m_buffer.starts_with(';'))) {
         extend();
     }
 }
 
-void uva::lang::source_cursor::update_position(source_position &position, const char &token)
+void uva::lang::lexer::cursor::update_position(uva::lang::lexer::cursor_position &position, const char &token)
 {
     if(m_buffer.front() == '\n') {
         position.line++;
@@ -107,31 +107,31 @@ void uva::lang::source_cursor::update_position(source_position &position, const 
     position.offset++;
 }
 
-void uva::lang::source_cursor::update_start_position(const char &token)
+void uva::lang::lexer::cursor::update_start_position(const char &token)
 {
     update_position(m_start, token);
 }
 
-void uva::lang::source_cursor::update_end_position(const char &token)
+void uva::lang::lexer::cursor::update_end_position(const char &token)
 {
     update_position(m_end, token);
 }
 
-void uva::lang::source_cursor::extend_by(const source_cursor &cursor)
+void uva::lang::lexer::cursor::extend_by(const uva::lang::lexer::cursor &cursor)
 {
     m_end = cursor.end();
     m_content = std::string_view(m_source.begin() + m_start.offset, m_end.offset - m_start.offset);
     m_buffer  = cursor.m_buffer;
 }
 
-void uva::lang::source_cursor::extend_by_last_child_if_exists()
+void uva::lang::lexer::cursor::extend_by_last_child_if_exists()
 {
     if(m_children.size()) {
         extend_by(m_children.back());
     }
 }
 
-void uva::lang::source_cursor::parse()
+void uva::lang::lexer::cursor::parse()
 {
     //First, make sure we are at the beginning of the source code, not comments or spaces.
     discard_whitespaces();
@@ -156,13 +156,13 @@ void uva::lang::source_cursor::parse()
             } else if(m_buffer.starts_with("class")) {
                 m_type = cursor_type::cursor_class;
 
-                source_cursor dctype_cursor = init_next();
+                uva::lang::lexer::cursor dctype_cursor = init_next();
                 dctype_cursor.m_type = cursor_type::cursor_dectype;
                 dctype_cursor.parse();
                 m_children.push_back(dctype_cursor);
 
                 // Read the class name
-                source_cursor decname_cursor = dctype_cursor.init_next();
+                uva::lang::lexer::cursor decname_cursor = dctype_cursor.init_next();
                 decname_cursor.m_type = cursor_type::cursor_decname;
                 decname_cursor.parse();
                 m_children.push_back(decname_cursor);
@@ -172,7 +172,7 @@ void uva::lang::source_cursor::parse()
                 }
 
                 // read the next token
-                source_cursor block_cursor = decname_cursor.init_next();
+                uva::lang::lexer::cursor block_cursor = decname_cursor.init_next();
                 block_cursor.parse();
 
                 if(block_cursor.content().empty() || block_cursor.type() != cursor_type::cursor_block) {
@@ -192,7 +192,7 @@ void uva::lang::source_cursor::parse()
                 if(m_buffer.starts_with('}')) {
                     extend();
                 } else {                
-                    source_cursor block_cursor = init_next();
+                    uva::lang::lexer::cursor block_cursor = init_next();
                     block_cursor.parse();
 
                     while(!block_cursor.eof()) {
@@ -217,13 +217,13 @@ void uva::lang::source_cursor::parse()
             } else if(m_buffer.starts_with("function")) {
                 m_type = cursor_type::cursor_function;
 
-                source_cursor dctype_cursor = init_next();
+                uva::lang::lexer::cursor dctype_cursor = init_next();
                 dctype_cursor.m_type = cursor_type::cursor_dectype;
                 dctype_cursor.parse();
                 m_children.push_back(dctype_cursor);
 
                 // Read the function name
-                source_cursor decname_cursor = dctype_cursor.init_next();
+                uva::lang::lexer::cursor decname_cursor = dctype_cursor.init_next();
                 decname_cursor.m_type = cursor_type::cursor_decname;
                 decname_cursor.parse();
                 m_children.push_back(decname_cursor);
@@ -233,13 +233,13 @@ void uva::lang::source_cursor::parse()
                 }
 
                 // read the params
-                source_cursor params_cursor = decname_cursor.init_next();
+                uva::lang::lexer::cursor params_cursor = decname_cursor.init_next();
                 params_cursor.m_type = cursor_type::cursor_decfnparams;
                 params_cursor.parse();
                 m_children.push_back(params_cursor);
 
                 // read block
-                source_cursor block_cursor = params_cursor.init_next();
+                uva::lang::lexer::cursor block_cursor = params_cursor.init_next();
                 block_cursor.parse();
                 m_children.push_back(block_cursor);
 
@@ -258,7 +258,7 @@ void uva::lang::source_cursor::parse()
                 }
 
                 // Read the return value
-                source_cursor return_cursor = init_next();
+                uva::lang::lexer::cursor return_cursor = init_next();
                 return_cursor.m_type = cursor_type::cursor_value;
                 return_cursor.parse();
                 m_children.push_back(return_cursor);
@@ -279,11 +279,11 @@ void uva::lang::source_cursor::parse()
                             m_type = cursor_type::cursor_fncall;
 
                             // The current cursor is the function name.
-                            source_cursor decname_cursor = *this;
+                            uva::lang::lexer::cursor decname_cursor = *this;
                             decname_cursor.m_type = cursor_type::cursor_decname;
                             m_children.push_back(decname_cursor);
 
-                            source_cursor params_cursor = decname_cursor.init_next();
+                            uva::lang::lexer::cursor params_cursor = decname_cursor.init_next();
                             params_cursor.m_type = cursor_type::cursor_fncallparams;
                             params_cursor.parse();
                             m_children.push_back(params_cursor);
@@ -403,7 +403,7 @@ void uva::lang::source_cursor::parse()
             if(!m_buffer.starts_with(')')) {
                 // Currently supports only one parameter
                 while(m_buffer.size()) {                  
-                    source_cursor param_cursor = init_next();
+                    uva::lang::lexer::cursor param_cursor = init_next();
                     param_cursor.m_type = cursor_type::cursor_value;
                     param_cursor.parse();
 
@@ -424,14 +424,14 @@ void uva::lang::source_cursor::parse()
     }
 }
 
-void uva::lang::source_cursor::throw_error_at_current_position(std::string what)
+void uva::lang::lexer::cursor::throw_error_at_current_position(std::string what)
 {
     what += " at ";
     what += human_start_position();
     throw std::runtime_error(what);
 }
 
-void uva::lang::source_cursor::throw_unexpected_token_at_current_position(const char &token)
+void uva::lang::lexer::cursor::throw_unexpected_token_at_current_position(const char &token)
 {
     std::string message = "Unexpected token '";
     message.push_back(token);
@@ -440,13 +440,13 @@ void uva::lang::source_cursor::throw_unexpected_token_at_current_position(const 
     throw_error_at_current_position(std::move(message));
 }
 
-void uva::lang::source_cursor::throw_unexpected_eof()
+void uva::lang::lexer::cursor::throw_unexpected_eof()
 {
     std::string message = "Unexpected end of file";
     throw_error_at_current_position(std::move(message));
 }
 
-void uva::lang::source_cursor::throw_unexpected_eof_if_buffer_is_empty()
+void uva::lang::lexer::cursor::throw_unexpected_eof_if_buffer_is_empty()
 {
     if(m_buffer.empty()) {
         throw_unexpected_eof();

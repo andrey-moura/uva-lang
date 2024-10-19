@@ -7,7 +7,7 @@
 
 #include <uva/core.hpp>
 
-#include "source_cursor.hpp"
+#include <lexer/cursor.hpp>
 #include "class.hpp"
 #include "method.hpp"
 

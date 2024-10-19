@@ -15,17 +15,17 @@ std::shared_ptr<uva::lang::structure> parser::parse(const std::filesystem::path 
     std::string class_content = uva::file::read_all_text<char>(path);
     std::string_view content_view = class_content;
 
-    source_cursor cursor(content_view);
+    uva::lang::lexer::cursor cursor(content_view);
 
     while(!cursor.eof()) {
         uva::console::log_debug("read cursor of type {} at {} with content '{}'", (int)cursor.type(), cursor.human_start_position(), cursor.content());
 
-        if(cursor.type() == cursor_type::cursor_class) {
+        if(cursor.type() == uva::lang::lexer::cursor_type::cursor_class) {
             c = std::make_shared<uva::lang::structure>(std::string(cursor.decname()));
             c->source_content = std::move(class_content);
 
             for(auto& child : cursor.block().children()) {
-                if(child.type() == cursor_type::cursor_function) {
+                if(child.type() == uva::lang::lexer::cursor_type::cursor_function) {
                     Method m;
                     m.name = std::string(child.decname());
                     m.block = std::string(child.content());

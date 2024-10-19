@@ -29,7 +29,7 @@ std::shared_ptr<uva::lang::object> uva::lang::vm::call(std::shared_ptr<uva::lang
         for(auto& statment : method.block_cursor.children()) {
             switch (statment.type())
             {
-            case cursor_type::cursor_fncall: {
+            case uva::lang::lexer::cursor_type::cursor_fncall: {
                     std::string_view function_name = statment.decname();
                     
                     auto it = Std->methods.find(std::string(function_name));
@@ -44,7 +44,7 @@ std::shared_ptr<uva::lang::object> uva::lang::vm::call(std::shared_ptr<uva::lang
 
                     var params_to_call = var::array();
 
-                    source_cursor params_cursor = statment.fncallparams();
+                    uva::lang::lexer::cursor params_cursor = statment.fncallparams();
 
                     for(auto& param : params_cursor.children()) {
                         std::string_view content = param.content();
@@ -59,7 +59,7 @@ std::shared_ptr<uva::lang::object> uva::lang::vm::call(std::shared_ptr<uva::lang
                     call(object, it->second, params_to_call);
                 }
                 break;
-            case cursor_type::cursor_return: {
+            case uva::lang::lexer::cursor_type::cursor_return: {
                 std::string_view return_value = statment.value();
 
                 if(return_value == "true") {

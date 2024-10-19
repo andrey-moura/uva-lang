@@ -3,7 +3,7 @@
 #include <functional>
 #include <memory>
 
-#include "source_cursor.hpp"
+#include <lexer/cursor.hpp>
 
 namespace uva {
     namespace lang {
@@ -16,7 +16,7 @@ namespace uva {
         {
             std::string name;
             std::string block;
-            uva::lang::source_cursor block_cursor;
+            uva::lang::lexer::cursor block_cursor;
             method_storage_type storage_type;
             std::vector<std::string> params;
             std::function<std::shared_ptr<uva::lang::object>(uva::lang::object* object, const var& params)> function;
