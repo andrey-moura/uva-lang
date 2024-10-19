@@ -36,9 +36,15 @@ bool wxUvaApp::OnInit()
     try {
         vm_instance = std::make_shared<uva::lang::vm>();
 
-        //Class* application_class = p.parse(std::filesystem::absolute("application.uva"));
-        application_class = p.parse(std::filesystem::path("/home/andrey/Moonslate/teste/application.uva"));
-        vm_instance->load(application_class);
+        std::filesystem::path file_path;
+
+        if(wxApp::argc > 1) {
+            file_path = std::filesystem::absolute(wxApp::argv[1].ToStdString(wxMBConvUTF8()));
+        } else {
+            file_path = std::filesystem::absolute("application.uva");
+        }
+
+        application_class = p.parse(file_path, vm_instance);
 
         auto it = application_class->methods.find("init");
 
