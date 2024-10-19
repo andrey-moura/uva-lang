@@ -266,7 +266,7 @@ void uva::lang::source_cursor::parse()
                 extend_by(return_cursor);
             }
             else {
-                while(m_buffer.size() && isalnum(m_buffer.front())) {
+                while(m_buffer.size() && (isalnum(m_buffer.front()) || m_buffer.front() == '_')) {
                     extend();
                 }
 
