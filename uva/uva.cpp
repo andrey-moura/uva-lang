@@ -26,7 +26,7 @@ public:
 
 wxIMPLEMENT_APP(wxUvaApp);
 
-std::shared_ptr<uva::lang::Class> application_class;
+std::shared_ptr<uva::lang::structure> application_class;
 std::shared_ptr<uva::lang::object> application;
 
 std::vector<uva::lang::extension*> extensions;

@@ -9,12 +9,12 @@ uva::lang::vm::vm()
     init();
 }
 
-void uva::lang::vm::load(std::shared_ptr<uva::lang::Class> cls)
+void uva::lang::vm::load(std::shared_ptr<uva::lang::structure> cls)
 {
     classes.push_back(cls);
 }
 
-std::shared_ptr<uva::lang::object> uva::lang::vm::instantiate(std::shared_ptr<uva::lang::Class> cls, const std::string &name)
+std::shared_ptr<uva::lang::object> uva::lang::vm::instantiate(std::shared_ptr<uva::lang::structure> cls, const std::string &name)
 {
     auto obj = std::make_shared<uva::lang::object>(cls);
 
@@ -82,8 +82,8 @@ std::shared_ptr<uva::lang::object> uva::lang::vm::call(std::shared_ptr<uva::lang
 
 void uva::lang::vm::init()
 {
-    False = std::make_shared<uva::lang::Class>("FalseClass");
-    True = std::make_shared<uva::lang::Class>("TrueClass");
+    False = std::make_shared<uva::lang::structure>("FalseClass");
+    True = std::make_shared<uva::lang::structure>("TrueClass");
 
     this->load(False);
     this->load(True);
@@ -95,7 +95,7 @@ void uva::lang::vm::init()
     //TODO separate it
 
     // std class
-    Std = std::make_shared<uva::lang::Class>("std");
+    Std = std::make_shared<uva::lang::structure>("std");
 
     Std->methods["print"] = Method("print", method_storage_type::instance_method, {"message"}, [](uva::lang::object* object, const var& params) {
         std::cout << params[0].to_s();

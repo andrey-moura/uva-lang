@@ -19,8 +19,8 @@ public:
     virtual void load_in_vm(uva::lang::vm* vm) override {
         // This is called when the VM is ready to load classes and objects.
         
-        std::shared_ptr<uva::lang::Class> appClass = std::make_shared<uva::lang::Class>("wx::App");
-        std::shared_ptr<uva::lang::Class> frameClass = std::make_shared<uva::lang::Class>("wx::Frame");
+        std::shared_ptr<uva::lang::structure> appClass = std::make_shared<uva::lang::structure>("wx::App");
+        std::shared_ptr<uva::lang::structure> frameClass = std::make_shared<uva::lang::structure>("wx::Frame");
 
         vm->load(appClass);
         vm->load(frameClass);

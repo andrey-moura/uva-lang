@@ -10,15 +10,15 @@ namespace uva {
         class Object;
         class Method;
 
-        struct Class
+        struct structure
         {
             //for user code, use create
-            Class(const std::string& __name, std::vector<Method> __methods = {});
-            ~Class();
+            structure(const std::string& __name, std::vector<Method> __methods = {});
+            ~structure();
         public:
             std::string name;
             std::map<std::string, Method> methods;
-            std::shared_ptr<Class> base;
+            std::shared_ptr<structure> base;
             std::map<std::string, std::shared_ptr<Object>> variables;
             std::string source_content;
 

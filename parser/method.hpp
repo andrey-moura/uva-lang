@@ -34,7 +34,7 @@ namespace uva {
             }
 
             std::shared_ptr<uva::lang::object> call(uva::lang::object* o);
-            std::shared_ptr<uva::lang::object> call(uva::lang::Class* c);
+            std::shared_ptr<uva::lang::object> call(uva::lang::structure* c);
         };
     }
 }
