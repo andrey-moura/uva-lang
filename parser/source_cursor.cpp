@@ -1,0 +1,454 @@
+#include "source_cursor.hpp"
+
+#include <ctype.h>
+#include <string.h>
+
+uva::lang::source_cursor::source_cursor(std::string_view source)
+    : m_source(source), m_buffer(source), m_start(), m_end(), m_type(cursor_type::cursor_undefined)
+{
+    parse();
+}
+
+uva::lang::source_cursor uva::lang::source_cursor::init_next()
+{
+    uva::lang::source_cursor sc;
+    sc.m_source = m_source;
+    sc.m_buffer = m_source.substr(m_end.offset);
+    sc.m_start  = m_end;
+    sc.m_end    = m_end;
+
+    return sc;
+}
+
+uva::lang::source_cursor uva::lang::source_cursor::parse_next()
+{
+    source_cursor sc = init_next();
+    sc.parse();
+
+    return sc;
+}
+
+const char &uva::lang::source_cursor::discard()
+{
+    const char& c = m_buffer.front();
+
+    update_start_position(c);
+
+    m_buffer.remove_prefix(1);
+
+    const char* start = m_source.begin() + m_start.offset;
+    const char* end   = m_source.begin() + m_end.offset;
+    
+    if(m_end.offset) {
+        m_content = std::string_view(start, end - start);
+    }
+
+    return c;
+}
+
+const char& uva::lang::source_cursor::extend()
+{
+    const char& c = m_buffer.front();
+
+    update_end_position(c);
+
+    m_buffer.remove_prefix(1);
+    
+    const char* start = m_source.begin() + m_start.offset;
+    const char* end   = m_source.begin() + m_end.offset;
+    
+    m_content = std::string_view(start, end - start);
+
+    return c;
+}
+
+const char &uva::lang::source_cursor::extend_untill_token_or_eof(const char &token)
+{
+    while(m_buffer.size() && m_buffer.front() != token) {
+        extend();
+    }
+
+    return m_buffer.front();
+}
+
+const char &uva::lang::source_cursor::extend_untill_token(const char &token)
+{
+    extend_untill_token_or_eof(token);
+
+    // If buffer does not starts with the token, it means we reached the end of the file.
+    if(!m_buffer.starts_with(token)) {
+        throw_unexpected_eof();
+    }
+}
+
+void uva::lang::source_cursor::discard_whitespaces()
+{
+    while(m_buffer.size() && (isspace(m_buffer.front()) || m_buffer.starts_with(';'))) {
+        discard();
+    }
+}
+
+void uva::lang::source_cursor::extend_whitespaces()
+{
+    while(m_buffer.size() && (isspace(m_buffer.front()) || m_buffer.starts_with(';'))) {
+        extend();
+    }
+}
+
+void uva::lang::source_cursor::update_position(source_position &position, const char &token)
+{
+    if(m_buffer.front() == '\n') {
+        position.line++;
+        position.column = 0;
+    } else {
+        position.column++;
+    }
+
+    position.offset++;
+}
+
+void uva::lang::source_cursor::update_start_position(const char &token)
+{
+    update_position(m_start, token);
+}
+
+void uva::lang::source_cursor::update_end_position(const char &token)
+{
+    update_position(m_end, token);
+}
+
+void uva::lang::source_cursor::extend_by(const source_cursor &cursor)
+{
+    m_end = cursor.end();
+    m_content = std::string_view(m_source.begin() + m_start.offset, m_end.offset - m_start.offset);
+    m_buffer  = cursor.m_buffer;
+}
+
+void uva::lang::source_cursor::extend_by_last_child_if_exists()
+{
+    if(m_children.size()) {
+        extend_by(m_children.back());
+    }
+}
+
+void uva::lang::source_cursor::parse()
+{
+    //First, make sure we are at the beginning of the source code, not comments or spaces.
+    discard_whitespaces();
+
+    m_end = m_start;
+
+    //At this point, we are at the beginning of the source code. The next character may be a comment or a token.
+
+    if(m_buffer.empty()) {
+        m_type = cursor_type::cursor_eof;
+        return;
+    }
+
+    switch(m_type) {
+        // Cusor initialized by a source code, we have no idea of what it is.
+        case cursor_type::cursor_undefined:
+            if(m_buffer.starts_with("//")) {
+                m_type = cursor_type::cursor_comment;
+
+                // Read the comment
+                extend_untill_token_or_eof('\n');
+            } else if(m_buffer.starts_with("class")) {
+                m_type = cursor_type::cursor_class;
+
+                source_cursor dctype_cursor = init_next();
+                dctype_cursor.m_type = cursor_type::cursor_dectype;
+                dctype_cursor.parse();
+                m_children.push_back(dctype_cursor);
+
+                // Read the class name
+                source_cursor decname_cursor = dctype_cursor.init_next();
+                decname_cursor.m_type = cursor_type::cursor_decname;
+                decname_cursor.parse();
+                m_children.push_back(decname_cursor);
+
+                if(decname_cursor.content().empty()) {
+                    throw_error_at_current_position("expected class name");
+                }
+
+                // read the next token
+                source_cursor block_cursor = decname_cursor.init_next();
+                block_cursor.parse();
+
+                if(block_cursor.content().empty() || block_cursor.type() != cursor_type::cursor_block) {
+                    throw_error_at_current_position("expected '{' after class name");
+                }
+
+                m_children.push_back(block_cursor);
+
+                m_end = block_cursor.end();
+                m_content = std::string_view(m_source.begin() + m_start.offset, m_end.offset - m_start.offset);
+            } else if(m_buffer.starts_with('{')) {
+                m_type = cursor_type::cursor_block;
+
+                extend();
+                extend_whitespaces();
+
+                if(m_buffer.starts_with('}')) {
+                    extend();
+                } else {                
+                    source_cursor block_cursor = init_next();
+                    block_cursor.parse();
+
+                    while(!block_cursor.eof()) {
+                        m_children.push_back(block_cursor);
+                        block_cursor = block_cursor.parse_next();
+
+                        if(block_cursor.type() == cursor_type::cursor_undefined) {
+                            if(block_cursor.m_buffer.starts_with('}')) {
+                                break;
+                            }
+                        }
+                    }
+
+                    extend_by(block_cursor);
+                }
+
+                if(!m_buffer.ends_with('}')) {
+                    throw_error_at_current_position("expected '}'");
+                }
+
+                extend();
+            } else if(m_buffer.starts_with("function")) {
+                m_type = cursor_type::cursor_function;
+
+                source_cursor dctype_cursor = init_next();
+                dctype_cursor.m_type = cursor_type::cursor_dectype;
+                dctype_cursor.parse();
+                m_children.push_back(dctype_cursor);
+
+                // Read the function name
+                source_cursor decname_cursor = dctype_cursor.init_next();
+                decname_cursor.m_type = cursor_type::cursor_decname;
+                decname_cursor.parse();
+                m_children.push_back(decname_cursor);
+
+                if(decname_cursor.content().empty()) {
+                    throw_error_at_current_position("expected function name");
+                }
+
+                // read the params
+                source_cursor params_cursor = decname_cursor.init_next();
+                params_cursor.m_type = cursor_type::cursor_decfnparams;
+                params_cursor.parse();
+                m_children.push_back(params_cursor);
+
+                // read block
+                source_cursor block_cursor = params_cursor.init_next();
+                block_cursor.parse();
+                m_children.push_back(block_cursor);
+
+                if(block_cursor.type() != cursor_type::cursor_block) {
+                    throw_error_at_current_position("expected '{' after function name");
+                }
+
+                m_end = block_cursor.end();
+                m_content = std::string_view(m_source.begin() + m_start.offset, m_end.offset - m_start.offset);
+            } else if(m_buffer.starts_with("return")) {
+                m_type = cursor_type::cursor_return;
+
+                // Read the return keyword
+                while(m_buffer.size() && !isspace(m_buffer.front())) {
+                    extend();
+                }
+
+                // Read the return value
+                source_cursor return_cursor = init_next();
+                return_cursor.m_type = cursor_type::cursor_value;
+                return_cursor.parse();
+                m_children.push_back(return_cursor);
+
+                extend_by(return_cursor);
+            }
+            else {
+                while(m_buffer.size() && isalnum(m_buffer.front())) {
+                    extend();
+                }
+
+                if(m_buffer.size() && !isspace(m_buffer.front())) {
+                    // Can be so many things
+
+                    switch(m_buffer.front()) {
+                        case '(': {
+                            // A function declaration can't be here, so it must be a function call
+                            m_type = cursor_type::cursor_fncall;
+
+                            // The current cursor is the function name.
+                            source_cursor decname_cursor = *this;
+                            decname_cursor.m_type = cursor_type::cursor_decname;
+                            m_children.push_back(decname_cursor);
+
+                            source_cursor params_cursor = decname_cursor.init_next();
+                            params_cursor.m_type = cursor_type::cursor_fncallparams;
+                            params_cursor.parse();
+                            m_children.push_back(params_cursor);
+
+                            extend_by(params_cursor);
+                        }
+                        break;
+                    }
+                }
+            }
+        break;
+        case cursor_type::cursor_dectype: {
+            // A cursor that represents a declaration type, like class, function, variable, etc.
+            while(m_buffer.size() && !isspace(m_buffer.front())) {
+                // The type is a single word, so we can just read until we find a space.
+                // The symbol need to starts with a letter and can contain letters, numbers,
+                // underscores and '::' (which means its from a class or namespace).
+                
+                const char& c = extend();
+                
+                if(m_content.size() == 1) {
+                    // first letter
+                    if(!isalpha(c)) {
+                        throw_unexpected_token_at_current_position(c);
+                    }
+                } else {
+                    if(!isalnum(c) && c != '_') {
+                        if(c == ':' && (!isalnum(m_content.back()) && m_content.back() == ':')) {
+                            throw_unexpected_token_at_current_position(c);
+                        }
+                        
+                    }
+                }
+            }
+        }
+        break;
+        case cursor_type::cursor_decname: {
+            // A cursor that represents a declaration name
+            while(m_buffer.size()) {
+                // The type is a single word, so we can just read until we find a space.
+                // The symbol need to starts with a letter and can contain letters, numbers and underscores.
+                
+                const char& c = m_buffer.front();
+
+                if(isspace(c)) {
+                    break;
+                }
+                
+                if(!m_content.size()) {
+                    // first letter
+                    if(!isalpha(c)) {
+                        throw_unexpected_token_at_current_position(c);
+                    }
+                } else if(!isalnum(c) && c != '_') {
+                    break;
+                }
+
+                extend();
+            }
+        }
+        break;
+        case cursor_type::cursor_decfnparams: {
+            // A cursor that represents a declaration function parameters
+            if(!m_buffer.starts_with('(')) {
+                throw_error_at_current_position("expected '(' after function name");
+            }
+
+            while(m_buffer.size()) {
+                // Reads () and everything inside it.
+                
+                const char& c = m_buffer.front();
+
+                extend();
+
+                if(c == ')') {
+                    break;
+                }
+            }
+
+            if(!m_content.ends_with(')')) {
+                throw_unexpected_eof();
+            }
+        }
+        case cursor_type::cursor_value: {
+            // A cursor that represents a value
+
+            throw_unexpected_eof_if_buffer_is_empty();
+
+            if(m_buffer.starts_with('"')) {
+                extend();
+                extend_untill_token('"');
+                extend();
+            } else {
+                while(m_buffer.size()) {
+                    // Reads the value until the end of the line or a space.
+                    
+                    const char& c = m_buffer.front();
+
+                    if(isspace(c) || c == ';') {
+                        break;
+                    }
+
+                    extend();
+                }
+            }
+        }
+        break;
+        case cursor_type::cursor_fncallparams: {
+            // A cursor that represents a function call parameters
+            if(!m_buffer.starts_with('(')) {
+                throw_error_at_current_position("expected '(' after function name");
+            }
+
+            extend();
+            extend_whitespaces();
+
+            if(!m_buffer.starts_with(')')) {
+                // Currently supports only one parameter
+                while(m_buffer.size()) {                  
+                    source_cursor param_cursor = init_next();
+                    param_cursor.m_type = cursor_type::cursor_value;
+                    param_cursor.parse();
+
+                    m_children.push_back(param_cursor);
+
+                    break;
+                }
+
+                extend_by_last_child_if_exists();
+
+                if(!m_buffer.starts_with(')')) {
+                    throw_unexpected_eof();
+                }
+            }
+
+            extend();
+        }
+    }
+}
+
+void uva::lang::source_cursor::throw_error_at_current_position(std::string what)
+{
+    what += " at ";
+    what += human_start_position();
+    throw std::runtime_error(what);
+}
+
+void uva::lang::source_cursor::throw_unexpected_token_at_current_position(const char &token)
+{
+    std::string message = "Unexpected token '";
+    message.push_back(token);
+    message.push_back('\'');
+    
+    throw_error_at_current_position(std::move(message));
+}
+
+void uva::lang::source_cursor::throw_unexpected_eof()
+{
+    std::string message = "Unexpected end of file";
+    throw_error_at_current_position(std::move(message));
+}
+
+void uva::lang::source_cursor::throw_unexpected_eof_if_buffer_is_empty()
+{
+    if(m_buffer.empty()) {
+        throw_unexpected_eof();
+    }
+}

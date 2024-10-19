@@ -1,0 +1,39 @@
+[submodule "include/uva"]
+	path = include/uva
+	url = git@github.com:andrey-moura/uva
+[submodule "include/juices/core"]
+	path = include/juices/core
+	url = git@github.com:andrey-moura/core.git
+[submodule "include/juices/json"]
+	path = include/juices/json
+	url = git@github.com:andrey-moura/json.git
+[submodule "include/juices/console"]
+	path = include/juices/console
+	url = git@github.com:andrey-moura/console.git
+[submodule "include/fmt"]
+	path = include/fmt
+	url = https://github.com/fmtlib/fmt
+[submodule "include/juices/string"]
+	path = include/juices/string
+	url = git@github.com:andrey-moura/string.git
+[submodule "include/juices/routing"]
+	path = include/juices/routing
+	url = git@github.com:andrey-moura/routing.git
+[submodule "include/juices/file"]
+	path = include/juices/file
+	url = git@github.com:andrey-moura/file.git
+[submodule "include/string"]
+	path = include/string
+	url = git@github.com:andrey-moura/string.git
+[submodule "include/core"]
+	path = include/core
+	url = git@github.com:andrey-moura/core.git
+[submodule "include/json"]
+	path = include/json
+	url = git@github.com:andrey-moura/json.git
+[submodule "include/file"]
+	path = include/file
+	url = git@github.com:andrey-moura/file.git
+[submodule "include/console"]
+	path = include/console
+	url = git@github.com:andrey-moura/console.git
