@@ -8,7 +8,8 @@
 using namespace uva;
 using namespace lang;
 
-std::shared_ptr<uva::lang::structure> parser::parse(const std::filesystem::path &path)
+
+std::shared_ptr<uva::lang::structure> parser::parse(const std::filesystem::path &path, std::shared_ptr<uva::lang::vm> vm_instance)
 {
     std::shared_ptr<uva::lang::structure> c;
 
@@ -23,6 +24,7 @@ std::shared_ptr<uva::lang::structure> parser::parse(const std::filesystem::path 
         switch(cursor.type()) {
             case uva::lang::lexer::cursor_type::cursor_class: {
                 c = std::make_shared<uva::lang::structure>(std::string(cursor.decname()));
+                vm_instance->load(c);
                 c->source_content = std::move(class_content);
 
                 for(auto& child : cursor.block()->children()) {
