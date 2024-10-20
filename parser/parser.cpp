@@ -92,7 +92,7 @@ std::shared_ptr<uva::lang::structure> parser::parse(const std::filesystem::path 
                             switch (block_child.type())
                             {
                                 case uva::lang::lexer::cursor_type::cursor_function: {
-                                    Method m;
+                                    uva::lang::method m;
                                     m.name = std::string(block_child.decname());
                                     m.block = std::string(block_child.content());
                                     m.block_cursor = *block_child.block();
@@ -143,7 +143,7 @@ uva::lang::structure::~structure()
 }
 
 
-uva::lang::structure::structure(const std::string& __name, std::vector<Method> __methods)
+uva::lang::structure::structure(const std::string& __name, std::vector<uva::lang::method> __methods)
     : name(__name)
 {
     uva::console::log_debug("{}#Class created", name);

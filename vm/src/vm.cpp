@@ -23,7 +23,7 @@ std::shared_ptr<uva::lang::object> uva::lang::vm::instantiate(std::shared_ptr<uv
     return obj;
 }
 
-std::shared_ptr<uva::lang::object> uva::lang::vm::call(std::shared_ptr<uva::lang::object> object, const Method &method, const var &params)
+std::shared_ptr<uva::lang::object> uva::lang::vm::call(std::shared_ptr<uva::lang::object> object, const uva::lang::method &method, const var &params)
 {
     if(method.block.size()) {
         for(auto& statment : method.block_cursor.children()) {
@@ -97,12 +97,12 @@ void uva::lang::vm::init()
     // std class
     Std = std::make_shared<uva::lang::structure>("std");
 
-    Std->methods["print"] = Method("print", method_storage_type::instance_method, {"message"}, [](uva::lang::object* object, const var& params) {
+    Std->methods["print"] = uva::lang::method("print", method_storage_type::instance_method, {"message"}, [](uva::lang::object* object, const var& params) {
         std::cout << params[0].to_s();
         return nullptr;
     });
 
-    Std->methods["puts"] = Method("puts", method_storage_type::instance_method, {"message"}, [](uva::lang::object* object, const var& params) {
+    Std->methods["puts"] = uva::lang::method("puts", method_storage_type::instance_method, {"message"}, [](uva::lang::object* object, const var& params) {
         std::cout << params[0].to_s() << std::endl;
         return nullptr;
     });

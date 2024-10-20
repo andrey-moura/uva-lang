@@ -9,23 +9,22 @@
 
 namespace uva {
     namespace lang {
-        class Object;
-        class Method;
-
+        class object;
+        class method;
         struct structure
         {
             //for user code, use create
-            structure(const std::string& __name, std::vector<Method> __methods = {});
+            structure(const std::string& __name, std::vector<uva::lang::method> __methods = {});
             ~structure();
         public:
             std::string name;
-            std::map<std::string, Method> methods;
+            std::map<std::string, uva::lang::method> methods;
             std::shared_ptr<structure> base;
-            std::map<std::string, std::shared_ptr<Object>> variables;
+            std::map<std::string, std::shared_ptr<uva::lang::object>> variables;
             std::string source_content;
 
-            std::shared_ptr<Object> call(const Method& method, const var& params= null);
-            std::shared_ptr<Object> call(const std::string& method, const var& params = null)
+            std::shared_ptr<uva::lang::object> call(const uva::lang::method& method, const var& params= null);
+            std::shared_ptr<uva::lang::object> call(const std::string& method, const var& params = null)
             {
                 return call(methods[method], params);
             }

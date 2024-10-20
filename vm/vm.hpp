@@ -49,7 +49,7 @@ namespace uva
             /// @return The instancieted object
             std::shared_ptr<uva::lang::object> instantiate(std::shared_ptr<uva::lang::structure> cls, const std::string& name);
 
-            std::shared_ptr<uva::lang::object> call(std::shared_ptr<uva::lang::object> object, const Method& method, const var& params = var());
+            std::shared_ptr<uva::lang::object> call(std::shared_ptr<uva::lang::object> object, const uva::lang::method& method, const var& params = var());
 
             std::shared_ptr<uva::lang::structure> find_class(const std::string_view& name) {
                 for(auto& cls : classes) {
