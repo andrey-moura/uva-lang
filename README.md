@@ -16,3 +16,29 @@ Linux
 ```
 
 Optional: Run ```sudo make install``` to install uva
+
+# Samples
+
+If you want to run a sample, try:
+
+```sh
+    uva samples/hellow_world.uva
+```
+
+This file has the content:
+
+```typescript
+    class Application
+    {
+        function run()
+        {
+            puts("Hello, World!");
+        }
+    }
+```
+
+The result is:
+
+```
+    Hello, World!
+```
