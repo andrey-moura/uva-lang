@@ -1,0 +1,10 @@
+class Application
+{
+    function run()
+    {
+        puts("This is line 1");
+        print("This is line 2");
+        print(" - This still line 2\n");
+        return 0;
+    }
+}
