@@ -159,6 +159,11 @@ namespace uva
                 const std::vector<uva::lang::lexer::cursor>& children() const {
                     return m_children;
                 }
+
+                void throw_error_at_current_position(std::string what);
+                void throw_unexpected_token_at_current_position(const char& token);
+                void throw_unexpected_eof();
+                void throw_unexpected_eof_if_buffer_is_empty();
             };
         };
     };
