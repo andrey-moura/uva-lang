@@ -94,8 +94,8 @@ std::shared_ptr<uva::lang::structure> parser::parse(const std::filesystem::path 
 
                             c->methods[m.name] = m;
                         }
+                        break;
                     }
-                    break;
                 }
             }
             break;
