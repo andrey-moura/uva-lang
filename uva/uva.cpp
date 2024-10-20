@@ -30,19 +30,23 @@ int main(int argc, char** argv) {
 
         application_class = p.parse(file_path, vm_instance);
 
-        auto it = application_class->methods.find("init");
+        auto it = application_class->methods.find("run");
 
         if(it == application_class->methods.end()) {
-            throw std::runtime_error("init method not defined in class Application");
+            throw std::runtime_error("run method not defined in class Application");
         }
         
         application = std::make_shared<uva::lang::object>(application_class);
 
         std::shared_ptr<uva::lang::object> ret = vm_instance->call(application, it->second);
 
-        if(!ret || ret->cls != vm_instance->True) {
-            std::cout << "init not returned true. Exiting..." << std::endl;
-            return false;
+        if(!ret) {
+            return 0;
+        }
+
+        if(ret) {
+            // TODO: Treat the return value
+            return 0;
         }
     } catch (const std::exception& e) {
         uva::console::log_error(e.what());
