@@ -2,7 +2,11 @@
 
 Uva is an interpreted object-oriented multi-purpose programming language
 
-[![C/C++ Build](https://github.com/andrey-moura/uva-lang/actions/workflows/build.yml/badge.svg)](https://github.com/andrey-moura/uva-lang/actions/workflows/build.yml)
+# Availability
+
+Environment | Build
+--- | --- |
+Ubuntu 20.04 | [![Ubuntu 20.04](https://github.com/andrey-moura/uva-lang/actions/workflows/build-ubuntu-20.04.yml/badge.svg)](https://github.com/andrey-moura/uva-lang/actions/workflows/build-ubuntu-20.04.yml)
 
 # Building
 
