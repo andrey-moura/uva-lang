@@ -5,19 +5,19 @@
 #include <string.h>
 
 std::map<uva::lang::lexer::cursor_type, void(uva::lang::lexer::cursor::*)()> uva::lang::lexer::cursor::s_lexers = {
-    { uva::lang::lexer::cursor_type::cursor_comment,      &uva::lang::lexer::cursor::lexer_comment },
-    { uva::lang::lexer::cursor_type::cursor_block,        &uva::lang::lexer::cursor::lexer_block },
-    { uva::lang::lexer::cursor_type::cursor_function,     &uva::lang::lexer::cursor::lexer_function },
-    { uva::lang::lexer::cursor_type::cursor_return,       &uva::lang::lexer::cursor::lexer_return },
-    { uva::lang::lexer::cursor_type::cursor_class,        &uva::lang::lexer::cursor::lexer_class },
-    { uva::lang::lexer::cursor_type::cursor_dectype,      &uva::lang::lexer::cursor::lexer_dectype },
-    { uva::lang::lexer::cursor_type::cursor_decname,      &uva::lang::lexer::cursor::lexer_decname },
-    { uva::lang::lexer::cursor_type::cursor_decfnparams,  &uva::lang::lexer::cursor::lexer_decfnparams },
-    { uva::lang::lexer::cursor_type::cursor_value,        &uva::lang::lexer::cursor::lexer_value },
+    { uva::lang::lexer::cursor_type::cursor_comment,      &uva::lang::lexer::cursor::lexer_comment      },
+    { uva::lang::lexer::cursor_type::cursor_block,        &uva::lang::lexer::cursor::lexer_block        },
+    { uva::lang::lexer::cursor_type::cursor_function,     &uva::lang::lexer::cursor::lexer_function     },
+    { uva::lang::lexer::cursor_type::cursor_return,       &uva::lang::lexer::cursor::lexer_return       },
+    { uva::lang::lexer::cursor_type::cursor_class,        &uva::lang::lexer::cursor::lexer_class        },
+    { uva::lang::lexer::cursor_type::cursor_dectype,      &uva::lang::lexer::cursor::lexer_dectype      },
+    { uva::lang::lexer::cursor_type::cursor_decname,      &uva::lang::lexer::cursor::lexer_decname      },
+    { uva::lang::lexer::cursor_type::cursor_decfnparams,  &uva::lang::lexer::cursor::lexer_decfnparams  },
+    { uva::lang::lexer::cursor_type::cursor_value,        &uva::lang::lexer::cursor::lexer_value        },
     { uva::lang::lexer::cursor_type::cursor_fncallparams, &uva::lang::lexer::cursor::lexer_fncallparams },
-    { uva::lang::lexer::cursor_type::cursor_undefined,    &uva::lang::lexer::cursor::lexer_undefined },
-    { uva::lang::lexer::cursor_type::cursor_baseclass,    &uva::lang::lexer::cursor::lexer_baseclass },
-    { uva::lang::lexer::cursor_type::cursor_fncall,       &uva::lang::lexer::cursor::lexer_fncall }
+    { uva::lang::lexer::cursor_type::cursor_undefined,    &uva::lang::lexer::cursor::lexer_undefined    },
+    { uva::lang::lexer::cursor_type::cursor_baseclass,    &uva::lang::lexer::cursor::lexer_baseclass    },
+    { uva::lang::lexer::cursor_type::cursor_fncall,       &uva::lang::lexer::cursor::lexer_fncall       }
 };
 
 uva::lang::lexer::cursor::cursor(std::string_view source)
