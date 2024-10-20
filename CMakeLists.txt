@@ -64,7 +64,10 @@ add_library(uva-extension
     extension/src/extension.cpp
 )
 
-include("languanizer/CMakeLists.txt")
+if(DEFINED LANGUANIZER_ENABLED)
+	include("languanizer/CMakeLists.txt")
+endif()
+
 include("vm/CMakeLists.txt")
 include("lexer/CMakeLists.txt")
 
