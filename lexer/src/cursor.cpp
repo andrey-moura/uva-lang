@@ -178,14 +178,14 @@ void uva::lang::lexer::cursor::parse()
     ((*this).*parser)();
 }
 
-void uva::lang::lexer::cursor::throw_error_at_current_position(std::string what)
+void uva::lang::lexer::cursor::throw_error_at_current_position(std::string what) const
 {
     what += " at ";
     what += human_start_position();
     throw std::runtime_error(what);
 }
 
-void uva::lang::lexer::cursor::throw_unexpected_token_at_current_position(const char &token)
+void uva::lang::lexer::cursor::throw_unexpected_token_at_current_position(const char &token) const
 {
     std::string message = "Unexpected token '";
     message.push_back(token);
@@ -194,13 +194,13 @@ void uva::lang::lexer::cursor::throw_unexpected_token_at_current_position(const 
     throw_error_at_current_position(std::move(message));
 }
 
-void uva::lang::lexer::cursor::throw_unexpected_eof()
+void uva::lang::lexer::cursor::throw_unexpected_eof() const
 {
     std::string message = "Unexpected end of file";
     throw_error_at_current_position(std::move(message));
 }
 
-void uva::lang::lexer::cursor::throw_unexpected_eof_if_buffer_is_empty()
+void uva::lang::lexer::cursor::throw_unexpected_eof_if_buffer_is_empty() const
 {
     if(m_buffer.empty()) {
         throw_unexpected_eof();

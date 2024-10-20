@@ -161,10 +161,10 @@ namespace uva
                     return m_children;
                 }
 
-                void throw_error_at_current_position(std::string what);
-                void throw_unexpected_token_at_current_position(const char& token);
-                void throw_unexpected_eof();
-                void throw_unexpected_eof_if_buffer_is_empty();
+                void throw_error_at_current_position(std::string what) const;
+                void throw_unexpected_token_at_current_position(const char& token) const;
+                void throw_unexpected_eof() const;
+                void throw_unexpected_eof_if_buffer_is_empty() const;
             };
         };
     };
