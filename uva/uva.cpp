@@ -32,6 +32,10 @@ int main(int argc, char** argv) {
             throw std::runtime_error("input file does not exist");
         }
 
+        if(!std::filesystem::is_regular_file(file_path)) {
+            throw std::runtime_error("input file is not a regular file");
+        }
+
         application_class = p.parse(file_path, vm_instance);
 
         auto it = application_class->methods.find("run");
