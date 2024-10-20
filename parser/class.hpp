@@ -20,7 +20,7 @@ namespace uva {
             std::string name;
             std::map<std::string, uva::lang::method> methods;
             std::shared_ptr<structure> base;
-            std::map<std::string, std::shared_ptr<uva::lang::object>> variables;
+            std::map<std::string, std::shared_ptr<uva::lang::object>> instance_variables;
             std::string source_content;
 
             std::shared_ptr<uva::lang::object> call(const uva::lang::method& method, const var& params= null);

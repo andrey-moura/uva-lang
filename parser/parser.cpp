@@ -100,6 +100,18 @@ std::shared_ptr<uva::lang::structure> parser::parse(const std::filesystem::path 
                                     c->methods[m.name] = m;
                                 }
                                 break;
+                                case uva::lang::lexer::cursor_type::cursor_var: {
+                                    std::string_view var_name  = block_child.decname();
+                                    std::string_view var_value = block_child.value();
+
+                                    if(var_value == "null") {
+                                        c->instance_variables[std::string(var_name)] = nullptr;
+                                    } else {
+                                        block_child.throw_error_at_current_position("parser: cannot parse declared value of variable");
+                                    }
+
+                                }
+                                break;
                             }
                         }
                     }
