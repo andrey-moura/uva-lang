@@ -442,6 +442,19 @@ void uva::lang::lexer::cursor::lexer_fncallparams() {
             param_cursor.m_type = cursor_type::cursor_value;
             param_cursor.parse();
 
+            if(param_cursor.content().ends_with(':')) {
+                // oops, its not a value, its a named parameter
+                param_cursor.m_type = cursor_type::cursor_decname;
+
+                uva::lang::lexer::cursor value_cursor = param_cursor.parse_next();
+                value_cursor.m_type = cursor_type::cursor_value;
+                value_cursor.parse();
+
+                param_cursor.extend_by(value_cursor);
+
+                param_cursor.m_children.push_back(value_cursor);
+            }
+
             m_children.push_back(param_cursor);
 
             break;
