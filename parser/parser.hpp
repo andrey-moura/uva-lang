@@ -23,5 +23,6 @@ namespace uva
         ~parser() = default;
     public:
         std::shared_ptr<uva::lang::structure> parse(const std::filesystem::path& path, std::shared_ptr<uva::lang::vm> vm_instance);
+        static std::map<std::string, void(*)(uva::parser* parser, std::shared_ptr<uva::lang::vm> vm, var)> parser_funtions;
     };
 }; // namespace uva
