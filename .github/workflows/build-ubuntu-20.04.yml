@@ -1,4 +1,4 @@
-name: C/C++ Build
+name: Ubuntu 20.04
 
 on:
   push:
