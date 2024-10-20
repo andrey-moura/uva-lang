@@ -104,6 +104,18 @@ std::shared_ptr<uva::lang::structure> parser::parse(const std::filesystem::path 
                         }
                     }
                     break;
+                    case uva::lang::lexer::cursor_type::cursor_baseclass: {
+                        std::string_view base_class_name = class_child.decname();
+
+                        auto cls = vm_instance->find_class(base_class_name);
+
+                        if(!cls) {
+                            class_child.throw_error_at_current_position(std::format("parser: {} is undefined", base_class_name));
+                        }
+
+                        c->base = cls;
+                    }
+                    break;
                     default:
                         break;
                     }

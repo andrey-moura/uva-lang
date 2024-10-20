@@ -45,6 +45,9 @@ namespace uva
                 bool eof() const {
                     return m_type == cursor_type::cursor_eof;
                 }
+                bool is_undefined() const {
+                    return m_type == cursor_type::cursor_undefined;
+                }
                 const std::string_view& content() const {
                     return m_content;
                 }
@@ -95,16 +98,15 @@ namespace uva
                 /// @param token The token which should stop the extending
                 /// @return The last character pushed to the content.
                 const char& extend_untill_token(const char& token);
+                /// @brief Push a character from buffer to content untill the buffer starts with a whitespace. If EOF is found, a exception is thrown. The token itself is not pushed to the content.
+                /// @param token The token which should stop the extending
+                /// @return The last character pushed to the content.
+                const char& extend_untill_whitespace();
                 void discard_whitespaces();
                 void extend_whitespaces();
                 void update_position(uva::lang::lexer::cursor_position& position, const char& token);
                 void update_start_position(const char& token);
                 void update_end_position(const char& token);
-
-                void throw_error_at_current_position(std::string what);
-                void throw_unexpected_token_at_current_position(const char& token);
-                void throw_unexpected_eof();
-                void throw_unexpected_eof_if_buffer_is_empty();
 
                 void extend_by(const uva::lang::lexer::cursor& cursor);
                 void extend_by_last_child_if_exists();
@@ -121,22 +123,23 @@ namespace uva
                 void lexer_fncall();
                 void lexer_fncallparams();
                 void lexer_undefined();
+                void lexer_baseclass();
             //parsing public interface
             public:
                 uva::lang::lexer::cursor parse_next();
 
-                const uva::lang::lexer::cursor& child_from_type(const cursor_type& __type) const {
+                const uva::lang::lexer::cursor* child_from_type(const cursor_type& __type) const {
                     for(auto& child : m_children) {
                         if(child.type() == __type) {
-                            return child;
+                            return &child;
                         }
                     }
 
-                    throw std::runtime_error("child not found");
+                    return nullptr;
                 }
 
                 const std::string_view& child_content_from_type(const cursor_type& __type) const {
-                    return child_from_type(__type).content();
+                    return child_from_type(__type)->content();
                 }
 
                 const std::string_view& decname() const {
@@ -149,12 +152,16 @@ namespace uva
                     return child_content_from_type(cursor_type::cursor_value);
                 }
 
-                const uva::lang::lexer::cursor& block() const {
+                const uva::lang::lexer::cursor* block() const {
                     return child_from_type(cursor_type::cursor_block);
                 }
 
-                const uva::lang::lexer::cursor& fncallparams() const {
+                const uva::lang::lexer::cursor* fncallparams() const {
                     return child_from_type(cursor_type::cursor_fncallparams);
+                }
+
+                const uva::lang::lexer::cursor* baseclass() const {
+                    return child_from_type(cursor_type::cursor_baseclass);
                 }
 
                 const std::vector<uva::lang::lexer::cursor>& children() const {

@@ -16,6 +16,7 @@ std::map<uva::lang::lexer::cursor_type, void(uva::lang::lexer::cursor::*)()> uva
     { uva::lang::lexer::cursor_type::cursor_value,        &uva::lang::lexer::cursor::lexer_value },
     { uva::lang::lexer::cursor_type::cursor_fncallparams, &uva::lang::lexer::cursor::lexer_fncallparams },
     { uva::lang::lexer::cursor_type::cursor_undefined,    &uva::lang::lexer::cursor::lexer_undefined },
+    { uva::lang::lexer::cursor_type::cursor_baseclass,    &uva::lang::lexer::cursor::lexer_baseclass },
     { uva::lang::lexer::cursor_type::cursor_fncall,       &uva::lang::lexer::cursor::lexer_fncall }
 };
 
@@ -95,6 +96,18 @@ const char &uva::lang::lexer::cursor::extend_untill_token(const char &token)
     if(!m_buffer.starts_with(token)) {
         throw_unexpected_eof();
     }
+
+    return m_buffer.front();
+}
+
+const char &uva::lang::lexer::cursor::extend_untill_whitespace()
+{
+    while(m_buffer.size() && !isspace(m_buffer.front())) {
+        extend();
+    }
+
+    // If buffer does not starts with the token, it means we reached the end of the file.
+    throw_unexpected_eof_if_buffer_is_empty();
 
     return m_buffer.front();
 }
@@ -312,17 +325,20 @@ void uva::lang::lexer::cursor::lexer_class() {
     }
 
     // read the next token
-    uva::lang::lexer::cursor block_cursor = decname_cursor.init_next();
-    block_cursor.parse();
+    uva::lang::lexer::cursor next_cursor = decname_cursor.parse_next();
 
-    if(block_cursor.content().empty() || block_cursor.type() != cursor_type::cursor_block) {
+    if(next_cursor.type() == cursor_type::cursor_baseclass) {
+        m_children.push_back(next_cursor);
+        next_cursor = next_cursor.parse_next();
+    }
+
+    if(next_cursor.content().empty() || next_cursor.type() != cursor_type::cursor_block) {
         throw_error_at_current_position("expected '{' after class name");
     }
 
-    m_children.push_back(block_cursor);
+    m_children.push_back(next_cursor);
 
-    m_end = block_cursor.end();
-    m_content = std::string_view(m_source.begin() + m_start.offset, m_end.offset - m_start.offset);
+    extend_by(next_cursor);
 }
 
 void uva::lang::lexer::cursor::lexer_dectype() {
@@ -510,4 +526,25 @@ void uva::lang::lexer::cursor::lexer_undefined() {
             break;
         }
     }
+}
+
+void uva::lang::lexer::cursor::lexer_baseclass()
+{
+    uva::lang::lexer::cursor decltype_cursor = init_next();
+    decltype_cursor.m_type = cursor_type::cursor_dectype;
+    decltype_cursor.parse();
+    m_children.push_back(decltype_cursor);
+
+    uva::lang::lexer::cursor decname_cursor = decltype_cursor.init_next();
+    decname_cursor.m_type = cursor_type::cursor_dectype;
+    decname_cursor.parse();
+    //parse as dectype, but it is actually a decname
+    decname_cursor.m_type = cursor_type::cursor_decname;
+    m_children.push_back(decname_cursor);
+
+    if(decname_cursor.content().empty()) {
+        throw_error_at_current_position("expected base class name");
+    }
+
+    extend_by(decname_cursor);
 }
