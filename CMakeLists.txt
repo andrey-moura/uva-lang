@@ -80,3 +80,5 @@ add_executable(uva
 )
 
 target_link_libraries(uva uva-vm uva-core uva-console uva-file uva-string ${wxWidgets_LIBRARIES})
+
+install(TARGETS uva DESTINATION bin)
