@@ -7,23 +7,39 @@
 #include <uva/file.hpp>
 #include <extension/extension.hpp>
 
+#include <wx/wx.h>
+
 using namespace uva;
 
 std::shared_ptr<uva::lang::vm> vm_instance;
 
+class wxUvaApp : public wxApp
+{
+private:
+    parser p;
+public:
+	wxUvaApp() = default;
+	~wxUvaApp() = default;
+
+	virtual bool OnInit();
+};
+
+wxIMPLEMENT_APP(wxUvaApp);
+
 std::shared_ptr<uva::lang::structure> application_class;
 std::shared_ptr<uva::lang::object> application;
-parser p;
+
 std::vector<uva::lang::extension*> extensions;
 
-int main(int argc, char** argv) {
+bool wxUvaApp::OnInit()
+{
     try {
         vm_instance = std::make_shared<uva::lang::vm>();
 
         std::filesystem::path file_path;
 
-        if(argc > 1) {
-            file_path = std::filesystem::absolute(argv[1]);
+        if(wxApp::argc > 1) {
+            file_path = std::filesystem::absolute(wxApp::argv[1].ToStdString(wxMBConvUTF8()));
         } else {
             file_path = std::filesystem::absolute("application.uva");
         }
@@ -49,5 +65,5 @@ int main(int argc, char** argv) {
         return false;
     }
 
-    return 0;
+	return true;
 }

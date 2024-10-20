@@ -67,10 +67,10 @@ add_library(uva-extension
 include("languanizer/CMakeLists.txt")
 include("vm/CMakeLists.txt")
 include("lexer/CMakeLists.txt")
+include("uva-wx/CMakeLists.txt")
 
 add_executable(uva
     uva/uva.cpp
-    uva-wx/src/lib.cpp
 )
 
 target_link_libraries(uva uva-vm uva-core uva-console uva-file uva-string ${wxWidgets_LIBRARIES})
