@@ -67,7 +67,10 @@ add_library(uva-extension
 include("languanizer/CMakeLists.txt")
 include("vm/CMakeLists.txt")
 include("lexer/CMakeLists.txt")
-include("uva-wx/CMakeLists.txt")
+
+if(DEFINED WX_ENABLED)
+	include("uva-wx/CMakeLists.txt")
+endif()
 
 add_executable(uva
     uva/uva.cpp
