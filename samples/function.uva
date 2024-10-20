@@ -1,0 +1,13 @@
+class Application
+{
+    function run()
+    {
+        say_hello();
+        return 0;
+    }
+
+    function say_hello()
+    {
+        puts("Hello from a function!");
+    }
+}
