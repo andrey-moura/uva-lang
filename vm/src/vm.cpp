@@ -51,8 +51,34 @@ std::shared_ptr<uva::lang::object> uva::lang::vm::call(std::shared_ptr<uva::lang
                         if(content.starts_with("\"") && content.ends_with("\"")) {
                             content.remove_prefix(1);
                             content.remove_suffix(1);
+
+                            std::string param;
+                            param.reserve(content.size());
+
+                            bool escape = false;
+
+                            for(const char& c : content) {
+                                switch (c)
+                                {
+                                case '\\':
+                                    escape = true;
+                                    break;
+                                case 'n': {
+                                    if(escape) {
+                                        param.push_back('\n');
+                                    } else {
+                                        param.push_back(c);
+                                    }
+                                }
+                                break;
+                                default:
+                                    escape = false;
+                                    param.push_back(c);
+                                    break;
+                                }
+                            }
                             
-                            params_to_call.push_back(std::string(content));
+                            params_to_call.push_back(param);
                         }
                     }
 
