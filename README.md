@@ -12,5 +12,7 @@ Linux
     mkdir build
     cd build/
     cmake ..
-    make uva
+    make
 ```
+
+Optional: Run ```sudo make install``` to install uva
