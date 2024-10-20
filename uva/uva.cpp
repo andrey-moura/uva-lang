@@ -28,6 +28,10 @@ int main(int argc, char** argv) {
             file_path = std::filesystem::absolute("application.uva");
         }
 
+        if(!std::filesystem::exists(file_path)) {
+            throw std::runtime_error("input file does not exist");
+        }
+
         application_class = p.parse(file_path, vm_instance);
 
         auto it = application_class->methods.find("run");
