@@ -10,10 +10,37 @@ using namespace lang;
 
 std::map<std::string, void(*)(uva::parser* parser, std::shared_ptr<uva::lang::vm> vm, var params)> uva::parser::parser_funtions = {
 
+    {"require_directory", [](uva::parser* parser, std::shared_ptr<uva::lang::vm> vm, var params) {
+        size_t params_size = params.size();
+
+        if(params.size() != 1) {
+            throw std::runtime_error("require_directory: wrong number of arguments. Expected 1, got " + std::to_string(params_size));
+        }
+
+        std::filesystem::path directory = parser->absolute(params[0]);
+
+        if(!std::filesystem::exists(directory)) {
+            throw std::runtime_error("require_directory: directory does not exist");
+        }
+
+        for(auto& entry : std::filesystem::directory_iterator(directory)) {
+            if(entry.is_regular_file()) {
+                std::string extension = entry.path().extension().string();
+
+                if(extension == ".uva") {
+                    uva::parser new_parser;
+                    new_parser.parse(entry.path(), vm);
+                }
+            }
+        }
+    }}
 };
 
 std::shared_ptr<uva::lang::structure> parser::parse(const std::filesystem::path &path, std::shared_ptr<uva::lang::vm> vm_instance)
 {
+    current_path = path;
+    current_path.remove_filename();
+
     std::shared_ptr<uva::lang::structure> c;
 
     std::string class_content = uva::file::read_all_text<char>(path);

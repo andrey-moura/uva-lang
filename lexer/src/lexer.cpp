@@ -9,4 +9,5 @@ std::vector<std::pair<std::string_view, uva::lang::lexer::cursor_type>> uva::lan
     { "return",   cursor_type::cursor_return           },
     { "class",    cursor_type::cursor_class            },
     { "extends",  cursor_type::cursor_baseclass        },
+    { "require_directory", cursor_type::cursor_fncall  },
 };
