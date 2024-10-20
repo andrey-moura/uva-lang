@@ -18,7 +18,7 @@ std::shared_ptr<uva::lang::structure> parser::parse(const std::filesystem::path 
     uva::lang::lexer::cursor cursor(content_view);
 
     while(!cursor.eof()) {
-        uva::console::log_debug("read cursor of type {} at {} with content '{}'", (int)cursor.type(), cursor.human_start_position(), cursor.content());
+        uva::console::log_debug("read cursor of type {} at {} with content '{}'", (int)cursor.type(), cursor.human_start_position(), cursor.is_undefined() ? "undefined" : cursor.content());
 
         if(cursor.type() == uva::lang::lexer::cursor_type::cursor_class) {
             c = std::make_shared<uva::lang::structure>(std::string(cursor.decname()));
