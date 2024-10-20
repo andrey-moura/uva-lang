@@ -118,6 +118,7 @@ namespace uva
                 void lexer_decname();
                 void lexer_decfnparams();
                 void lexer_value();
+                void lexer_fncall();
                 void lexer_fncallparams();
                 void lexer_undefined();
             //parsing public interface

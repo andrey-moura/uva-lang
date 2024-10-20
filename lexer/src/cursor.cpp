@@ -16,6 +16,7 @@ std::map<uva::lang::lexer::cursor_type, void(uva::lang::lexer::cursor::*)()> uva
     { uva::lang::lexer::cursor_type::cursor_value,        &uva::lang::lexer::cursor::lexer_value },
     { uva::lang::lexer::cursor_type::cursor_fncallparams, &uva::lang::lexer::cursor::lexer_fncallparams },
     { uva::lang::lexer::cursor_type::cursor_undefined,    &uva::lang::lexer::cursor::lexer_undefined },
+    { uva::lang::lexer::cursor_type::cursor_fncall,       &uva::lang::lexer::cursor::lexer_fncall }
 };
 
 uva::lang::lexer::cursor::cursor(std::string_view source)
@@ -426,6 +427,22 @@ void uva::lang::lexer::cursor::lexer_value() {
     }
 }
 
+void uva::lang::lexer::cursor::lexer_fncall()
+{
+    // The current cursor is the function name.
+    uva::lang::lexer::cursor decname_cursor = *this;
+    decname_cursor.m_type = cursor_type::cursor_decname;
+    decname_cursor.parse();
+    m_children.push_back(decname_cursor);
+
+    uva::lang::lexer::cursor params_cursor = decname_cursor.init_next();
+    params_cursor.m_type = cursor_type::cursor_fncallparams;
+    params_cursor.parse();
+    m_children.push_back(params_cursor);
+
+    extend_by(params_cursor);
+}
+
 void uva::lang::lexer::cursor::lexer_fncallparams() {
     // A cursor that represents a function call parameters
     if(!m_buffer.starts_with('(')) {
@@ -471,6 +488,8 @@ void uva::lang::lexer::cursor::lexer_fncallparams() {
 }
 
 void uva::lang::lexer::cursor::lexer_undefined() {
+    uva::lang::lexer::cursor initial_cursor = *this;
+
     while(m_buffer.size() && (isalnum(m_buffer.front()) || m_buffer.front() == '_')) {
         extend();
     }
@@ -481,19 +500,11 @@ void uva::lang::lexer::cursor::lexer_undefined() {
         switch(m_buffer.front()) {
             case '(': {
                 // A function declaration can't be here, so it must be a function call
+
+                // Rollback to the initial cursor
+                *this = initial_cursor;
                 m_type = cursor_type::cursor_fncall;
-
-                // The current cursor is the function name.
-                uva::lang::lexer::cursor decname_cursor = *this;
-                decname_cursor.m_type = cursor_type::cursor_decname;
-                m_children.push_back(decname_cursor);
-
-                uva::lang::lexer::cursor params_cursor = decname_cursor.init_next();
-                params_cursor.m_type = cursor_type::cursor_fncallparams;
-                params_cursor.parse();
-                m_children.push_back(params_cursor);
-
-                extend_by(params_cursor);
+                lexer_fncall();
             }
             break;
         }
