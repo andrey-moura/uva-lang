@@ -84,16 +84,27 @@ std::shared_ptr<uva::lang::structure> parser::parse(const std::filesystem::path 
                 vm_instance->load(c);
                 c->source_content = std::move(class_content);
 
-                for(auto& child : cursor.block()->children()) {
-                    switch(child.type()) {
-                        case uva::lang::lexer::cursor_type::cursor_function: {
-                            Method m;
-                            m.name = std::string(child.decname());
-                            m.block = std::string(child.content());
-                            m.block_cursor = *child.block();
+                for(auto& class_child : cursor.children()) {
+                    switch (class_child.type())
+                    {
+                    case uva::lang::lexer::cursor_type::cursor_block: {
+                        for(auto& block_child : class_child.children()) {
+                            switch (block_child.type())
+                            {
+                                case uva::lang::lexer::cursor_type::cursor_function: {
+                                    Method m;
+                                    m.name = std::string(block_child.decname());
+                                    m.block = std::string(block_child.content());
+                                    m.block_cursor = *block_child.block();
 
-                            c->methods[m.name] = m;
+                                    c->methods[m.name] = m;
+                                }
+                                break;
+                            }
                         }
+                    }
+                    break;
+                    default:
                         break;
                     }
                 }
