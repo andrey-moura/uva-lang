@@ -3,5 +3,6 @@ class Application
     function run()
     {
         puts("Hello, World!");
+        return 0;
     }
 }
