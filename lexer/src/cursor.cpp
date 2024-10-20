@@ -478,6 +478,7 @@ void uva::lang::lexer::cursor::lexer_fncallparams() {
         }
 
         extend_by_last_child_if_exists();
+        extend_whitespaces();
 
         if(!m_buffer.starts_with(')')) {
             throw_unexpected_eof();
