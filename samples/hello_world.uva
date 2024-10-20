@@ -1,0 +1,7 @@
+class Application
+{
+    function run()
+    {
+        puts("Hello, World!");
+    }
+}
