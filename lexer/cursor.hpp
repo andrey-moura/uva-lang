@@ -26,6 +26,7 @@ namespace uva
                 cursor_value,
                 cursor_fncall,
                 cursor_fncallparams,
+                cursor_var,
                 cursor_eof
             };
             struct cursor_position {
@@ -124,6 +125,7 @@ namespace uva
                 void lexer_fncallparams();
                 void lexer_undefined();
                 void lexer_baseclass();
+                void lexer_var();
             //parsing public interface
             public:
                 uva::lang::lexer::cursor parse_next();

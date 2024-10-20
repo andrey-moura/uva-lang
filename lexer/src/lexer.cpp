@@ -4,6 +4,7 @@ std::vector<std::pair<std::string_view, uva::lang::lexer::cursor_type>> uva::lan
     /* Keep in most used order */
 
     { "//",       cursor_type::cursor_comment          },
+    { "var",      cursor_type::cursor_var              },
     { "{",        cursor_type::cursor_block            },
     { "function", cursor_type::cursor_function         },
     { "return",   cursor_type::cursor_return           },

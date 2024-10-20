@@ -17,7 +17,8 @@ std::map<uva::lang::lexer::cursor_type, void(uva::lang::lexer::cursor::*)()> uva
     { uva::lang::lexer::cursor_type::cursor_fncallparams, &uva::lang::lexer::cursor::lexer_fncallparams },
     { uva::lang::lexer::cursor_type::cursor_undefined,    &uva::lang::lexer::cursor::lexer_undefined    },
     { uva::lang::lexer::cursor_type::cursor_baseclass,    &uva::lang::lexer::cursor::lexer_baseclass    },
-    { uva::lang::lexer::cursor_type::cursor_fncall,       &uva::lang::lexer::cursor::lexer_fncall       }
+    { uva::lang::lexer::cursor_type::cursor_fncall,       &uva::lang::lexer::cursor::lexer_fncall       },
+    { uva::lang::lexer::cursor_type::cursor_var,           &uva::lang::lexer::cursor::lexer_var          },
 };
 
 uva::lang::lexer::cursor::cursor(std::string_view source)
@@ -547,4 +548,42 @@ void uva::lang::lexer::cursor::lexer_baseclass()
     }
 
     extend_by(decname_cursor);
+}
+
+void uva::lang::lexer::cursor::lexer_var()
+{
+    uva::lang::lexer::cursor decltype_cursor = init_next();
+    decltype_cursor.m_type = cursor_type::cursor_dectype;
+    decltype_cursor.parse();
+    m_children.push_back(decltype_cursor);
+
+    uva::lang::lexer::cursor decname_cursor = decltype_cursor.init_next();
+    decname_cursor.m_type = cursor_type::cursor_decname;
+    decname_cursor.parse();
+    m_children.push_back(decname_cursor);
+
+    if(decname_cursor.content().empty()) {
+        throw_error_at_current_position("expected variable name");
+    }
+
+    // As for this version, the variable should aways have a value
+
+    uva::lang::lexer::cursor value_cursor = decname_cursor.init_next();
+    value_cursor.m_type = cursor_type::cursor_undefined;
+    value_cursor.parse();
+
+    value_cursor.throw_unexpected_eof_if_buffer_is_empty();
+
+    if(value_cursor.type() != cursor_type::cursor_undefined || value_cursor.m_buffer.front() != '=') {
+        throw_error_at_current_position("expected '=' after variable name");
+    }
+
+    value_cursor.extend();
+
+    value_cursor = value_cursor.init_next();
+    value_cursor.m_type = cursor_type::cursor_value;
+    value_cursor.parse();
+    m_children.push_back(value_cursor);
+
+    extend_by(value_cursor);
 }
