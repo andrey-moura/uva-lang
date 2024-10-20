@@ -2,6 +2,8 @@
 
 Uva is an interpreted object-oriented multi-purpose programming language
 
+[![C/C++ Build](https://github.com/andrey-moura/uva-lang/actions/workflows/build.yml/badge.svg)](https://github.com/andrey-moura/uva-lang/actions/workflows/build.yml)
+
 # Building
 
 Linux
