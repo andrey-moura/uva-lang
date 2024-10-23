@@ -2,9 +2,9 @@ class Application
 {
     function run()
     {
-        var message = "Hello from variable";
+        var message = "Hello from a variable!";
         puts(message);
-        
+
         return 0;
     }
 }
