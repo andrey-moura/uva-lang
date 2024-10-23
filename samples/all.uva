@@ -1,0 +1,22 @@
+class Application
+    {
+        function run()
+        {
+            puts("Hello, World!");
+            print("Here's more text.");
+            puts(" This is even more text.");
+
+            hello();
+
+            var message = "Hello from a variable!";
+
+            puts(message);
+    
+            return 0;
+        }
+        
+        function hello()
+        {
+            puts("Hello from a function!");
+        }
+    }
