@@ -179,8 +179,8 @@ uva::lang::parser::ast_node parser::parse_node(uva::lang::lexer& lexer)
                 std::string_view content;
 
                 while((content = token.content()) != ")") {
-                    if(token.type() != lexer::token_type::token_literal) {
-                        token.throw_error_at_current_position("Expected literal");
+                    if(token.type() != lexer::token_type::token_literal && token.type() != lexer::token_type::token_identifier) {
+                        token.throw_error_at_current_position("Expected literal or identifier in function call");
                     }
 
                     method_node.add_child(std::move(ast_node(std::move(token), ast_node_type::ast_node_valuedecl)));
