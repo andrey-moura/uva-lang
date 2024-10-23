@@ -8,6 +8,8 @@
 namespace uva
 {
     namespace lang {
+        class object;
+        class structure;
         struct object
         {
             object(std::shared_ptr<uva::lang::structure> c) : cls(c) {};

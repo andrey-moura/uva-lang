@@ -30,7 +30,7 @@ if(DEFINED LANGUANIZER_ENABLED)
 	include("languanizer/CMakeLists.txt")
 endif()
 
-include("vm/CMakeLists.txt")
+include("interpreter/CMakeLists.txt")
 include("lexer/CMakeLists.txt")
 
 if(DEFINED WX_ENABLED)
@@ -41,6 +41,6 @@ add_executable(uva
     uva/uva.cpp
 )
 
-target_link_libraries(uva uva-vm uva-core uva-console uva-file uva-string ${wxWidgets_LIBRARIES})
+target_link_libraries(uva uva-interpreter uva-core uva-console uva-file uva-string ${wxWidgets_LIBRARIES})
 
 install(TARGETS uva DESTINATION bin)

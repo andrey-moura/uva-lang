@@ -1,24 +1,22 @@
 #include <filesystem>
 
 #include <parser/parser.hpp>
-#include <vm/vm.hpp>
+#include <lexer/lexer.hpp>
+//#include <vm/vm.hpp>
 
 #include <console.hpp>
 #include <uva/file.hpp>
+#include <interpreter/interpreter.hpp>
 #include <extension/extension.hpp>
 
 using namespace uva;
 
-std::shared_ptr<uva::lang::vm> vm_instance;
-
-std::shared_ptr<uva::lang::structure> application_class;
 std::shared_ptr<uva::lang::object> application;
-parser p;
 std::vector<uva::lang::extension*> extensions;
 
 int main(int argc, char** argv) {
     try {
-        vm_instance = std::make_shared<uva::lang::vm>();
+        //vm_instance = std::make_shared<uva::lang::vm>();
 
         std::filesystem::path file_path;
 
@@ -36,26 +34,40 @@ int main(int argc, char** argv) {
             throw std::runtime_error("input file is not a regular file");
         }
 
-        application_class = p.parse(file_path, vm_instance);
+        std::string source = uva::file::read_all_text<char>(file_path);
 
-        auto it = application_class->methods.find("run");
+        uva::lang::lexer l(file_path.string(), source);
 
-        if(it == application_class->methods.end()) {
-            throw std::runtime_error("run method not defined in class Application");
+        uva::lang::parser p;
+        uva::lang::parser::ast_node root_node = p.parse_all(l);
+
+        uva::lang::interpreter interpreter;
+        interpreter.execute(root_node);
+
+        auto application_class = interpreter.find_class("Application");
+
+        if(!application_class) {
+            throw std::runtime_error("Application class not found");
+        }
+
+        auto run_it = application_class->methods.find("run");
+
+        if(run_it == application_class->methods.end()) {
+            throw std::runtime_error("run method not defined in class Application. Define it so uva know where to start the application");
         }
         
         application = std::make_shared<uva::lang::object>(application_class);
 
-        std::shared_ptr<uva::lang::object> ret = vm_instance->call(application, it->second);
+        std::shared_ptr<uva::lang::object> ret = interpreter.call(application, run_it->second);
 
-        if(!ret) {
-            return 0;
-        }
+        // if(!ret) {
+        //     return 0;
+        // }
 
-        if(ret) {
-            // TODO: Treat the return value
+        // if(ret) {
+        //     // TODO: Treat the return value
             return 0;
-        }
+        // }
     } catch (const std::exception& e) {
         uva::console::log_error(e.what());
         return false;

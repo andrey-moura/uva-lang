@@ -5,7 +5,7 @@
 #include <functional>
 #include <memory>
 
-#include <lexer/cursor.hpp>
+#include <parser/parser.hpp>
 
 namespace uva {
     namespace lang {
@@ -18,15 +18,15 @@ namespace uva {
         {
             std::string name;
             std::string block;
-            uva::lang::lexer::cursor block_cursor;
+            uva::lang::parser::ast_node block_ast;
             method_storage_type storage_type;
             std::vector<std::string> params;
             std::function<std::shared_ptr<uva::lang::object>(uva::lang::object* object, const var& params)> function;
 
             method() = default;
 
-            method(const std::string& __name, method_storage_type __storage_type, std::vector<std::string> params, std::string __block)
-                : name(__name), block(std::move(__block)), storage_type(__storage_type) {
+            method(const std::string& __name, method_storage_type __storage_type, std::vector<std::string> params, uva::lang::parser::ast_node __block)
+                : name(__name), block_ast(std::move(__block)), storage_type(__storage_type) {
 
             };
 
