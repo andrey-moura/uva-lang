@@ -5,143 +5,219 @@
 #include <exception>
 #include <iostream>
 
+#include <parser/object.hpp>
+#include <parser/class.hpp>
+#include <parser/method.hpp>
+
 using namespace uva;
 using namespace lang;
 
-std::map<std::string, void(*)(uva::parser* parser, std::shared_ptr<uva::lang::vm> vm, var params)> uva::parser::parser_funtions = {
-
-    {"require_directory", [](uva::parser* parser, std::shared_ptr<uva::lang::vm> vm, var params) {
-        size_t params_size = params.size();
-
-        if(params.size() != 1) {
-            throw std::runtime_error("require_directory: wrong number of arguments. Expected 1, got " + std::to_string(params_size));
-        }
-
-        std::filesystem::path directory = parser->absolute(params[0]);
-
-        if(!std::filesystem::exists(directory)) {
-            throw std::runtime_error("require_directory: directory does not exist");
-        }
-
-        for(auto& entry : std::filesystem::directory_iterator(directory)) {
-            if(entry.is_regular_file()) {
-                std::string extension = entry.path().extension().string();
-
-                if(extension == ".uva") {
-                    uva::parser new_parser;
-                    new_parser.parse(entry.path(), vm);
-                }
-            }
-        }
-    }}
-};
-
-std::shared_ptr<uva::lang::structure> parser::parse(const std::filesystem::path &path, std::shared_ptr<uva::lang::vm> vm_instance)
+uva::lang::parser::parser()
 {
-    current_path = path;
-    current_path.remove_filename();
+}
 
-    std::shared_ptr<uva::lang::structure> c;
+uva::lang::parser::ast_node parser::parse_node(uva::lang::lexer& lexer)
+{
+    uva::lang::lexer::token token = lexer.next_token();
 
-    std::string class_content = uva::file::read_all_text<char>(path);
-    std::string_view content_view = class_content;
+    switch(token.type()) {
+        case lexer::token_type::token_comment:
+            // Do nothing
+            // The comments is not discarted by the lexer because it is useful for debugging/intellisense
 
-    uva::lang::lexer::cursor cursor(content_view);
+            return parse_node(lexer);
+            break;
+        case lexer::token_type::token_keyword:
+            if(token.content() == "class") {
+                ast_node class_node(ast_node_type::ast_node_classdecl);
 
-    while(!cursor.eof()) {
-        uva::console::log_debug("read cursor of type {} at {} with content '{}'", (int)cursor.type(), cursor.human_start_position(), cursor.is_undefined() ? "undefined" : cursor.content());
+                class_node.add_child(std::move(ast_node(std::move(token), ast_node_type::ast_node_decltype)));
 
-        switch(cursor.type()) {
-            case uva::lang::lexer::cursor_type::cursor_fncall: {
-                // functions calls outside of classes are allowed only if it is a parser function.
-                auto it = parser_funtions.find(std::string(cursor.decname()));
+                token = lexer.next_token();
 
-                if(it == parser_funtions.end()) {
-                    cursor.throw_error_at_current_position("parser error: function call is not allowed outside of class");
+                if(token.type() != lexer::token_type::token_identifier) {
+                    token.throw_error_at_current_position("Expected class name after 'class'");
                 }
 
-                var params = var::array();
+                class_node.add_child(std::move(ast_node(std::move(token), ast_node_type::ast_node_declname)));
 
-                const uva::lang::lexer::cursor* params_cursor = cursor.fncallparams();
+                token = lexer.next_token();
 
-                if(params_cursor) {
-                    for(auto& param : params_cursor->children()) {
-                        std::string_view content = param.content();
-                        if(content.starts_with("\"") && content.ends_with("\"")) {
-                            content.remove_prefix(1);
-                            content.remove_suffix(1);
-                            
-                            params.push_back(std::string(content));
-                        }
+                if(token.content() != "{") {
+                    token.throw_error_at_current_position("Expected '{' after class name");
+                }
+
+                ast_node class_child = parse_node(lexer);
+
+                while(!class_child.is_undefined()) {
+                    class_node.add_child(std::move(class_child));
+                    class_child = parse_node(lexer);
+                }
+
+                return class_node;
+            } else if(token.content() == "var") {
+                ast_node var_node(std::move(token), ast_node_type::ast_node_vardecl);
+
+                token = lexer.next_token();
+
+                if(token.type() != lexer::token_type::token_identifier) {
+                    token.throw_error_at_current_position("Expected variable name after 'var'");
+                }
+
+                var_node.add_child(std::move(ast_node(std::move(token), ast_node_type::ast_node_declname)));
+
+                token = lexer.next_token();
+
+                if(token.content() != "=") {
+                    token.throw_error_at_current_position("Expected '=' after variable name");
+                }
+
+                token = lexer.next_token();
+
+                if(token.type() != lexer::token_type::token_literal) {
+                    token.throw_error_at_current_position("Expected literal after '='");
+                }
+
+                var_node.add_child(std::move(ast_node(std::move(token), ast_node_type::ast_node_valuedecl)));
+
+                token = lexer.next_token();
+
+                return var_node;
+            } else if(token.content() == "function") {
+                ast_node method_node(ast_node_type::ast_node_fn_decl);
+                method_node.add_child(ast_node(std::move(token), ast_node_type::ast_node_decltype));
+
+                token = lexer.next_token();
+
+                if(token.type() != lexer::token_type::token_identifier) {
+                    token.throw_error_at_current_position("Expected method name after 'function'");
+                }
+
+                method_node.add_child(std::move(ast_node(std::move(token), ast_node_type::ast_node_declname)));
+
+                token = lexer.next_token();
+
+                if(token.content() != "(") {
+                    token.throw_error_at_current_position("Expected '(' after method name");
+                }
+
+                token = lexer.next_token();
+
+                while(token.content() != ")") {
+                    if(token.type() != lexer::token_type::token_identifier) {
+                        token.throw_error_at_current_position("Expected parameter name");
+                    }
+
+                    method_node.add_child(std::move(ast_node(std::move(token), ast_node_type::ast_node_declname)));
+
+                    token = lexer.next_token();
+
+                    if(token.content() == ",") {
+                        token = lexer.next_token();
+                    } else if(token.content() != ")") {
+                        token.throw_error_at_current_position("Expected ',' or ')'");
                     }
                 }
 
-                it->second(this, vm_instance, params);
+                token = lexer.next_token();
+
+                if(token.content() != "{") {
+                    token.throw_error_at_current_position("Expected '{' after method declaration");
+                }
+
+                ast_node method_child = parse_node(lexer);
+
+                while(method_child.token().content() != "}") {
+                    method_node.add_child(std::move(method_child));
+                    method_child = parse_node(lexer);
+                }
+
+                return method_node;
+            } else if(token.content() == "return") {
+                ast_node return_node(std::move(token), ast_node_type::ast_node_fn_return);
+
+                token = lexer.next_token();
+
+                if(token.type() != lexer::token_type::token_literal) {
+                    token.throw_error_at_current_position("Expected literal after 'return'");
+                }
+
+                return_node.add_child(std::move(ast_node(std::move(token), ast_node_type::ast_node_valuedecl)));
+
+                return return_node;
+            } else {
+                token.throw_error_at_current_position("Unexpected keyword");
             }
             break;
-            case uva::lang::lexer::cursor_type::cursor_class: {
-                c = std::make_shared<uva::lang::structure>(std::string(cursor.decname()));
-                vm_instance->load(c);
-                c->source_content = std::move(class_content);
+        case lexer::token_type::token_delimiter:
+            if(token.content() == ";") {
+                // ; in the middle of the code is considered a whitespace
+                return parse_node(lexer);
+            }
 
-                for(auto& class_child : cursor.children()) {
-                    switch (class_child.type())
-                    {
-                    case uva::lang::lexer::cursor_type::cursor_block: {
-                        for(auto& block_child : class_child.children()) {
-                            switch (block_child.type())
-                            {
-                                case uva::lang::lexer::cursor_type::cursor_function: {
-                                    uva::lang::method m;
-                                    m.name = std::string(block_child.decname());
-                                    m.block = std::string(block_child.content());
-                                    m.block_cursor = *block_child.block();
+            return ast_node(std::move(token), ast_node_type::ast_node_undefined);
+            break;
+        case lexer::token_type::token_identifier:
+            // Can be: variable assingment, method call
+            
+            // First check if it has '(' after the identifier
 
-                                    c->methods[m.name] = m;
-                                }
-                                break;
-                                case uva::lang::lexer::cursor_type::cursor_var: {
-                                    std::string_view var_name  = block_child.decname();
-                                    std::string_view var_value = block_child.value();
+            token = lexer.next_token();
 
-                                    if(var_value == "null") {
-                                        c->instance_variables[std::string(var_name)] = nullptr;
-                                    } else {
-                                        block_child.throw_error_at_current_position("parser: cannot parse declared value of variable");
-                                    }
+            if(token.content() == "(") {
+                // Go back to the identifier
+                token = lexer.previous_token();
 
-                                }
-                                break;
-                            }
-                        }
+                // Method call
+                ast_node method_node(ast_node_type::ast_node_fn_call);
+
+                method_node.add_child(std::move(ast_node(std::move(token), ast_node_type::ast_node_declname)));
+
+                token = lexer.next_token(); // ( again
+                token = lexer.next_token();
+
+                std::string_view content;
+
+                while((content = token.content()) != ")") {
+                    if(token.type() != lexer::token_type::token_literal) {
+                        token.throw_error_at_current_position("Expected literal");
                     }
-                    break;
-                    case uva::lang::lexer::cursor_type::cursor_baseclass: {
-                        std::string_view base_class_name = class_child.decname();
 
-                        auto cls = vm_instance->find_class(base_class_name);
+                    method_node.add_child(std::move(ast_node(std::move(token), ast_node_type::ast_node_valuedecl)));
 
-                        if(!cls) {
-                            class_child.throw_error_at_current_position(std::format("parser: {} is undefined", base_class_name));
-                        }
+                    token = lexer.next_token();
 
-                        c->base = cls;
-                    }
-                    break;
-                    default:
-                        break;
+                    if(token.content() == ",") {
+                        token = lexer.next_token();
+                    } else if(token.content() != ")") {
+                        token.throw_error_at_current_position("Expected ',' or ')'");
                     }
                 }
+
+                return method_node;
+            } else {
+                token.throw_error_at_current_position("Unexpected identifier");
             }
             break;
-        }
-
-        cursor = cursor.parse_next();
+        default:
+            token.throw_error_at_current_position("Unexpected token");
+            break;
     }
 
-    uva::console::log_debug("read cursor of type eof at {}", cursor.human_start_position());
+    // This should never happen
+    // This is just to avoid the compiler warning
+    throw std::runtime_error("parser: unknown node");
+}
 
-    return c;
+uva::lang::parser::ast_node uva::lang::parser::parse_all(uva::lang::lexer &lexer)
+{
+    ast_node root_node(ast_node_type::ast_node_unit);
+
+    // TODO: Parse other nodes
+
+    ast_node child = parse_node(lexer);
+    root_node.add_child(std::move(child));
+    return root_node;
 }
 
 uva::lang::object::~object()

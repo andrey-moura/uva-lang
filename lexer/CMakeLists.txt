@@ -9,5 +9,4 @@ include_directories(${CMAKE_CURRENT_LIST_DIR})
 
 add_library(uva-lexer
     ${CMAKE_CURRENT_LIST_DIR}/src/lexer.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/cursor.cpp
 )
