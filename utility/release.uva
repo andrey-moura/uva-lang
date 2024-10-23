@@ -1,0 +1,9 @@
+// This tool generates releases notes for the uva-lang project.
+
+class Application
+{
+    function run()
+    {
+        return 0;
+    }
+}
