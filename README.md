@@ -1,3 +1,7 @@
+<p align="center">
+    <img src="resources/uva.svg" alt="Alt Text" style="width:200px; height:200px;">
+</p>
+
 # The uva programming language
 
 Uva is an interpreted object-oriented multi-purpose programming language
