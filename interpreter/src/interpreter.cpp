@@ -84,9 +84,21 @@ std::shared_ptr<uva::lang::object> uva::lang::interpreter::call(std::shared_ptr<
                         switch (param.type())
                         {
                         case uva::lang::parser::ast_node_type::ast_node_valuedecl: {
+                            if(param.token().type() == uva::lang::lexer::token_type::token_literal) { 
                                 const std::string& value = param.token().content();
                                 params_to_call.push_back(value);
                             }
+                            else {
+                                // an identifier
+                                auto it = variables.find(param.token().content());
+
+                                if(it != variables.end()) {
+                                    params_to_call.push_back(it->second);
+                                } else {
+                                    throw std::runtime_error("variable not found");
+                                }
+                            }
+                        }
                             break;
                         default:
                             break;
@@ -96,59 +108,12 @@ std::shared_ptr<uva::lang::object> uva::lang::interpreter::call(std::shared_ptr<
                     call(object, it->second, params_to_call);
                 }
                 break;
-            // case uva::lang::lexer::cursor_type::cursor_return: {
-            //     std::string_view return_value = statment.value();
+            case uva::lang::parser::ast_node_type::ast_node_vardecl: {
+                std::string_view var_name = statment.decname();
+                std::string_view var_value = statment.value();
 
-            //     if(return_value == "true") {
-            //         return std::make_shared<uva::lang::object>(True);
-            //     } else if(return_value == "false") {
-            //         return std::make_shared<uva::lang::object>(False);
-            //     }
-            // }
-            //     break;
-            // case uva::lang::lexer::cursor_type::cursor_var: {
-            //     std::string_view var_name = statment.decname();
-            //     std::string_view var_value = statment.value();
-            //     std::string param;
-
-            //     if(var_value == "true") {
-            //         //variables[std::string(var_name)] = True;
-            //     } else if(var_value == "false") {
-            //         //variables[std::string(var_name)] = False;
-            //     } else {
-            //         if(var_value.starts_with("\"") && var_value.ends_with("\"")) {
-            //             var_value.remove_prefix(1);
-            //             var_value.remove_suffix(1);
-
-            //             param.reserve(var_value.size());
-
-            //             bool escape = false;
-
-            //             for(const char& c : var_value) {
-            //                 switch (c)
-            //                 {
-            //                 case '\\':
-            //                     escape = true;
-            //                     break;
-            //                 case 'n': {
-            //                     if(escape) {
-            //                         param.push_back('\n');
-            //                     } else {
-            //                         param.push_back(c);
-            //                     }
-            //                 }
-            //                 break;
-            //                 default:
-            //                     escape = false;
-            //                     param.push_back(c);
-            //                     break;
-            //                 }
-            //             }
-            //         }
-
-            //         variables[std::string(var_name)] = std::string(param);
-            //     }
-            // }
+                variables[std::string(var_name)] = std::string(var_value);
+            }
                 break;
             default:
                 break;

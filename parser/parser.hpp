@@ -94,6 +94,10 @@ namespace uva
                 std::string_view decname() const {
                     return child_content_from_type(ast_node_type::ast_node_declname);
                 }
+
+                std::string_view value() const {
+                    return child_content_from_type(ast_node_type::ast_node_valuedecl);
+                }
             };
         protected:
             std::filesystem::path current_path;
