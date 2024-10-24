@@ -4,6 +4,8 @@
 #include <memory>
 #include <map>
 #include <utility>
+#include <string>
+#include <stdexcept>
 
 namespace uva
 {
