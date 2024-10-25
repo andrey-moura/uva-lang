@@ -14,36 +14,21 @@ Ubuntu 20.04 | [![Ubuntu 20.04](https://github.com/andrey-moura/uva-lang/actions
 
 # Building
 
-### Linux
+On Linux or Windows Developer Command Prompt
 
 ```sh
     git clone https://github.com/andrey-moura/uva-lang --recursive
     cd uva-lang
-    mkdir build
-    cd build/
-    cmake ..
-    make
+    cmake -B build .
+    cmake --build build --config Release
 ```
 
-Optional: Run ```sudo make install``` to install uva.exe
-
-## Windows
-
-### From VS Code Or Visual Studio
-Simply open the project with it and hit build.
-
-### From Developer Command Prompt for VS
+# Install
+After building, run as sudo on Linux or with a Administrator Command Prompt on Windows
 
 ```sh
-    git clone https://github.com/andrey-moura/uva-lang --recursive
-    cd uva-lang
-    mkdir build
-    cd build/
-    cmake ..
-    MSBuild.exe ALL_BUILD.vcxproj
+    cmake --install build
 ```
-
-Optional: Run (as an administrator) ```MSBuild.exe INSTALL.vcxproj``` to install uva
 
 # Samples
 
