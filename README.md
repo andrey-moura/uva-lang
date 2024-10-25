@@ -11,6 +11,7 @@ Uva is an interpreted object-oriented multi-purpose programming language
 Environment | Build
 --- | --- |
 Ubuntu 20.04 | [![Ubuntu 20.04](https://github.com/andrey-moura/uva-lang/actions/workflows/build-ubuntu-20.04.yml/badge.svg)](https://github.com/andrey-moura/uva-lang/actions/workflows/build-ubuntu-20.04.yml)
+Windows Server 2022 | [![Windows Server 2022](https://github.com/andrey-moura/uva-lang/actions/workflows/build-windows-2022.yml/badge.svg)](https://github.com/andrey-moura/uva-lang/actions/workflows/build-windows-2022.yml)
 
 # Building
 
