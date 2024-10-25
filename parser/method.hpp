@@ -14,8 +14,9 @@ namespace uva {
             instance_method,
             class_method,
         };
-        struct method
+        class method
         {
+        public:
             std::string name;
             std::string block;
             uva::lang::parser::ast_node block_ast;

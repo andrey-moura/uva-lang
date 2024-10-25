@@ -11,8 +11,9 @@ namespace uva {
     namespace lang {
         class object;
         class method;
-        struct structure
+        class structure
         {
+        public:
             //for user code, use create
             structure(const std::string& __name, std::vector<uva::lang::method> __methods = {});
             ~structure();

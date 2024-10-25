@@ -10,8 +10,9 @@ namespace uva
     namespace lang {
         class object;
         class structure;
-        struct object
+        class object
         {
+        public:
             object(std::shared_ptr<uva::lang::structure> c) : cls(c) {};
             ~object();
             std::shared_ptr<uva::lang::structure> cls;
