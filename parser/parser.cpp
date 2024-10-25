@@ -1,6 +1,7 @@
 #include "parser.hpp"
 
 #include <uva/file.hpp>
+#include <console.hpp>
 
 #include <exception>
 #include <iostream>
