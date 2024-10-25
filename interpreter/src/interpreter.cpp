@@ -1,5 +1,6 @@
-#include <interpreter.hpp>
+#include <iostream>
 
+#include <interpreter.hpp>
 #include <extension/extension.hpp>
 
 extern std::vector<uva::lang::extension*> extensions;
