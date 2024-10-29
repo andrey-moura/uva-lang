@@ -60,7 +60,6 @@ bool is_keyword(const std::string& str) {
         keywords["function"] = true;
         keywords["return"]   = true;
         keywords["class"]    = true;
-        keywords["return"]   = true;
     }
 
     return keywords.find(str) != keywords.end();
