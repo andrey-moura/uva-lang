@@ -65,15 +65,15 @@ std::shared_ptr<uva::lang::object> uva::lang::interpreter::execute(uva::lang::pa
                 {
                 case uva::lang::parser::ast_node_type::ast_node_valuedecl: {
                     if(param.token().type() == uva::lang::lexer::token_type::token_literal) { 
-                        const std::string& value = param.token().content();
-                        params_to_call.push_back(value);
+                        //const std::string& value = param.token().content();
+                        //params_to_call.push_back(value);
                     }
                     else {
                         // an identifier
                         auto it = current_context.variables.find(param.token().content());
 
                         if(it != current_context.variables.end()) {
-                            params_to_call.push_back(it->second);
+                            //params_to_call.push_back(it->second);
                         } else {
                             throw std::runtime_error("variable not found");
                         }
@@ -85,14 +85,14 @@ std::shared_ptr<uva::lang::object> uva::lang::interpreter::execute(uva::lang::pa
                 }
             }
 
-            call(object, it->second, params_to_call);
+            call(object, it->second, {});// params_to_call);
         }
         break;
         case uva::lang::parser::ast_node_type::ast_node_vardecl: {
             std::string_view var_name = source_code.decname();
             std::string_view var_value = source_code.value();
 
-            variables[std::string(var_name)] = std::string(var_value);
+            //current_context[std::string(var_name)] = std::string(var_value);
         }
         break;
         case uva::lang::parser::ast_node_type::ast_node_conditional: {
