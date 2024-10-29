@@ -1,0 +1,8 @@
+#include "method.hpp"
+#include "object.hpp"
+#include "class.hpp"
+
+std::shared_ptr<uva::lang::object> uva::lang::method::call(uva::lang::object* o)
+{
+    return function(o, var::array());
+}

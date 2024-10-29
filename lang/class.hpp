@@ -7,6 +7,8 @@
 
 #include <uva/var.hpp>
 
+#include <lang/method.hpp>
+
 namespace uva {
     namespace lang {
         class object;
@@ -20,7 +22,7 @@ namespace uva {
         public:
             std::string name;
             std::map<std::string, uva::lang::method> methods;
-            std::shared_ptr<structure> base;
+            std::shared_ptr<uva::lang::structure> base;
             std::map<std::string, std::shared_ptr<uva::lang::object>> instance_variables;
             std::string source_content;
 
