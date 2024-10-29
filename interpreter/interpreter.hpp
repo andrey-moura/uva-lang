@@ -5,9 +5,9 @@
 
 #include <uva/var.hpp>
 #include <parser/parser.hpp>
-#include <parser/class.hpp>
-#include <parser/method.hpp>
-#include <parser/object.hpp>
+#include <lang/class.hpp>
+#include <lang/method.hpp>
+#include <lang/object.hpp>
 
 namespace uva
 {
@@ -83,7 +83,7 @@ namespace uva
                 if(stack.empty()) {
                     throw std::runtime_error("interpreter: unexpected end of file");
                 }
-                
+
                 current_context = stack.back();
                 stack.pop_back();
             }
