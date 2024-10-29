@@ -169,7 +169,7 @@ uva::lang::lexer::token uva::lang::lexer::read_next_token()
 
         discard();
 
-        return uva::lang::lexer::token(start, m_start, m_buffer, token_type::token_literal);
+        return uva::lang::lexer::token(start, m_start, m_buffer, token_type::token_literal, token_kind::token_string);
     }
 
     if(isdigit(c)) {
@@ -178,7 +178,7 @@ uva::lang::lexer::token uva::lang::lexer::read_next_token()
             return isdigit(c);
         });
 
-        return uva::lang::lexer::token(start, m_start, m_buffer, token_type::token_literal);
+        return uva::lang::lexer::token(start, m_start, m_buffer, token_type::token_literal, token_kind::token_integer);
     }
 
     // It must be a identifier or a keyword
@@ -186,8 +186,13 @@ uva::lang::lexer::token uva::lang::lexer::read_next_token()
         return isalnum(c) || c == '_';
     });
 
+    // Todo: map
     if(m_buffer == "null") {
-        return uva::lang::lexer::token(start, m_start, m_buffer, token_type::token_literal);
+        return uva::lang::lexer::token(start, m_start, m_buffer, token_type::token_literal, token_kind::token_null);
+    } else if(m_buffer == "false") {
+        return uva::lang::lexer::token(start, m_start, m_buffer, token_type::token_literal, token_kind::token_boolean);
+    } else if(m_buffer == "true") {
+        return uva::lang::lexer::token(start, m_start, m_buffer, token_type::token_literal, token_kind::token_boolean);
     }
 
     if(is_keyword(m_buffer)) {
@@ -235,6 +240,12 @@ const uva::lang::lexer::token& uva::lang::lexer::previous_token()
 uva::lang::lexer::token::token(token_position start, token_position end, std::string content, token_type type)
     : start(start), end(end), m_content(std::move(content)), m_type(type)
 {
+}
+
+uva::lang::lexer::token::token(token_position start, token_position end, std::string content, token_type type, token_kind kind)
+    : start(start), end(end), m_content(std::move(content)), m_type(type), m_kind(kind)
+{
+
 }
 
 void uva::lang::lexer::token::throw_error_at_current_position(std::string what) const
