@@ -60,6 +60,7 @@ bool is_keyword(const std::string& str) {
         keywords["function"] = true;
         keywords["return"]   = true;
         keywords["class"]    = true;
+        keywords["if"]       = true;
     }
 
     return keywords.find(str) != keywords.end();
@@ -233,13 +234,22 @@ const uva::lang::lexer::token& uva::lang::lexer::next_token()
 
 const uva::lang::lexer::token& uva::lang::lexer::previous_token()
 {
-    if(iterator == 0) {
+    if(iterator < 1) {
         throw std::runtime_error("unexpected begin of file");
     }
 
     --iterator;
 
     return m_tokens[iterator - 1];
+}
+
+void uva::lang::lexer::rollback_token()
+{
+    if(iterator < 1) {
+        throw std::runtime_error("unexpected begin of file");
+    }
+
+    iterator -= 2;
 }
 
 uva::lang::lexer::token::token(token_position start, token_position end, std::string content, token_type type)

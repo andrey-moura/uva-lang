@@ -37,7 +37,9 @@ namespace uva
 
             /// @brief Exeuctes a syntax tree into the interpreter. Note that if the code has while loops with no exit condition, this method will never return.
             /// @param cls The syntax tree to exeuctes. All its childs (not recursively) will be executed.
-            void execute(uva::lang::parser::ast_node source_code);
+            std::shared_ptr<uva::lang::object> execute(uva::lang::parser::ast_node source_code, std::shared_ptr<uva::lang::object> object = nullptr);
+
+            std::shared_ptr<uva::lang::object> execute_all(uva::lang::parser::ast_node source_code, std::shared_ptr<uva::lang::object> object = nullptr);
 
             /// @brief The global false class.
             std::shared_ptr<uva::lang::structure> False;
@@ -64,6 +66,8 @@ namespace uva
 
                 return nullptr;
             }
+
+            const std::shared_ptr<uva::lang::object> node_to_object(const uva::lang::parser::ast_node& node) const;
         protected:
             /// @brief The global context stack.
             interpreter_context global_context;
