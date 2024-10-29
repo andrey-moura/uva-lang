@@ -156,6 +156,12 @@ uva::lang::lexer::token uva::lang::lexer::read_next_token()
 
     if(is_operator(c)) {
         read();
+
+        // If the next character is also an operator, it is a double operator.
+        if(is_operator(m_source.front())) {
+            read();
+        }
+
         return uva::lang::lexer::token(start, m_start, m_buffer, token_type::token_operator);
     }
 
