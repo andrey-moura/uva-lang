@@ -19,6 +19,13 @@ namespace uva
             void* native = nullptr;
             std::shared_ptr<object> base_instance = nullptr;
             object* derived_instance = nullptr;
+
+            bool is_present() const;
+
+            template<typename T>
+            T* as() {
+                return static_cast<T*>(native);
+            }
         };
     };
 };

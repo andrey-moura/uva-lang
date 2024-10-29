@@ -117,6 +117,8 @@ namespace uva
             /// @brief Decrement the iterator and return the next token.
             /// @return The previous token.
             const uva::lang::lexer::token& previous_token();
+            /// @brief Rollback the token iterator. The next call to next_token will return the same token.
+            void rollback_token();
         protected:
         public:
             //extern std::vector<std::pair<std::string_view, uva::lang::lexer::cursor_type>> cursor_type_from_string_map;

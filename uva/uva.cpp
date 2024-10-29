@@ -42,7 +42,7 @@ int main(int argc, char** argv) {
         uva::lang::parser::ast_node root_node = p.parse_all(l);
 
         uva::lang::interpreter interpreter;
-        interpreter.execute(root_node);
+        interpreter.execute_all(root_node);
 
         auto application_class = interpreter.find_class("Application");
 

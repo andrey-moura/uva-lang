@@ -1,0 +1,14 @@
+class Application
+{
+    function run() {
+        if(false) {
+            puts("This should not be printed!");
+        } 
+        
+        if(true) {
+            puts("Hellow world from if!")
+        }
+
+        return 0;
+    }
+}

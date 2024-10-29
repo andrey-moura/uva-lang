@@ -126,12 +126,16 @@ uva::lang::parser::ast_node parser::parse_node(uva::lang::lexer& lexer)
                     token.throw_error_at_current_position("Expected '{' after method declaration");
                 }
 
+                ast_node fn_context(ast_node_type::ast_node_context);
+
                 ast_node method_child = parse_node(lexer);
 
                 while(method_child.token().content() != "}") {
-                    method_node.add_child(std::move(method_child));
+                    fn_context.add_child(std::move(method_child));
                     method_child = parse_node(lexer);
                 }
+
+                method_node.add_child(std::move(fn_context));
 
                 return method_node;
             } else if(token.content() == "return") {
@@ -146,7 +150,47 @@ uva::lang::parser::ast_node parser::parse_node(uva::lang::lexer& lexer)
                 return_node.add_child(std::move(ast_node(std::move(token), ast_node_type::ast_node_valuedecl)));
 
                 return return_node;
-            } else {
+            }
+            else if(token.content() == "if") {
+                ast_node if_node(ast_node_type::ast_node_conditional);
+                if_node.add_child(ast_node(std::move(token), ast_node_type::ast_node_decltype));
+
+                token = lexer.next_token();
+
+                if(token.content() != "(") {
+                    token.throw_error_at_current_position("Expected '(' after 'if'");
+                }
+
+                ast_node condition_node(ast_node_type::ast_node_condition);
+
+                ast_node node = parse_node(lexer);
+
+                condition_node.add_child(std::move(node));
+
+                if_node.add_child(std::move(condition_node));
+
+                ast_node if_child = parse_node(lexer);
+
+                if(if_child.token().content() != ")") {
+                    if_child.token().throw_error_at_current_position("Expected ')' after 'if' condition");
+                }
+
+                if_child = parse_node(lexer);
+
+                if(if_child.token().content() != "{") {
+                    if_child.token().throw_error_at_current_position("Expected '{' after 'if' condition");
+                }
+
+                if_child = parse_node(lexer);
+
+                while(if_child.token().content() != "}") {
+                    if_node.add_child(std::move(if_child));
+                    if_child = parse_node(lexer);
+                }
+
+                return if_node;
+            }
+            else {
                 token.throw_error_at_current_position("Unexpected keyword");
             }
             break;
@@ -158,6 +202,9 @@ uva::lang::parser::ast_node parser::parse_node(uva::lang::lexer& lexer)
 
             return ast_node(std::move(token), ast_node_type::ast_node_undefined);
             break;
+        case lexer::token_type::token_literal:
+            return ast_node(std::move(token), ast_node_type::ast_node_valuedecl);
+        break;
         case lexer::token_type::token_identifier:
             // Can be: variable assingment, method call
             
@@ -226,14 +273,37 @@ uva::lang::object::~object()
     uva::console::log_debug("{}#{} destroyed", cls->name, (void*)this);
 }
 
+bool uva::lang::object::is_present() const
+{
+    auto it = cls->methods.find("is_present");
+
+    if(it == cls->methods.end()) {
+        throw std::runtime_error("is_present is not defined in class " + cls->name);
+    } else {
+        auto this_without_const = const_cast<object*>(this);
+
+        auto obj = it->second.call( this_without_const );
+
+        if(obj->cls->name == "TrueClass") {
+            return true;
+        } else {
+            return false;
+        }
+    }
+}
+
 uva::lang::structure::~structure()
 {
     uva::console::log_debug("{}#Class destroyed", name);
 }
 
-
 uva::lang::structure::structure(const std::string& __name, std::vector<uva::lang::method> __methods)
     : name(__name)
 {
     uva::console::log_debug("{}#Class created", name);
+}
+
+std::shared_ptr<uva::lang::object> uva::lang::method::call(uva::lang::object* o)
+{
+    return function(o, var::array());
 }
