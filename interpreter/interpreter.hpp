@@ -19,7 +19,6 @@ namespace uva
             std::shared_ptr<uva::lang::structure> cls;
             std::shared_ptr<uva::lang::object> self;
             std::map<std::string, std::shared_ptr<uva::lang::object>> variables;
-            std::shared_ptr<interpreter_context> parent;
         };
         // This class is responsible of storing all resources needed by an uvalang program.
         // It will store all classes, objects, methods, variables, call stack, etc.
@@ -68,6 +67,22 @@ namespace uva
         protected:
             /// @brief The global context stack.
             interpreter_context global_context;
+
+            /// @brief The current context.
+            interpreter_context current_context;
+
+            /// @brief The call stack.
+            std::vector<interpreter_context> stack;
+
+            void push_context() { stack.push_back(current_context); }
+            void pop_context() { 
+                if(stack.empty()) {
+                    throw std::runtime_error("interpreter: unexpected end of file");
+                }
+                
+                current_context = stack.back();
+                stack.pop_back();
+            }
         protected:
             /// @brief Initialize the interpreter. This method will create the global classes and objects. It also load extensions.
             void init();
