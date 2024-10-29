@@ -10,6 +10,7 @@
 namespace uva {
     namespace lang {
         class object;
+        class structure;
         enum class method_storage_type {
             instance_method,
             class_method,

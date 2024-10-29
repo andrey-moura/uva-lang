@@ -8,5 +8,7 @@ project(uva-lang)
 include_directories(${CMAKE_CURRENT_LIST_DIR})
 
 add_library(uva-lang
+    ${CMAKE_CURRENT_LIST_DIR}/src/class.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/src/method.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/object.cpp
 )
