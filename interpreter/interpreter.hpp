@@ -42,12 +42,12 @@ namespace uva
             std::shared_ptr<uva::lang::object> execute_all(uva::lang::parser::ast_node source_code, std::shared_ptr<uva::lang::object> object = nullptr);
 
             /// @brief The global false class.
-            std::shared_ptr<uva::lang::structure> False;
+            std::shared_ptr<uva::lang::structure> FalseClass;
             /// @brief The global true class.
-            std::shared_ptr<uva::lang::structure> True;
+            std::shared_ptr<uva::lang::structure> TrueClass;
 
             /// @brief The global std class.
-            std::shared_ptr<uva::lang::structure> Std;
+            std::shared_ptr<uva::lang::structure> StdClass;
 
             /// @brief Create an instance of @cls with the name @name at the global context.
             /// @param cls The class to instantiate.

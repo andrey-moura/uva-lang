@@ -161,23 +161,23 @@ std::shared_ptr<uva::lang::object> uva::lang::interpreter::call(std::shared_ptr<
 
 void uva::lang::interpreter::init()
 {
-    False = std::make_shared<uva::lang::structure>("FalseClass");
-    True = std::make_shared<uva::lang::structure>("TrueClass");
+    FalseClass = std::make_shared<uva::lang::structure>("FalseClass");
+    TrueClass = std::make_shared<uva::lang::structure>("TrueClass");
 
-    False->methods = {
+    FalseClass->methods = {
         {"is_present", uva::lang::method("is_present", method_storage_type::instance_method, {}, [this](uva::lang::object* object, const var& params) {
-            return std::make_shared<uva::lang::object>(False);
+            return std::make_shared<uva::lang::object>(FalseClass);
         })}
     };
 
-    True->methods = {
+    TrueClass->methods = {
         {"is_present", uva::lang::method("is_present", method_storage_type::instance_method, {}, [this](uva::lang::object* object, const var& params) {
-            return std::make_shared<uva::lang::object>(True);
+            return std::make_shared<uva::lang::object>(TrueClass);
         })}
     };
 
-    this->load(False);
-    this->load(True);
+    this->load(FalseClass);
+    this->load(TrueClass);
 
     for(auto& extension : extensions) {
         extension->load_in_interpreter(this);
@@ -186,14 +186,14 @@ void uva::lang::interpreter::init()
     //TODO separate it
 
     // std class
-    Std = std::make_shared<uva::lang::structure>("std");
+    StdClass = std::make_shared<uva::lang::structure>("std");
 
-    Std->methods["print"] = uva::lang::method("print", method_storage_type::instance_method, {"message"}, [](uva::lang::object* object, const var& params) {
+    StdClass->methods["print"] = uva::lang::method("print", method_storage_type::instance_method, {"message"}, [](uva::lang::object* object, const var& params) {
         std::cout << params[0].to_s();
         return nullptr;
     });
 
-    Std->methods["puts"] = uva::lang::method("puts", method_storage_type::instance_method, {"message"}, [](uva::lang::object* object, const var& params) {
+    StdClass->methods["puts"] = uva::lang::method("puts", method_storage_type::instance_method, {"message"}, [](uva::lang::object* object, const var& params) {
         std::cout << params[0].to_s() << std::endl;
         return nullptr;
     });
@@ -205,9 +205,9 @@ const std::shared_ptr<uva::lang::object> uva::lang::interpreter::node_to_object(
     {
         case lexer::token_kind::token_boolean: {
             if(node.token().content() == "true") {
-                return std::make_shared<uva::lang::object>(True);
+                return std::make_shared<uva::lang::object>(TrueClass);
             } else {
-                return std::make_shared<uva::lang::object>(False);
+                return std::make_shared<uva::lang::object>(FalseClass);
             }
         }
         break;
