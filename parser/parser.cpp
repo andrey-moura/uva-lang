@@ -6,9 +6,9 @@
 #include <exception>
 #include <iostream>
 
-#include <parser/object.hpp>
-#include <parser/class.hpp>
-#include <parser/method.hpp>
+#include <lang/object.hpp>
+#include <lang/class.hpp>
+#include <lang/method.hpp>
 
 using namespace uva;
 using namespace lang;
