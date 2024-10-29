@@ -27,6 +27,13 @@ namespace uva
                 token_operator,
                 token_eof
             };
+            enum token_kind {
+                token_null,
+                token_boolean,
+                token_integer,
+                token_float,
+                token_string,
+            };
             struct token_position {
                 size_t line = 0;
                 size_t column = 0;
@@ -36,8 +43,10 @@ namespace uva
             protected:
                 std::string m_content;
                 token_type m_type;
+                token_kind m_kind;
             public:
                 token(token_position start, token_position end, std::string content, token_type type);
+                token(token_position start, token_position end, std::string content, token_type type, token_kind kind);
                 token() = default;
                 ~token() = default;
             public:
@@ -52,6 +61,8 @@ namespace uva
                 const std::string & content() const { return m_content; }
                 /// @brief Return the type of the token.
                 token_type type() const { return m_type; }
+                /// @brief Return the kind of the token.
+                token_kind kind() const { return m_kind; }
             public:
                 token_position start;
                 token_position end;
