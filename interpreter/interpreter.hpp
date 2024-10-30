@@ -51,7 +51,7 @@ namespace uva
 
             /// @brief The global string class.
             std::shared_ptr<uva::lang::structure> StringClass;
-
+          
             /// @brief The global integer class.
             std::shared_ptr<uva::lang::structure> IntegerClass;
 
@@ -72,7 +72,6 @@ namespace uva
 
                 return nullptr;
             }
-
             const std::shared_ptr<uva::lang::object> node_to_object(const uva::lang::parser::ast_node& node);
         protected:
             /// @brief The global context stack.
