@@ -244,6 +244,18 @@ void uva::lang::interpreter::init()
 
         return nullptr;
     });
+
+    StdClass->methods["system"] = uva::lang::method("system", method_storage_type::instance_method, {"command"}, [this](uva::lang::object* object, std::vector<std::shared_ptr<uva::lang::object>> params) {
+        std::shared_ptr<uva::lang::object> command = params[0]->cls->methods["to_s"].call(params[0].get());
+        int code = WEXITSTATUS(std::system(command->as<std::string>()->c_str()));
+        
+        std::shared_ptr<uva::lang::object> obj = std::make_shared<uva::lang::object>(IntegerClass);
+
+        obj->native = new int();
+        *((int*)obj->native) = code;
+
+        return obj;
+    });
 }
 
 const std::shared_ptr<uva::lang::object> uva::lang::interpreter::node_to_object(const uva::lang::parser::ast_node& node)
