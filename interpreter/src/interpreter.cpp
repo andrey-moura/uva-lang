@@ -100,15 +100,14 @@ std::shared_ptr<uva::lang::object> uva::lang::interpreter::execute(uva::lang::pa
             if(ret && ret->is_present()) {
                 auto if_childs = source_code.childrens();
 
-                for(size_t i = 2; i < if_childs.size(); i++) {
-                    auto statment_child = if_childs[i];
-                    execute(statment_child);
-                }
+                ret = execute_all(if_childs.begin()+2, if_childs.end(), object);
             }
+
+            return ret;
         }
         break;
         case uva::lang::parser::ast_node_type::ast_node_context:
-            execute_all(source_code, object);
+            return execute_all(source_code, object);
         break;
         case uva::lang::parser::ast_node_type::ast_node_condition: {
             return node_to_object(source_code.childrens().front());
@@ -125,15 +124,28 @@ std::shared_ptr<uva::lang::object> uva::lang::interpreter::execute(uva::lang::pa
     return nullptr;
 }
 
-std::shared_ptr<uva::lang::object> uva::lang::interpreter::execute_all(uva::lang::parser::ast_node source_code, std::shared_ptr<uva::lang::object> object)
+std::shared_ptr<uva::lang::object> uva::lang::interpreter::execute_all(std::vector<uva::lang::parser::ast_node>::const_iterator begin, std::vector<uva::lang::parser::ast_node>::const_iterator end, std::shared_ptr<uva::lang::object> object)
 {
     std::shared_ptr<uva::lang::object> result = nullptr;
 
-    for(auto& child : source_code.childrens()) {
-        result = execute(child, object);
+    for(auto it = begin; it != end; it++) {
+        result = execute(*it, object);
+
+        if(it->type() == uva::lang::parser::ast_node_type::ast_node_fn_return) {
+            current_context.has_returned = true;
+            current_context.return_value = result;
+            return result;
+        } else if(current_context.has_returned) {
+            return current_context.return_value;
+        }
     }
 
     return result;
+}
+
+std::shared_ptr<uva::lang::object> uva::lang::interpreter::execute_all(uva::lang::parser::ast_node source_code, std::shared_ptr<uva::lang::object> object)
+{
+    return execute_all(source_code.childrens().begin(), source_code.childrens().end(), object);
 }
 
 std::shared_ptr<uva::lang::object> uva::lang::interpreter::instantiate(std::shared_ptr<uva::lang::structure> cls, const std::string &name)

@@ -19,6 +19,9 @@ namespace uva
             std::shared_ptr<uva::lang::structure> cls;
             std::shared_ptr<uva::lang::object> self;
             std::map<std::string, std::shared_ptr<uva::lang::object>> variables;
+
+            bool has_returned = false;
+            std::shared_ptr<uva::lang::object> return_value;
         };
         // This class is responsible of storing all resources needed by an uvalang program.
         // It will store all classes, objects, methods, variables, call stack, etc.
@@ -39,6 +42,7 @@ namespace uva
             /// @param cls The syntax tree to exeuctes. All its childs (not recursively) will be executed.
             std::shared_ptr<uva::lang::object> execute(uva::lang::parser::ast_node source_code, std::shared_ptr<uva::lang::object> object = nullptr);
 
+            std::shared_ptr<uva::lang::object> execute_all(std::vector<uva::lang::parser::ast_node>::const_iterator begin, std::vector<uva::lang::parser::ast_node>::const_iterator end, std::shared_ptr<uva::lang::object> object = nullptr);
             std::shared_ptr<uva::lang::object> execute_all(uva::lang::parser::ast_node source_code, std::shared_ptr<uva::lang::object> object = nullptr);
 
             /// @brief The global false class.

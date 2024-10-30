@@ -1,0 +1,7 @@
+class Application
+{
+    function run() {
+        return 7;
+        puts("This should not be printed.");
+    }
+}
