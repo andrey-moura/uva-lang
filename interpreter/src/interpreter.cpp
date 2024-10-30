@@ -272,8 +272,12 @@ const std::shared_ptr<uva::lang::object> uva::lang::interpreter::node_to_object(
             }
             break;
             case lexer::token_kind::token_integer: {
-                return std::make_shared<uva::lang::object>(nullptr);
+                std::shared_ptr<uva::lang::object> obj = std::make_shared<uva::lang::object>(IntegerClass);
+                obj->native = new int();
+                *((int*)obj->native) = std::stoi(node.token().content());
+                return obj;
             }
+            break;
             case lexer::token_kind::token_string: {
                 std::shared_ptr<uva::lang::object> obj = std::make_shared<uva::lang::object>(StringClass);
                 obj->native = new std::string(node.token().content());
@@ -286,12 +290,8 @@ const std::shared_ptr<uva::lang::object> uva::lang::interpreter::node_to_object(
         }
     } else if(node.type() == uva::lang::parser::ast_node_type::ast_node_fn_call) {
         return execute(node);
-    }
-
-    auto declname = node.child_from_type(uva::lang::parser::ast_node_type::ast_node_declname);
-
-    if(declname) {
-        auto it = current_context.variables.find(declname->token().content());
+    } else if(node.type() == uva::lang::parser::ast_node_type::ast_node_valuedecl) {
+        auto it = current_context.variables.find(node.token().content());
 
         if(it != current_context.variables.end()) {
             return it->second;
