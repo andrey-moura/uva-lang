@@ -22,7 +22,7 @@ namespace uva
             enum ast_node_type {
                 ast_node_undefined,
                 ast_node_unit,
-                
+                ast_node_context,
                 ast_node_classdecl,
 
                 ast_node_fn_decl,
@@ -34,6 +34,9 @@ namespace uva
 
                 ast_node_decltype,
                 ast_node_declname,
+
+                ast_node_conditional,
+                ast_node_condition
             };
             class ast_node
             {
@@ -63,6 +66,10 @@ namespace uva
                 void add_child(ast_node child) {
                     m_children.push_back(std::move(child));
                 }
+                void set_type(ast_node_type __type)
+                {
+                    m_type = __type;
+                }
             // Getters
             public:
                 const uva::lang::lexer::token& token() const {
@@ -77,18 +84,22 @@ namespace uva
                     return m_type;
                 }
 
-                const uva::lang::lexer::token* child_from_type(const uva::lang::parser::ast_node_type& __type) const {
+                const ast_node* child_from_type(const uva::lang::parser::ast_node_type& __type) const {
                     for(auto& child : m_children) {
                         if(child.type() == __type) {
-                            return &child.token();
+                            return &child;
                         }
                     }
 
                     return nullptr;
                 }
 
+                const uva::lang::lexer::token* child_token_from_type(const uva::lang::parser::ast_node_type& __type) const {
+                    return &child_from_type(__type)->token();
+                }
+
                 std::string_view child_content_from_type(const ast_node_type& __type) const {
-                    return child_from_type(__type)->content();
+                    return child_token_from_type(__type)->content();
                 }
 
                 std::string_view decname() const {
@@ -97,6 +108,14 @@ namespace uva
 
                 std::string_view value() const {
                     return child_content_from_type(ast_node_type::ast_node_valuedecl);
+                }
+
+                const ast_node* condition() const {
+                    return child_from_type(ast_node_type::ast_node_condition);
+                }
+
+                const ast_node* block() const {
+                    return child_from_type(ast_node_type::ast_node_context);
                 }
             };
         protected:

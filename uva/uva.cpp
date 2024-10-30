@@ -42,7 +42,7 @@ int main(int argc, char** argv) {
         uva::lang::parser::ast_node root_node = p.parse_all(l);
 
         uva::lang::interpreter interpreter;
-        interpreter.execute(root_node);
+        interpreter.execute_all(root_node);
 
         auto application_class = interpreter.find_class("Application");
 
@@ -58,16 +58,17 @@ int main(int argc, char** argv) {
         
         application = std::make_shared<uva::lang::object>(application_class);
 
-        std::shared_ptr<uva::lang::object> ret = interpreter.call(application, run_it->second);
+        std::shared_ptr<uva::lang::object> ret = interpreter.call(application, run_it->second, {});
 
-        // if(!ret) {
-        //     return 0;
-        // }
-
-        // if(ret) {
-        //     // TODO: Treat the return value
+        if(!ret) {
             return 0;
-        // }
+        }
+
+        if(ret) {
+            // TODO: Treat the return value
+            int ret_value = *ret->as<int>();
+            return ret_value;
+        }
     } catch (const std::exception& e) {
         uva::console::log_error(e.what());
         return false;

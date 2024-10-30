@@ -46,8 +46,9 @@ struct argument
     bool pointer = false;
 };
 
-struct method
+class method
 {
+public:
     std::string name;
     std::vector<argument> args;
     method_storage_type type;

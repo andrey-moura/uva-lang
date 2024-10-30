@@ -5,9 +5,9 @@
 
 #include <uva/var.hpp>
 #include <parser/parser.hpp>
-#include <parser/class.hpp>
-#include <parser/method.hpp>
-#include <parser/object.hpp>
+#include <lang/class.hpp>
+#include <lang/method.hpp>
+#include <lang/object.hpp>
 
 namespace uva
 {
@@ -19,7 +19,9 @@ namespace uva
             std::shared_ptr<uva::lang::structure> cls;
             std::shared_ptr<uva::lang::object> self;
             std::map<std::string, std::shared_ptr<uva::lang::object>> variables;
-            std::shared_ptr<interpreter_context> parent;
+
+            bool has_returned = false;
+            std::shared_ptr<uva::lang::object> return_value;
         };
         // This class is responsible of storing all resources needed by an uvalang program.
         // It will store all classes, objects, methods, variables, call stack, etc.
@@ -38,15 +40,24 @@ namespace uva
 
             /// @brief Exeuctes a syntax tree into the interpreter. Note that if the code has while loops with no exit condition, this method will never return.
             /// @param cls The syntax tree to exeuctes. All its childs (not recursively) will be executed.
-            void execute(uva::lang::parser::ast_node source_code);
+            std::shared_ptr<uva::lang::object> execute(uva::lang::parser::ast_node source_code, std::shared_ptr<uva::lang::object> object = nullptr);
+
+            std::shared_ptr<uva::lang::object> execute_all(std::vector<uva::lang::parser::ast_node>::const_iterator begin, std::vector<uva::lang::parser::ast_node>::const_iterator end, std::shared_ptr<uva::lang::object> object = nullptr);
+            std::shared_ptr<uva::lang::object> execute_all(uva::lang::parser::ast_node source_code, std::shared_ptr<uva::lang::object> object = nullptr);
 
             /// @brief The global false class.
-            std::shared_ptr<uva::lang::structure> False;
+            std::shared_ptr<uva::lang::structure> FalseClass;
             /// @brief The global true class.
-            std::shared_ptr<uva::lang::structure> True;
+            std::shared_ptr<uva::lang::structure> TrueClass;
 
             /// @brief The global std class.
-            std::shared_ptr<uva::lang::structure> Std;
+            std::shared_ptr<uva::lang::structure> StdClass;
+
+            /// @brief The global string class.
+            std::shared_ptr<uva::lang::structure> StringClass;
+
+            /// @brief The global integer class.
+            std::shared_ptr<uva::lang::structure> IntegerClass;
 
             /// @brief Create an instance of @cls with the name @name at the global context.
             /// @param cls The class to instantiate.
@@ -54,7 +65,7 @@ namespace uva
             /// @return The instancieted object
             std::shared_ptr<uva::lang::object> instantiate(std::shared_ptr<uva::lang::structure> cls, const std::string& name);
 
-            std::shared_ptr<uva::lang::object> call(std::shared_ptr<uva::lang::object> object, const uva::lang::method& method, const var& params = var());
+            std::shared_ptr<uva::lang::object> call(std::shared_ptr<uva::lang::object> object, const uva::lang::method& method, std::vector<std::shared_ptr<uva::lang::object>> params);
 
             std::shared_ptr<uva::lang::structure> find_class(const std::string_view& name) {
                 for(auto& cls : classes) {
@@ -65,9 +76,27 @@ namespace uva
 
                 return nullptr;
             }
+
+            const std::shared_ptr<uva::lang::object> node_to_object(const uva::lang::parser::ast_node& node);
         protected:
             /// @brief The global context stack.
             interpreter_context global_context;
+
+            /// @brief The current context.
+            interpreter_context current_context;
+
+            /// @brief The call stack.
+            std::vector<interpreter_context> stack;
+
+            void push_context() { stack.push_back(current_context); }
+            void pop_context() { 
+                if(stack.empty()) {
+                    throw std::runtime_error("interpreter: unexpected end of file");
+                }
+
+                current_context = stack.back();
+                stack.pop_back();
+            }
         protected:
             /// @brief Initialize the interpreter. This method will create the global classes and objects. It also load extensions.
             void init();

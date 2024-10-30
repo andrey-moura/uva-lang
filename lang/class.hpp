@@ -7,19 +7,22 @@
 
 #include <uva/var.hpp>
 
+#include <lang/method.hpp>
+
 namespace uva {
     namespace lang {
         class object;
         class method;
-        struct structure
+        class structure
         {
+        public:
             //for user code, use create
             structure(const std::string& __name, std::vector<uva::lang::method> __methods = {});
             ~structure();
         public:
             std::string name;
             std::map<std::string, uva::lang::method> methods;
-            std::shared_ptr<structure> base;
+            std::shared_ptr<uva::lang::structure> base;
             std::map<std::string, std::shared_ptr<uva::lang::object>> instance_variables;
             std::string source_content;
 

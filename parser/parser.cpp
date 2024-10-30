@@ -1,13 +1,14 @@
 #include "parser.hpp"
 
 #include <uva/file.hpp>
+#include <console.hpp>
 
 #include <exception>
 #include <iostream>
 
-#include <parser/object.hpp>
-#include <parser/class.hpp>
-#include <parser/method.hpp>
+#include <lang/object.hpp>
+#include <lang/class.hpp>
+#include <lang/method.hpp>
 
 using namespace uva;
 using namespace lang;
@@ -72,13 +73,9 @@ uva::lang::parser::ast_node parser::parse_node(uva::lang::lexer& lexer)
                     token.throw_error_at_current_position("Expected '=' after variable name");
                 }
 
-                token = lexer.next_token();
+                ast_node value_node = parse_node(lexer);
 
-                if(token.type() != lexer::token_type::token_literal) {
-                    token.throw_error_at_current_position("Expected literal after '='");
-                }
-
-                var_node.add_child(std::move(ast_node(std::move(token), ast_node_type::ast_node_valuedecl)));
+                var_node.add_child(value_node);
 
                 token = lexer.next_token();
 
@@ -125,12 +122,16 @@ uva::lang::parser::ast_node parser::parse_node(uva::lang::lexer& lexer)
                     token.throw_error_at_current_position("Expected '{' after method declaration");
                 }
 
+                ast_node fn_context(ast_node_type::ast_node_context);
+
                 ast_node method_child = parse_node(lexer);
 
                 while(method_child.token().content() != "}") {
-                    method_node.add_child(std::move(method_child));
+                    fn_context.add_child(std::move(method_child));
                     method_child = parse_node(lexer);
                 }
+
+                method_node.add_child(std::move(fn_context));
 
                 return method_node;
             } else if(token.content() == "return") {
@@ -138,14 +139,54 @@ uva::lang::parser::ast_node parser::parse_node(uva::lang::lexer& lexer)
 
                 token = lexer.next_token();
 
-                if(token.type() != lexer::token_type::token_literal) {
-                    token.throw_error_at_current_position("Expected literal after 'return'");
+                if(token.type() != lexer::token_type::token_literal && token.type() != lexer::token_type::token_identifier) {
+                    token.throw_error_at_current_position("Expected literal or identifier after 'return'");
                 }
 
                 return_node.add_child(std::move(ast_node(std::move(token), ast_node_type::ast_node_valuedecl)));
 
                 return return_node;
-            } else {
+            }
+            else if(token.content() == "if") {
+                ast_node if_node(ast_node_type::ast_node_conditional);
+                if_node.add_child(ast_node(std::move(token), ast_node_type::ast_node_decltype));
+
+                token = lexer.next_token();
+
+                if(token.content() != "(") {
+                    token.throw_error_at_current_position("Expected '(' after 'if'");
+                }
+
+                ast_node condition_node(ast_node_type::ast_node_condition);
+
+                ast_node node = parse_node(lexer);
+
+                condition_node.add_child(std::move(node));
+
+                if_node.add_child(std::move(condition_node));
+
+                ast_node if_child = parse_node(lexer);
+
+                if(if_child.token().content() != ")") {
+                    if_child.token().throw_error_at_current_position("Expected ')' after 'if' condition");
+                }
+
+                if_child = parse_node(lexer);
+
+                if(if_child.token().content() != "{") {
+                    if_child.token().throw_error_at_current_position("Expected '{' after 'if' condition");
+                }
+
+                if_child = parse_node(lexer);
+
+                while(if_child.token().content() != "}") {
+                    if_node.add_child(std::move(if_child));
+                    if_child = parse_node(lexer);
+                }
+
+                return if_node;
+            }
+            else {
                 token.throw_error_at_current_position("Unexpected keyword");
             }
             break;
@@ -157,8 +198,11 @@ uva::lang::parser::ast_node parser::parse_node(uva::lang::lexer& lexer)
 
             return ast_node(std::move(token), ast_node_type::ast_node_undefined);
             break;
+        case lexer::token_type::token_literal:
+            return ast_node(std::move(token), ast_node_type::ast_node_valuedecl);
+        break;
         case lexer::token_type::token_identifier:
-            // Can be: variable assingment, method call
+            // Can be: variable reference/assingment, method call
             
             // First check if it has '(' after the identifier
 
@@ -196,7 +240,13 @@ uva::lang::parser::ast_node parser::parse_node(uva::lang::lexer& lexer)
 
                 return method_node;
             } else {
-                token.throw_error_at_current_position("Unexpected identifier");
+                // Go back to the identifier
+                token = lexer.previous_token();
+
+                // Variable reference/assignment
+                // Only variable reference is implemented for now
+                ast_node node(std::move(token), ast_node_type::ast_node_valuedecl);
+                return node;
             }
             break;
         default:
@@ -218,21 +268,4 @@ uva::lang::parser::ast_node uva::lang::parser::parse_all(uva::lang::lexer &lexer
     ast_node child = parse_node(lexer);
     root_node.add_child(std::move(child));
     return root_node;
-}
-
-uva::lang::object::~object()
-{
-    uva::console::log_debug("{}#{} destroyed", cls->name, (void*)this);
-}
-
-uva::lang::structure::~structure()
-{
-    uva::console::log_debug("{}#Class destroyed", name);
-}
-
-
-uva::lang::structure::structure(const std::string& __name, std::vector<uva::lang::method> __methods)
-    : name(__name)
-{
-    uva::console::log_debug("{}#Class created", name);
 }

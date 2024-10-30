@@ -1,0 +1,7 @@
+class Application
+{
+    function run() {
+        var ret = system("whoami");
+        return ret;
+    }
+}
