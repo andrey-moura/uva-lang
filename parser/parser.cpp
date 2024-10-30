@@ -73,22 +73,9 @@ uva::lang::parser::ast_node parser::parse_node(uva::lang::lexer& lexer)
                     token.throw_error_at_current_position("Expected '=' after variable name");
                 }
 
-                token = lexer.next_token();
+                ast_node value_node = parse_node(lexer);
 
-                switch(token.type()) {
-                    case lexer::token_type::token_literal:
-                        var_node.add_child(std::move(ast_node(std::move(token), ast_node_type::ast_node_valuedecl)));
-                        break;
-                    case lexer::token_type::token_identifier:
-                        // Variable assignment
-                        var_node.add_child(std::move(ast_node(std::move(token), ast_node_type::ast_node_declname)));
-                        break;
-                    default:
-                        token.throw_error_at_current_position("Expected literal or identifier after '='");
-                        break;
-                }
-
-                var_node.add_child(std::move(ast_node(std::move(token), ast_node_type::ast_node_valuedecl)));
+                var_node.add_child(value_node);
 
                 token = lexer.next_token();
 
@@ -215,7 +202,7 @@ uva::lang::parser::ast_node parser::parse_node(uva::lang::lexer& lexer)
             return ast_node(std::move(token), ast_node_type::ast_node_valuedecl);
         break;
         case lexer::token_type::token_identifier:
-            // Can be: variable assingment, method call
+            // Can be: variable reference/assingment, method call
             
             // First check if it has '(' after the identifier
 
@@ -253,7 +240,15 @@ uva::lang::parser::ast_node parser::parse_node(uva::lang::lexer& lexer)
 
                 return method_node;
             } else {
-                token.throw_error_at_current_position("Unexpected identifier");
+                // Go back to the identifier
+                token = lexer.previous_token();
+
+                // Variable reference/assignment
+                // Only variable reference is implemented for now
+                ast_node node(ast_node_type::ast_node_valuedecl);
+                node.add_child(ast_node(std::move(token), ast_node_type::ast_node_declname));
+
+                return node;
             }
             break;
         default:

@@ -86,18 +86,18 @@ std::shared_ptr<uva::lang::object> uva::lang::interpreter::execute(uva::lang::pa
                 }
             }
 
-            call(object, it->second, params_to_call);
+            return call(object, it->second, params_to_call);
         }
         break;
         case uva::lang::parser::ast_node_type::ast_node_vardecl: {
             std::string_view var_name = source_code.decname();
-            current_context.variables[std::string(var_name)] = node_to_object(*source_code.child_from_type(uva::lang::parser::ast_node_type::ast_node_valuedecl));
+            current_context.variables[std::string(var_name)] = node_to_object(source_code.childrens()[1]);
         }
         break;
         case uva::lang::parser::ast_node_type::ast_node_conditional: {
             std::shared_ptr<uva::lang::object> ret = execute(*source_code.condition());
 
-            if(ret->is_present()) {
+            if(ret && ret->is_present()) {
                 auto if_childs = source_code.childrens();
 
                 for(size_t i = 2; i < if_childs.size(); i++) {
@@ -163,6 +163,7 @@ void uva::lang::interpreter::init()
     FalseClass  = std::make_shared<uva::lang::structure>("FalseClass");
     TrueClass   = std::make_shared<uva::lang::structure>("TrueClass");
     StringClass = std::make_shared<uva::lang::structure>("StringClass");
+    IntegerClass = std::make_shared<uva::lang::structure>("IntegerClass");
 
     FalseClass->methods = {
         {"is_present", uva::lang::method("is_present", method_storage_type::instance_method, {}, [this](uva::lang::object* object, std::vector<std::shared_ptr<uva::lang::object>> params) {
@@ -196,9 +197,30 @@ void uva::lang::interpreter::init()
         })}
     };
 
+    IntegerClass->methods = {
+        {"is_present", uva::lang::method("is_present", method_storage_type::instance_method, {}, [this](uva::lang::object* object, std::vector<std::shared_ptr<uva::lang::object>> params) {
+            int i = *object->as<int>();
+            
+            if(i == 0) {
+                return std::make_shared<uva::lang::object>(FalseClass);
+            }
+
+            return std::make_shared<uva::lang::object>(TrueClass);
+        })},
+        {"to_s", uva::lang::method("to_s", method_storage_type::instance_method, {}, [this](uva::lang::object* object, std::vector<std::shared_ptr<uva::lang::object>> params) {
+            int value = *object->as<int>();
+
+            std::shared_ptr<uva::lang::object> obj = std::make_shared<uva::lang::object>(StringClass);
+            obj->native = new std::string(std::to_string(value));
+
+            return obj;
+        })}
+    };
+
     this->load(FalseClass);
     this->load(TrueClass);
     this->load(StringClass);
+    this->load(IntegerClass);
 
     for(auto& extension : extensions) {
         extension->load_in_interpreter(this);
@@ -224,30 +246,45 @@ void uva::lang::interpreter::init()
     });
 }
 
-const std::shared_ptr<uva::lang::object> uva::lang::interpreter::node_to_object(const uva::lang::parser::ast_node& node) const
+const std::shared_ptr<uva::lang::object> uva::lang::interpreter::node_to_object(const uva::lang::parser::ast_node& node)
 {
-    switch(node.token().kind())
-    {
-        case lexer::token_kind::token_boolean: {
-            if(node.token().content() == "true") {
-                return std::make_shared<uva::lang::object>(TrueClass);
-            } else {
-                return std::make_shared<uva::lang::object>(FalseClass);
+    if(node.token().type() == uva::lang::lexer::token_type::token_literal) {
+        switch(node.token().kind())
+        {
+            case lexer::token_kind::token_boolean: {
+                if(node.token().content() == "true") {
+                    return std::make_shared<uva::lang::object>(TrueClass);
+                } else {
+                    return std::make_shared<uva::lang::object>(FalseClass);
+                }
             }
+            break;
+            case lexer::token_kind::token_integer: {
+                return std::make_shared<uva::lang::object>(nullptr);
+            }
+            case lexer::token_kind::token_string: {
+                std::shared_ptr<uva::lang::object> obj = std::make_shared<uva::lang::object>(StringClass);
+                obj->native = new std::string(node.token().content());
+                return obj;
+            }
+            break;
+            default:    
+                throw std::runtime_error("interpreter: unknown node kind");
+            break;
         }
-        break;
-        case lexer::token_kind::token_integer: {
-            return std::make_shared<uva::lang::object>(nullptr);
-        }
-        case lexer::token_kind::token_string: {
-            std::shared_ptr<uva::lang::object> obj = std::make_shared<uva::lang::object>(StringClass);
-            obj->native = new std::string(node.token().content());
-            return obj;
-        }
-        break;
-        default:    
-            throw std::runtime_error("interpreter: unknown node kind");
-        break;
+    } else if(node.type() == uva::lang::parser::ast_node_type::ast_node_fn_call) {
+        return execute(node);
     }
 
+    auto declname = node.child_from_type(uva::lang::parser::ast_node_type::ast_node_declname);
+
+    if(declname) {
+        auto it = current_context.variables.find(declname->token().content());
+
+        if(it != current_context.variables.end()) {
+            return it->second;
+        }
+    }
+
+    return nullptr;
 }
