@@ -5,6 +5,10 @@
 
 #include <lang/lang.hpp>
 
+#ifndef __WEXITSTATUS
+    #define __WEXITSTATUS(status) (((status) & 0xFF00) >> 8)
+#endif /* __WEXITSTATUS */
+
 extern std::vector<uva::lang::extension*> extensions;
 
 uva::lang::interpreter::interpreter()
