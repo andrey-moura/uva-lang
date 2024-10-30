@@ -75,8 +75,17 @@ uva::lang::parser::ast_node parser::parse_node(uva::lang::lexer& lexer)
 
                 token = lexer.next_token();
 
-                if(token.type() != lexer::token_type::token_literal) {
-                    token.throw_error_at_current_position("Expected literal after '='");
+                switch(token.type()) {
+                    case lexer::token_type::token_literal:
+                        var_node.add_child(std::move(ast_node(std::move(token), ast_node_type::ast_node_valuedecl)));
+                        break;
+                    case lexer::token_type::token_identifier:
+                        // Variable assignment
+                        var_node.add_child(std::move(ast_node(std::move(token), ast_node_type::ast_node_declname)));
+                        break;
+                    default:
+                        token.throw_error_at_current_position("Expected literal or identifier after '='");
+                        break;
                 }
 
                 var_node.add_child(std::move(ast_node(std::move(token), ast_node_type::ast_node_valuedecl)));
