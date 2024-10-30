@@ -139,8 +139,8 @@ uva::lang::parser::ast_node parser::parse_node(uva::lang::lexer& lexer)
 
                 token = lexer.next_token();
 
-                if(token.type() != lexer::token_type::token_literal) {
-                    token.throw_error_at_current_position("Expected literal after 'return'");
+                if(token.type() != lexer::token_type::token_literal && token.type() != lexer::token_type::token_identifier) {
+                    token.throw_error_at_current_position("Expected literal or identifier after 'return'");
                 }
 
                 return_node.add_child(std::move(ast_node(std::move(token), ast_node_type::ast_node_valuedecl)));
@@ -245,9 +245,7 @@ uva::lang::parser::ast_node parser::parse_node(uva::lang::lexer& lexer)
 
                 // Variable reference/assignment
                 // Only variable reference is implemented for now
-                ast_node node(ast_node_type::ast_node_valuedecl);
-                node.add_child(ast_node(std::move(token), ast_node_type::ast_node_declname));
-
+                ast_node node(std::move(token), ast_node_type::ast_node_valuedecl);
                 return node;
             }
             break;
