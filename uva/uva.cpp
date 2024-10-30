@@ -60,14 +60,15 @@ int main(int argc, char** argv) {
 
         std::shared_ptr<uva::lang::object> ret = interpreter.call(application, run_it->second, {});
 
-        // if(!ret) {
-        //     return 0;
-        // }
-
-        // if(ret) {
-        //     // TODO: Treat the return value
+        if(!ret) {
             return 0;
-        // }
+        }
+
+        if(ret) {
+            // TODO: Treat the return value
+            int ret_value = *ret->as<int>();
+            return ret_value;
+        }
     } catch (const std::exception& e) {
         uva::console::log_error(e.what());
         return false;
