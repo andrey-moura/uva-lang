@@ -52,6 +52,9 @@ namespace uva
             /// @brief The global string class.
             std::shared_ptr<uva::lang::structure> StringClass;
 
+            /// @brief The global integer class.
+            std::shared_ptr<uva::lang::structure> IntegerClass;
+
             /// @brief Create an instance of @cls with the name @name at the global context.
             /// @param cls The class to instantiate.
             /// @param name The name of the instancieted object.
@@ -70,7 +73,7 @@ namespace uva
                 return nullptr;
             }
 
-            const std::shared_ptr<uva::lang::object> node_to_object(const uva::lang::parser::ast_node& node) const;
+            const std::shared_ptr<uva::lang::object> node_to_object(const uva::lang::parser::ast_node& node);
         protected:
             /// @brief The global context stack.
             interpreter_context global_context;

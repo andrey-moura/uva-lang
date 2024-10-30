@@ -14,6 +14,10 @@ uva::lang::object::~object()
 
 bool uva::lang::object::is_present() const
 {
+    if(!cls) {
+        throw std::runtime_error("object has no class");
+    }
+    
     auto it = cls->methods.find("is_present");
 
     if(it == cls->methods.end()) {
