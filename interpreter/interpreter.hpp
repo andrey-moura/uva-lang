@@ -49,13 +49,16 @@ namespace uva
             /// @brief The global std class.
             std::shared_ptr<uva::lang::structure> StdClass;
 
+            /// @brief The global string class.
+            std::shared_ptr<uva::lang::structure> StringClass;
+
             /// @brief Create an instance of @cls with the name @name at the global context.
             /// @param cls The class to instantiate.
             /// @param name The name of the instancieted object.
             /// @return The instancieted object
             std::shared_ptr<uva::lang::object> instantiate(std::shared_ptr<uva::lang::structure> cls, const std::string& name);
 
-            std::shared_ptr<uva::lang::object> call(std::shared_ptr<uva::lang::object> object, const uva::lang::method& method, const var& params = var());
+            std::shared_ptr<uva::lang::object> call(std::shared_ptr<uva::lang::object> object, const uva::lang::method& method, std::vector<std::shared_ptr<uva::lang::object>> params);
 
             std::shared_ptr<uva::lang::structure> find_class(const std::string_view& name) {
                 for(auto& cls : classes) {

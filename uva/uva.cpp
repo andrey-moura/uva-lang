@@ -58,7 +58,7 @@ int main(int argc, char** argv) {
         
         application = std::make_shared<uva::lang::object>(application_class);
 
-        std::shared_ptr<uva::lang::object> ret = interpreter.call(application, run_it->second);
+        std::shared_ptr<uva::lang::object> ret = interpreter.call(application, run_it->second, {});
 
         // if(!ret) {
         //     return 0;

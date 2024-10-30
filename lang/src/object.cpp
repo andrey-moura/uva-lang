@@ -7,7 +7,9 @@
 
 uva::lang::object::~object()
 {
-    uva::console::log_debug("{}#{} destroyed", cls->name, (void*)this);
+    if(cls) {
+        uva::console::log_debug("{}#{} destroyed", cls->name, (void*)this);
+    }
 }
 
 bool uva::lang::object::is_present() const
