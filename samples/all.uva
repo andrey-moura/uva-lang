@@ -6,16 +6,30 @@ class Application
         print("Here's more text.");
         puts(" This is even more text.");
 
-        hello();
+        say_hello();
 
         var message = "Hello from a variable!";
 
         puts(message);
 
+        if(true) {
+            puts("Hello from an if statement!");
+        }
+
+        if(false) {
+            puts("This should not be printed.");
+        }
+
+        system("echo Hello from a system call!");
+
+        var file_content = File.read("file.txt");
+
+        puts(file_content);
+
         return 0;
     }
     
-    function hello()
+    function say_hello()
     {
         puts("Hello from a function!");
     }
