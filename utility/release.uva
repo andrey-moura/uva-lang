@@ -4,6 +4,20 @@ class Application
 {
     function run()
     {
+        // Get commit hash, prefix and message.
+        var ret = system("git log --oneline --no-decorate --no-merges > releases/release_notes.txt");
+
+        // Check if the command was successful. If not, return the error code.
+        if (ret)
+        {
+            return ret;
+        }
+
+        // Read the content of the file.
+        var content = File.read("releases/release_notes.txt");
+
+        puts(content);
+
         return 0;
     }
 }
