@@ -1,0 +1,16 @@
+class Application
+{
+    function run()
+    {
+        var array = ["Hello", "from", "a", "foreach!"];
+        
+        foreach(var element in array) {
+            print(element);
+            print(" ");
+        }
+
+        puts("");
+        
+        return 0;
+    }
+}

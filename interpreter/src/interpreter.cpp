@@ -60,25 +60,37 @@ std::shared_ptr<uva::lang::object> uva::lang::interpreter::execute(uva::lang::pa
 
                 std::string_view class_or_object_name = declname->childrens()[0].token().content();
 
-                // For now, we only support calling methods from classes
+                auto object_it = current_context.variables.find(std::string(class_or_object_name));
 
-                for(auto& cls : classes) {
-                    if(cls->name == class_or_object_name) {
-                        std::string_view function_name = declname->childrens()[1].token().content();
+                if(object_it != current_context.variables.end()) {
+                    object_to_call = object_it->second;
 
-                        auto it = cls->methods.find(std::string(function_name));
+                    auto method_it = object_to_call->cls->methods.find(std::string(declname->childrens()[1].token().content()));
+                    
+                    if(method_it == object_to_call->cls->methods.end()) {
+                        throw std::runtime_error("class " + object_to_call->cls->name + " does not have a method called " + std::string(declname->childrens()[1].token().content()));
+                    }
 
-                        if(it == cls->methods.end()) {
-                            throw std::runtime_error("class " + std::string(class_or_object_name) + " does not have a method called " + std::string(function_name));
+                    method_to_call = &method_it->second;
+                } else {
+                    for(auto& cls : classes) {
+                        if(cls->name == class_or_object_name) {
+                            std::string_view function_name = declname->childrens()[1].token().content();
+
+                            auto it = cls->methods.find(std::string(function_name));
+
+                            if(it == cls->methods.end()) {
+                                throw std::runtime_error("class " + std::string(class_or_object_name) + " does not have a method called " + std::string(function_name));
+                            }
+
+                            method_to_call = &it->second;
+                            break;
                         }
-
-                        method_to_call = &it->second;
-                        break;
                     }
                 }
 
                 if(!method_to_call) {
-                    throw std::runtime_error("class " + std::string(class_or_object_name) + " not found");
+                    throw std::runtime_error("class or object " + std::string(class_or_object_name) + " not found");
                 }
             } else {
                 std::string_view function_name = source_code.decname();
@@ -115,7 +127,7 @@ std::shared_ptr<uva::lang::object> uva::lang::interpreter::execute(uva::lang::pa
                         if(it != current_context.variables.end()) {
                             params_to_call.push_back(it->second);
                         } else {
-                            throw std::runtime_error("variable not found");
+                            throw std::runtime_error("'" + std::string(param.token().content()) + "' is undefined");
                         }
                     }
                 }
@@ -155,6 +167,29 @@ std::shared_ptr<uva::lang::object> uva::lang::interpreter::execute(uva::lang::pa
         case uva::lang::parser::ast_node_type::ast_node_fn_return: {
             return node_to_object(source_code.childrens().front());
         }
+        break;
+        case uva::lang::parser::ast_node_type::ast_node_foreach: {
+            auto* valuedecl = source_code.child_from_type(uva::lang::parser::ast_node_type::ast_node_valuedecl);
+
+            std::shared_ptr<uva::lang::object> array = node_to_object(*valuedecl);
+
+            if(array->cls != ArrayClass) {
+                throw std::runtime_error("foreach should iterate over an array");
+            }
+
+            std::vector<std::shared_ptr<uva::lang::object>>& array_values = *array->as<std::vector<std::shared_ptr<uva::lang::object>>>();
+
+            auto* vardecl = source_code.child_from_type(uva::lang::parser::ast_node_type::ast_node_vardecl);
+
+            std::string var_name(vardecl->decname());
+
+
+            for(auto& value : array_values) {
+                current_context.variables[var_name] = value;
+                execute_all(*source_code.child_from_type(uva::lang::parser::ast_node_type::ast_node_context), object);
+            }
+        }
+        break;
     default:
         source_code.token().throw_error_at_current_position("interpreter: Unexpected token");
         break;
@@ -217,6 +252,7 @@ void uva::lang::interpreter::init()
     this->load(IntegerClass = uva::lang::integer_class::create(this));
     this->load(FileClass    = uva::lang::file_class::create(this));
     this->load(StdClass     = uva::lang::std_class::create(this));
+    this->load(ArrayClass   = uva::lang::array_class::create(this));
 
     for(auto& extension : extensions) {
         extension->load_in_interpreter(this);
@@ -261,6 +297,16 @@ const std::shared_ptr<uva::lang::object> uva::lang::interpreter::node_to_object(
         if(it != current_context.variables.end()) {
             return it->second;
         }
+    } else if(node.type() == uva::lang::parser::ast_node_type::ast_node_arraydecl) {
+        std::shared_ptr<uva::lang::object> obj = std::make_shared<uva::lang::object>(ArrayClass);
+
+        obj->native = new std::vector<std::shared_ptr<uva::lang::object>>();
+
+        for(auto& child : node.childrens()) {
+            ((std::vector<std::shared_ptr<uva::lang::object>>*)obj->native)->push_back(node_to_object(child));
+        }
+
+        return obj;
     }
 
     return nullptr;

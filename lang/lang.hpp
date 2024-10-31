@@ -8,3 +8,4 @@
 #include <lang/integer_class.hpp>
 #include <lang/file_class.hpp>
 #include <lang/std_class.hpp>
+#include <lang/array_class.hpp>

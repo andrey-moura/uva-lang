@@ -22,8 +22,6 @@ bool is_delimiter(const char& c) {
         delimiters['}'] = true;
         delimiters['('] = true;
         delimiters[')'] = true;
-        delimiters['['] = true;
-        delimiters[']'] = true;
         delimiters[';'] = true;
         delimiters[','] = true;
         delimiters['.'] = true;
@@ -47,6 +45,8 @@ bool is_operator(const char& c) {
         operators['!'] = true;
         operators['<'] = true;
         operators['>'] = true;
+        operators['['] = true;
+        operators[']'] = true;
     }
 
     return operators[c];
@@ -61,6 +61,7 @@ bool is_keyword(const std::string& str) {
         keywords["return"]   = true;
         keywords["class"]    = true;
         keywords["if"]       = true;
+        keywords["foreach"]  = true;
     }
 
     return keywords.find(str) != keywords.end();

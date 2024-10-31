@@ -116,19 +116,10 @@ uva::lang::parser::ast_node parser::parse_node(uva::lang::lexer& lexer)
                     }
                 }
 
-                token = lexer.next_token();
+                ast_node fn_context = parse_node(lexer);
 
-                if(token.content() != "{") {
-                    token.throw_error_at_current_position("Expected '{' after method declaration");
-                }
-
-                ast_node fn_context(ast_node_type::ast_node_context);
-
-                ast_node method_child = parse_node(lexer);
-
-                while(method_child.token().content() != "}") {
-                    fn_context.add_child(std::move(method_child));
-                    method_child = parse_node(lexer);
+                if(fn_context.type() != ast_node_type::ast_node_context) {
+                    token.throw_error_at_current_position("Expected context after method declaration");
                 }
 
                 method_node.add_child(std::move(fn_context));
@@ -171,20 +162,73 @@ uva::lang::parser::ast_node parser::parse_node(uva::lang::lexer& lexer)
                     if_child.token().throw_error_at_current_position("Expected ')' after 'if' condition");
                 }
 
-                if_child = parse_node(lexer);
+                ast_node if_context = parse_node(lexer);
 
-                if(if_child.token().content() != "{") {
-                    if_child.token().throw_error_at_current_position("Expected '{' after 'if' condition");
+                if(if_context.type() != ast_node_type::ast_node_context) {
+                    token.throw_error_at_current_position("Expected context after 'if'");
                 }
 
-                if_child = parse_node(lexer);
-
-                while(if_child.token().content() != "}") {
-                    if_node.add_child(std::move(if_child));
-                    if_child = parse_node(lexer);
-                }
+                if_node.add_child(std::move(if_context));
 
                 return if_node;
+            } else if(token.content() == "foreach")  {
+                ast_node foreach_node(ast_node_type::ast_node_foreach);
+                foreach_node.add_child(ast_node(std::move(token), ast_node_type::ast_node_decltype));
+
+                token = lexer.next_token();
+
+                if(token.content() != "(") {
+                    token.throw_error_at_current_position("Expected '(' after 'foreach'");
+                }
+
+                token = lexer.next_token();
+
+                if(token.content() != "var") {
+                    token.throw_error_at_current_position("Expected 'var' after '('");
+                }
+
+                ast_node var_node(ast_node_type::ast_node_vardecl);
+                var_node.add_child(ast_node(std::move(token), ast_node_type::ast_node_decltype));
+
+                token = lexer.next_token();
+
+                if(token.type() != lexer::token_type::token_identifier) {
+                    token.throw_error_at_current_position("Expected variable name after 'var'");
+                }
+
+                var_node.add_child(ast_node(std::move(token), ast_node_type::ast_node_declname));
+
+                foreach_node.add_child(std::move(var_node));
+
+                token = lexer.next_token();
+
+                if(token.content() != "in") {
+                    token.throw_error_at_current_position("Expected 'in' after variable name");
+                }
+
+                token = lexer.next_token();
+
+                if(token.type() != lexer::token_type::token_identifier) {
+                    token.throw_error_at_current_position("Expected identifier after 'in'");
+                }
+
+                foreach_node.add_child(ast_node(std::move(token), ast_node_type::ast_node_valuedecl));
+
+                token = lexer.next_token();
+
+                if(token.content() != ")") {
+                    token.throw_error_at_current_position("Expected ')' after 'foreach' declaration");
+                }
+
+                ast_node context_node = parse_node(lexer);
+
+                if(context_node.type() != ast_node_type::ast_node_context) {
+                    token.throw_error_at_current_position("Expected context after 'foreach'");
+                }
+
+                foreach_node.add_child(std::move(context_node));
+
+                return foreach_node;
             }
             else {
                 token.throw_error_at_current_position("Unexpected keyword");
@@ -194,6 +238,17 @@ uva::lang::parser::ast_node parser::parse_node(uva::lang::lexer& lexer)
             if(token.content() == ";") {
                 // ; in the middle of the code is considered a whitespace
                 return parse_node(lexer);
+            } else if(token.content() == "{") {
+                ast_node context_node(ast_node_type::ast_node_context);
+
+                ast_node context_child = parse_node(lexer);
+
+                while(context_child.token().content() != "}") {
+                    context_node.add_child(std::move(context_child));
+                    context_child = parse_node(lexer);
+                }
+
+                return context_node;
             }
 
             return ast_node(std::move(token), ast_node_type::ast_node_undefined);
@@ -268,6 +323,37 @@ uva::lang::parser::ast_node parser::parse_node(uva::lang::lexer& lexer)
                 return node;
             }
             break;
+        case lexer::token_type::token_operator: {
+            if(token.content() == "[") {
+                // Array declaration
+                ast_node array_node(ast_node_type::ast_node_arraydecl);
+
+                while(true) {
+                    token = lexer.next_token();
+
+                    if(token.type() != lexer::token_type::token_literal && token.type() != lexer::token_type::token_identifier) {
+                        token.throw_error_at_current_position("Expected literal or identifier in array declaration");
+                    }
+
+                    array_node.add_child(std::move(ast_node(std::move(token), ast_node_type::ast_node_valuedecl)));
+
+                    token = lexer.next_token();
+
+                    if(token.content() == ",") {
+                        continue;
+                    } else if(token.content() == "]") {
+                        break;
+                    } else {
+                        token.throw_error_at_current_position("Expected ',' or ']'");
+                    }
+                }
+
+                return array_node;
+            } else {
+                token.throw_error_at_current_position("Unexpected operator");
+            }
+        }
+        break;
         default:
             token.throw_error_at_current_position("Unexpected token");
             break;

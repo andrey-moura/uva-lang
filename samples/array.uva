@@ -1,0 +1,12 @@
+class Application
+{
+    function run()
+    {
+        var array = ["Hello", "from", "an", "array!"];
+        var message = array.join(" ");
+
+        puts(message);
+
+        return 0;
+    }
+}
