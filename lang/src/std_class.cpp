@@ -1,5 +1,7 @@
 #include <lang/lang.hpp>
 
+#include <iostream>
+
 #include <interpreter/interpreter.hpp>
 
 std::shared_ptr<uva::lang::structure> uva::lang::std_class::create(uva::lang::interpreter* interpreter)
