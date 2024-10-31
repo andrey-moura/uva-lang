@@ -48,15 +48,52 @@ std::shared_ptr<uva::lang::object> uva::lang::interpreter::execute(uva::lang::pa
         }
         break;
         case uva::lang::parser::ast_node_fn_call: {
-            std::string_view function_name = source_code.decname();
-            
-            auto it = StdClass->methods.find(std::string(function_name));
+            auto declname = source_code.child_from_type(uva::lang::parser::ast_node_type::ast_node_declname);
 
-            if(it == StdClass->methods.end()) {
-                it = object->cls->methods.find(std::string(function_name));
+            uva::lang::method* method_to_call = nullptr;
+            std::shared_ptr<uva::lang::object> object_to_call = nullptr;
 
-                if(it == object->cls->methods.end()) {
-                    throw std::runtime_error("method not found");
+            if(declname->childrens().size() > 1) {
+                // function call from a class/object
+
+                std::string_view class_or_object_name = declname->childrens()[0].token().content();
+
+                // For now, we only support calling methods from classes
+
+                for(auto& cls : classes) {
+                    if(cls->name == class_or_object_name) {
+                        std::string_view function_name = declname->childrens()[1].token().content();
+
+                        auto it = cls->methods.find(std::string(function_name));
+
+                        if(it == cls->methods.end()) {
+                            throw std::runtime_error("class " + std::string(class_or_object_name) + " does not have a method called " + std::string(function_name));
+                        }
+
+                        method_to_call = &it->second;
+                        break;
+                    }
+                }
+
+                if(!method_to_call) {
+                    throw std::runtime_error("class " + std::string(class_or_object_name) + " not found");
+                }
+            } else {
+                std::string_view function_name = source_code.decname();
+
+                auto it = StdClass->methods.find(std::string(function_name));
+
+                if(it == StdClass->methods.end()) {
+                    it = object->cls->methods.find(std::string(function_name));
+
+                    if(it == object->cls->methods.end()) {
+                        throw std::runtime_error("method not found");
+                    }
+
+                    method_to_call = &it->second;
+                    object_to_call = object;
+                } else {
+                    method_to_call = &it->second;
                 }
             }
 
@@ -86,7 +123,7 @@ std::shared_ptr<uva::lang::object> uva::lang::interpreter::execute(uva::lang::pa
                 }
             }
 
-            return call(object, it->second, params_to_call);
+            return call(object_to_call, *method_to_call, params_to_call);
         }
         break;
         case uva::lang::parser::ast_node_type::ast_node_vardecl: {
