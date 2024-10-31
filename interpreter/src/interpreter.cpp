@@ -1,5 +1,7 @@
 #include <iostream>
 
+#include <uva/file.hpp>
+
 #include <interpreter.hpp>
 #include <extension/extension.hpp>
 
@@ -213,6 +215,7 @@ void uva::lang::interpreter::init()
     TrueClass   = std::make_shared<uva::lang::structure>("TrueClass");
     StringClass = std::make_shared<uva::lang::structure>("StringClass");
     IntegerClass = std::make_shared<uva::lang::structure>("IntegerClass");
+    FileClass = std::make_shared<uva::lang::structure>("File");
 
     FalseClass->methods = {
         {"is_present", uva::lang::method("is_present", method_storage_type::instance_method, {}, [this](uva::lang::object* object, std::vector<std::shared_ptr<uva::lang::object>> params) {
@@ -266,10 +269,30 @@ void uva::lang::interpreter::init()
         })}
     };
 
+    FileClass->methods = {
+        { "read", uva::lang::method("read", method_storage_type::class_method, {"path"}, [this](uva::lang::object* object, std::vector<std::shared_ptr<uva::lang::object>> params) {
+            std::shared_ptr<uva::lang::object> obj = std::make_shared<uva::lang::object>(StringClass);
+
+            const std::string& input_path = *(params[0]->as<std::string>());
+            std::filesystem::path path = std::filesystem::absolute(input_path);
+
+            if(!std::filesystem::exists(path)) {
+                throw std::runtime_error("file '" + path.string() + "' does not exist");
+            }
+
+            std::string file = uva::file::read_all_text<char>(path);
+
+            obj->native = new std::string(file);
+
+            return obj;
+        })},
+    };
+
     this->load(FalseClass);
     this->load(TrueClass);
     this->load(StringClass);
     this->load(IntegerClass);
+    this->load(FileClass);
 
     for(auto& extension : extensions) {
         extension->load_in_interpreter(this);

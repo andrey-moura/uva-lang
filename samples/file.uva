@@ -1,0 +1,8 @@
+class Application
+{
+    function run()
+    {
+        var message = File.read("file.txt");
+        puts(message);
+    }
+};
