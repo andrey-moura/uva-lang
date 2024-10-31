@@ -61,6 +61,7 @@ bool is_keyword(const std::string& str) {
         keywords["return"]   = true;
         keywords["class"]    = true;
         keywords["if"]       = true;
+        keywords["foreach"]  = true;
     }
 
     return keywords.find(str) != keywords.end();

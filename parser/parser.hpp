@@ -32,6 +32,7 @@ namespace uva
                 ast_node_valuedecl,
                 ast_node_arraydecl,
                 ast_node_vardecl,
+                ast_node_foreach,
 
                 ast_node_decltype,
                 ast_node_declname,

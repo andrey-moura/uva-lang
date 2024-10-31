@@ -127,7 +127,7 @@ std::shared_ptr<uva::lang::object> uva::lang::interpreter::execute(uva::lang::pa
                         if(it != current_context.variables.end()) {
                             params_to_call.push_back(it->second);
                         } else {
-                            throw std::runtime_error("variable not found");
+                            throw std::runtime_error("'" + std::string(param.token().content()) + "' is undefined");
                         }
                     }
                 }
@@ -167,6 +167,29 @@ std::shared_ptr<uva::lang::object> uva::lang::interpreter::execute(uva::lang::pa
         case uva::lang::parser::ast_node_type::ast_node_fn_return: {
             return node_to_object(source_code.childrens().front());
         }
+        break;
+        case uva::lang::parser::ast_node_type::ast_node_foreach: {
+            auto* valuedecl = source_code.child_from_type(uva::lang::parser::ast_node_type::ast_node_valuedecl);
+
+            std::shared_ptr<uva::lang::object> array = node_to_object(*valuedecl);
+
+            if(array->cls != ArrayClass) {
+                throw std::runtime_error("foreach should iterate over an array");
+            }
+
+            std::vector<std::shared_ptr<uva::lang::object>>& array_values = *array->as<std::vector<std::shared_ptr<uva::lang::object>>>();
+
+            auto* vardecl = source_code.child_from_type(uva::lang::parser::ast_node_type::ast_node_vardecl);
+
+            std::string var_name(vardecl->decname());
+
+
+            for(auto& value : array_values) {
+                current_context.variables[var_name] = value;
+                execute_all(*source_code.child_from_type(uva::lang::parser::ast_node_type::ast_node_context), object);
+            }
+        }
+        break;
     default:
         source_code.token().throw_error_at_current_position("interpreter: Unexpected token");
         break;
