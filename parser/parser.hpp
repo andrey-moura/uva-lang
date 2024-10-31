@@ -70,6 +70,10 @@ namespace uva
                 {
                     m_type = __type;
                 }
+                void set_token(uva::lang::lexer::token __token)
+                {
+                    m_token = std::move(__token);
+                }
             // Getters
             public:
                 const uva::lang::lexer::token& token() const {
@@ -85,6 +89,16 @@ namespace uva
                 }
 
                 const ast_node* child_from_type(const uva::lang::parser::ast_node_type& __type) const {
+                    for(auto& child : m_children) {
+                        if(child.type() == __type) {
+                            return &child;
+                        }
+                    }
+
+                    return nullptr;
+                }
+
+                ast_node* child_from_type(const uva::lang::parser::ast_node_type& __type) {
                     for(auto& child : m_children) {
                         if(child.type() == __type) {
                             return &child;
