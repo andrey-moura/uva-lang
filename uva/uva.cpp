@@ -34,7 +34,7 @@ int main(int argc, char** argv) {
             throw std::runtime_error("input file is not a regular file");
         }
 
-        std::filesystem::current_path(file_path.parent_path());
+        //std::filesystem::current_path(file_path.parent_path());
 
         std::string source = uva::file::read_all_text<char>(file_path);
 
