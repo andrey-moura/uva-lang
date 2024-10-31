@@ -5,7 +5,7 @@ class Application
     function run()
     {
         // Get commit hash, prefix and message.
-        var ret = system("git log --oneline --no-decorate --no-merges > release_notes.txt");
+        var ret = system("git log --oneline --no-decorate --no-merges > releases/release_notes.txt");
 
         // Check if the command was successful. If not, return the error code.
         if (ret)
@@ -14,7 +14,7 @@ class Application
         }
 
         // Read the content of the file.
-        var content = File.read("release_notes.txt");
+        var content = File.read("releases/release_notes.txt");
 
         puts(content);
 
