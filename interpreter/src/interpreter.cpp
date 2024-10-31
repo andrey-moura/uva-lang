@@ -5,10 +5,6 @@
 
 #include <lang/lang.hpp>
 
-#ifndef __WEXITSTATUS
-    #define __WEXITSTATUS(status) (((status) & 0xFF00) >> 8)
-#endif /* __WEXITSTATUS */
-
 extern std::vector<uva::lang::extension*> extensions;
 
 uva::lang::interpreter::interpreter()
@@ -263,8 +259,8 @@ void uva::lang::interpreter::init()
 
     StdClass->methods["system"] = uva::lang::method("system", method_storage_type::instance_method, {"command"}, [this](uva::lang::object* object, std::vector<std::shared_ptr<uva::lang::object>> params) {
         std::shared_ptr<uva::lang::object> command = params[0]->cls->methods["to_s"].call(params[0].get());
-        int code = WEXITSTATUS(std::system(command->as<std::string>()->c_str()));
-        
+        int code = ((std::system(command->as<std::string>()->c_str())) & 0xff00) >> 8;
+
         std::shared_ptr<uva::lang::object> obj = std::make_shared<uva::lang::object>(IntegerClass);
 
         obj->native = new int();
