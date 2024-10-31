@@ -211,123 +211,16 @@ std::shared_ptr<uva::lang::object> uva::lang::interpreter::call(std::shared_ptr<
 
 void uva::lang::interpreter::init()
 {
-    FalseClass  = std::make_shared<uva::lang::structure>("FalseClass");
-    TrueClass   = std::make_shared<uva::lang::structure>("TrueClass");
-    StringClass = std::make_shared<uva::lang::structure>("StringClass");
-    IntegerClass = std::make_shared<uva::lang::structure>("IntegerClass");
-    FileClass = std::make_shared<uva::lang::structure>("File");
-
-    FalseClass->methods = {
-        {"is_present", uva::lang::method("is_present", method_storage_type::instance_method, {}, [this](uva::lang::object* object, std::vector<std::shared_ptr<uva::lang::object>> params) {
-            return std::make_shared<uva::lang::object>(FalseClass);
-        })}
-    };
-
-    TrueClass->methods = {
-        {"is_present", uva::lang::method("is_present", method_storage_type::instance_method, {}, [this](uva::lang::object* object, std::vector<std::shared_ptr<uva::lang::object>> params) {
-            return std::make_shared<uva::lang::object>(TrueClass);
-        })}
-    };
-
-    StringClass->methods = {
-        {"is_present", uva::lang::method("is_present", method_storage_type::instance_method, {}, [this](uva::lang::object* object, std::vector<std::shared_ptr<uva::lang::object>> params) {
-            const std::string* value = object->as<std::string>();
-
-            if(value->empty()) {
-                return std::make_shared<uva::lang::object>(FalseClass);
-            }
-
-            return std::make_shared<uva::lang::object>(TrueClass);
-        })},
-        {"to_s", uva::lang::method("to_s", method_storage_type::instance_method, {}, [this](uva::lang::object* object, std::vector<std::shared_ptr<uva::lang::object>> params) {
-            const std::string* value = object->as<std::string>();
-
-            std::shared_ptr<uva::lang::object> obj = std::make_shared<uva::lang::object>(StringClass);
-            obj->native = new std::string(*value);
-
-            return obj;
-        })}
-    };
-
-    IntegerClass->methods = {
-        {"is_present", uva::lang::method("is_present", method_storage_type::instance_method, {}, [this](uva::lang::object* object, std::vector<std::shared_ptr<uva::lang::object>> params) {
-            int i = *object->as<int>();
-            
-            if(i == 0) {
-                return std::make_shared<uva::lang::object>(FalseClass);
-            }
-
-            return std::make_shared<uva::lang::object>(TrueClass);
-        })},
-        {"to_s", uva::lang::method("to_s", method_storage_type::instance_method, {}, [this](uva::lang::object* object, std::vector<std::shared_ptr<uva::lang::object>> params) {
-            int value = *object->as<int>();
-
-            std::shared_ptr<uva::lang::object> obj = std::make_shared<uva::lang::object>(StringClass);
-            obj->native = new std::string(std::to_string(value));
-
-            return obj;
-        })}
-    };
-
-    FileClass->methods = {
-        { "read", uva::lang::method("read", method_storage_type::class_method, {"path"}, [this](uva::lang::object* object, std::vector<std::shared_ptr<uva::lang::object>> params) {
-            std::shared_ptr<uva::lang::object> obj = std::make_shared<uva::lang::object>(StringClass);
-
-            const std::string& input_path = *(params[0]->as<std::string>());
-            std::filesystem::path path = std::filesystem::absolute(input_path);
-
-            if(!std::filesystem::exists(path)) {
-                throw std::runtime_error("file '" + path.string() + "' does not exist");
-            }
-
-            std::string file = uva::file::read_all_text<char>(path);
-
-            obj->native = new std::string(file);
-
-            return obj;
-        })},
-    };
-
-    this->load(FalseClass);
-    this->load(TrueClass);
-    this->load(StringClass);
-    this->load(IntegerClass);
-    this->load(FileClass);
+    this->load(FalseClass   = uva::lang::false_class::create());
+    this->load(TrueClass    = uva::lang::true_class::create());
+    this->load(StringClass  = uva::lang::string_class::create(this));
+    this->load(IntegerClass = uva::lang::integer_class::create(this));
+    this->load(FileClass    = uva::lang::file_class::create(this));
+    this->load(StdClass     = uva::lang::std_class::create(this));
 
     for(auto& extension : extensions) {
         extension->load_in_interpreter(this);
     }
-
-    //TODO separate it
-
-    // std class
-    StdClass = std::make_shared<uva::lang::structure>("std");
-
-    StdClass->methods["print"] = uva::lang::method("print", method_storage_type::instance_method, {"message"}, [](uva::lang::object* object, std::vector<std::shared_ptr<uva::lang::object>> params) {
-        std::shared_ptr<uva::lang::object> obj = params[0]->cls->methods["to_s"].call(params[0].get());
-        std::cout << *obj->as<std::string>();
-
-        return nullptr;
-    });
-
-    StdClass->methods["puts"] = uva::lang::method("puts", method_storage_type::instance_method, {"message"}, [](uva::lang::object* object, std::vector<std::shared_ptr<uva::lang::object>> params) {
-        std::shared_ptr<uva::lang::object> obj = params[0]->cls->methods["to_s"].call(params[0].get());
-        std::cout << *obj->as<std::string>() << std::endl;
-
-        return nullptr;
-    });
-
-    StdClass->methods["system"] = uva::lang::method("system", method_storage_type::instance_method, {"command"}, [this](uva::lang::object* object, std::vector<std::shared_ptr<uva::lang::object>> params) {
-        std::shared_ptr<uva::lang::object> command = params[0]->cls->methods["to_s"].call(params[0].get());
-        int code = ((std::system(command->as<std::string>()->c_str())) & 0xff00) >> 8;
-
-        std::shared_ptr<uva::lang::object> obj = std::make_shared<uva::lang::object>(IntegerClass);
-
-        obj->native = new int();
-        *((int*)obj->native) = code;
-
-        return obj;
-    });
 }
 
 const std::shared_ptr<uva::lang::object> uva::lang::interpreter::node_to_object(const uva::lang::parser::ast_node& node)
