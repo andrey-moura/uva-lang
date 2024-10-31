@@ -229,6 +229,7 @@ void uva::lang::interpreter::init()
     this->load(IntegerClass = uva::lang::integer_class::create(this));
     this->load(FileClass    = uva::lang::file_class::create(this));
     this->load(StdClass     = uva::lang::std_class::create(this));
+    this->load(ArrayClass   = uva::lang::array_class::create(this));
 
     for(auto& extension : extensions) {
         extension->load_in_interpreter(this);
@@ -273,6 +274,16 @@ const std::shared_ptr<uva::lang::object> uva::lang::interpreter::node_to_object(
         if(it != current_context.variables.end()) {
             return it->second;
         }
+    } else if(node.type() == uva::lang::parser::ast_node_type::ast_node_arraydecl) {
+        std::shared_ptr<uva::lang::object> obj = std::make_shared<uva::lang::object>(ArrayClass);
+
+        obj->native = new std::vector<std::shared_ptr<uva::lang::object>>();
+
+        for(auto& child : node.childrens()) {
+            ((std::vector<std::shared_ptr<uva::lang::object>>*)obj->native)->push_back(node_to_object(child));
+        }
+
+        return obj;
     }
 
     return nullptr;

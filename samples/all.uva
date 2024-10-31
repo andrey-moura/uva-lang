@@ -26,6 +26,11 @@ class Application
 
         puts(file_content);
 
+        var array = ["Hello", "from", "an", "array!"];
+        var message = array.join(" ");
+
+        puts(message);
+
         return 0;
     }
     

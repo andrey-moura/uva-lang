@@ -62,6 +62,9 @@ namespace uva
             /// @brief The global file class.
             std::shared_ptr<uva::lang::structure> FileClass;
 
+            /// @brief The global array class.
+            std::shared_ptr<uva::lang::structure> ArrayClass;
+
             /// @brief Create an instance of @cls with the name @name at the global context.
             /// @param cls The class to instantiate.
             /// @param name The name of the instancieted object.

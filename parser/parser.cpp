@@ -268,6 +268,37 @@ uva::lang::parser::ast_node parser::parse_node(uva::lang::lexer& lexer)
                 return node;
             }
             break;
+        case lexer::token_type::token_operator: {
+            if(token.content() == "[") {
+                // Array declaration
+                ast_node array_node(ast_node_type::ast_node_arraydecl);
+
+                while(true) {
+                    token = lexer.next_token();
+
+                    if(token.type() != lexer::token_type::token_literal && token.type() != lexer::token_type::token_identifier) {
+                        token.throw_error_at_current_position("Expected literal or identifier in array declaration");
+                    }
+
+                    array_node.add_child(std::move(ast_node(std::move(token), ast_node_type::ast_node_valuedecl)));
+
+                    token = lexer.next_token();
+
+                    if(token.content() == ",") {
+                        continue;
+                    } else if(token.content() == "]") {
+                        break;
+                    } else {
+                        token.throw_error_at_current_position("Expected ',' or ']'");
+                    }
+                }
+
+                return array_node;
+            } else {
+                token.throw_error_at_current_position("Unexpected operator");
+            }
+        }
+        break;
         default:
             token.throw_error_at_current_position("Unexpected token");
             break;

@@ -18,4 +18,5 @@ add_library(uva-lang
     ${CMAKE_CURRENT_LIST_DIR}/src/integer_class.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/file_class.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/std_class.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/src/array_class.cpp
 )
