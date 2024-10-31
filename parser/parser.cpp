@@ -239,6 +239,25 @@ uva::lang::parser::ast_node parser::parse_node(uva::lang::lexer& lexer)
                 }
 
                 return method_node;
+            }
+            else if(token.content() == ".") {
+                // Go back to the identifier
+                uva::lang::lexer::token previous_token = lexer.previous_token();
+
+                token = lexer.next_token(); // . again
+
+                ast_node next_node = parse_node(lexer);
+
+                if(next_node.type() != ast_node_type::ast_node_fn_call) {
+                    token.throw_error_at_current_position("Expected function call after '.'");
+                }
+                
+                ast_node* name_node = next_node.child_from_type(ast_node_type::ast_node_declname);
+                name_node->add_child(std::move(ast_node(std::move(previous_token), ast_node_type::ast_node_declname)));
+                name_node->add_child(std::move(ast_node(std::move(name_node->token()), ast_node_type::ast_node_declname)));
+
+                return next_node;
+
             } else {
                 // Go back to the identifier
                 token = lexer.previous_token();
