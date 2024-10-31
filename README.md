@@ -25,7 +25,7 @@ On Linux or Windows Developer Command Prompt
 ```
 
 # Install
-After building, run as sudo on Linux or with a Administrator Command Prompt on Windows
+After building, run as sudo on Linux or with an Administrator Command Prompt on Windows
 
 ```sh
     cmake --install build
