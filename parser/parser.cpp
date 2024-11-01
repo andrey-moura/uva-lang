@@ -312,7 +312,50 @@ uva::lang::parser::ast_node parser::parse_node(uva::lang::lexer& lexer)
                 name_node->add_child(std::move(ast_node(std::move(name_node->token()), ast_node_type::ast_node_declname)));
 
                 return next_node;
+            }
+            else if(token.content() == "!") {
+                // ! after the identifier is a method call
+                // Go back to the identifier
+                uva::lang::lexer::token original_name_token = lexer.previous_token();
 
+                token = lexer.next_token(); // ! again
+
+                // The parser separates the identifier from the '!' token.
+                // In this case, the () is not required
+
+                ast_node method_node(ast_node_type::ast_node_fn_call);
+
+                uva::lang::lexer::token name_token(original_name_token.start, token.end, original_name_token.content() + "!", lexer::token_type::token_identifier);
+
+                method_node.add_child(std::move(ast_node(std::move(name_token), ast_node_type::ast_node_declname)));
+
+                std::string_view content;
+
+                token = lexer.next_token(); // The first token after the '!' token
+
+                if(token.content() != "(") {
+                    lexer.rollback_token();
+                } else {
+                    token = lexer.next_token();
+
+                    while((content = token.content()) != ")") {
+                        if(token.type() != lexer::token_type::token_literal && token.type() != lexer::token_type::token_identifier) {
+                            token.throw_error_at_current_position("Expected literal or identifier in function call");
+                        }
+
+                        method_node.add_child(std::move(ast_node(std::move(token), ast_node_type::ast_node_valuedecl)));
+
+                        token = lexer.next_token();
+
+                        if(token.content() == ",") {
+                            token = lexer.next_token();
+                        } else if(token.content() != ")") {
+                            token.throw_error_at_current_position("Expected ',' or ')'");
+                        }
+                    }
+                }
+
+                return method_node;
             } else {
                 // Go back to the identifier
                 token = lexer.previous_token();
