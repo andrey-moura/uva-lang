@@ -157,6 +157,15 @@ uva::lang::lexer::token uva::lang::lexer::read_next_token()
         return uva::lang::lexer::token(start, m_start, m_buffer, token_type::token_comment);
     }
 
+    if(isdigit(c) || (c == '-' && isdigit(m_source[1]))) {
+        // if a token starts with a digit or a minus sign followed by a digit, it is a number
+        read_while([this](const char& c) {
+            return isdigit(c) || (m_buffer.empty() && c == '-');
+        });
+
+        return uva::lang::lexer::token(start, m_start, m_buffer, token_type::token_literal, token_kind::token_integer);
+    }
+
     if(is_operator(c)) {
         read();
 
@@ -178,15 +187,6 @@ uva::lang::lexer::token uva::lang::lexer::read_next_token()
         discard();
 
         return uva::lang::lexer::token(start, m_start, m_buffer, token_type::token_literal, token_kind::token_string);
-    }
-
-    if(isdigit(c)) {
-        // if a token starts with a digit, it is a number
-        read_while([](const char& c) {
-            return isdigit(c);
-        });
-
-        return uva::lang::lexer::token(start, m_start, m_buffer, token_type::token_literal, token_kind::token_integer);
     }
 
     // It must be a identifier or a keyword
