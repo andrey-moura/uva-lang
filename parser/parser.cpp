@@ -313,8 +313,8 @@ uva::lang::parser::ast_node parser::parse_node(uva::lang::lexer& lexer)
 
                 return next_node;
             }
-            else if(token.content() == "!") {
-                // ! after the identifier is a method call
+            else if(token.content() == "!" || token.content() == "?") {
+                // ! or ? after the identifier is a method call
                 // Go back to the identifier
                 uva::lang::lexer::token original_name_token = lexer.previous_token();
 
@@ -325,7 +325,7 @@ uva::lang::parser::ast_node parser::parse_node(uva::lang::lexer& lexer)
 
                 ast_node method_node(ast_node_type::ast_node_fn_call);
 
-                uva::lang::lexer::token name_token(original_name_token.start, token.end, original_name_token.content() + "!", lexer::token_type::token_identifier);
+                uva::lang::lexer::token name_token(original_name_token.start, token.end, original_name_token.content() + token.content(), lexer::token_type::token_identifier);
 
                 method_node.add_child(std::move(ast_node(std::move(name_token), ast_node_type::ast_node_declname)));
 

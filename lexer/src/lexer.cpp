@@ -43,6 +43,7 @@ bool is_operator(const char& c) {
         operators['%'] = true;
         operators['='] = true;
         operators['!'] = true;
+        operators['?'] = true;
         operators['<'] = true;
         operators['>'] = true;
         operators['['] = true;
