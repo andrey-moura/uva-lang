@@ -250,7 +250,7 @@ void uva::lang::lexer::rollback_token()
         throw std::runtime_error("unexpected begin of file");
     }
 
-    iterator -= 2;
+    iterator--;
 }
 
 uva::lang::lexer::token::token(token_position start, token_position end, std::string content, token_type type)
