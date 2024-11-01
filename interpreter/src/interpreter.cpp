@@ -177,7 +177,7 @@ std::shared_ptr<uva::lang::object> uva::lang::interpreter::execute(uva::lang::pa
                 throw std::runtime_error("foreach should iterate over an array");
             }
 
-            std::vector<std::shared_ptr<uva::lang::object>>& array_values = *array->as<std::vector<std::shared_ptr<uva::lang::object>>>();
+            std::vector<std::shared_ptr<uva::lang::object>>& array_values = array->as<std::vector<std::shared_ptr<uva::lang::object>>>();
 
             auto* vardecl = source_code.child_from_type(uva::lang::parser::ast_node_type::ast_node_vardecl);
 
@@ -220,15 +220,6 @@ std::shared_ptr<uva::lang::object> uva::lang::interpreter::execute_all(std::vect
 std::shared_ptr<uva::lang::object> uva::lang::interpreter::execute_all(uva::lang::parser::ast_node source_code, std::shared_ptr<uva::lang::object> object)
 {
     return execute_all(source_code.childrens().begin(), source_code.childrens().end(), object);
-}
-
-std::shared_ptr<uva::lang::object> uva::lang::interpreter::instantiate(std::shared_ptr<uva::lang::structure> cls, const std::string &name)
-{
-    auto obj = std::make_shared<uva::lang::object>(cls);
-
-    global_context.variables[name] = obj;
-
-    return obj;
 }
 
 std::shared_ptr<uva::lang::object> uva::lang::interpreter::call(std::shared_ptr<uva::lang::object> object, const uva::lang::method &method, std::vector<std::shared_ptr<uva::lang::object>> params)
@@ -274,15 +265,12 @@ const std::shared_ptr<uva::lang::object> uva::lang::interpreter::node_to_object(
             break;
             case lexer::token_kind::token_integer: {
                 std::shared_ptr<uva::lang::object> obj = std::make_shared<uva::lang::object>(IntegerClass);
-                obj->native = new int();
-                *((int*)obj->native) = std::stoi(node.token().content());
-                return obj;
+                return instantiate(IntegerClass, std::stoi(node.token().content()));
             }
             break;
             case lexer::token_kind::token_string: {
                 std::shared_ptr<uva::lang::object> obj = std::make_shared<uva::lang::object>(StringClass);
-                obj->native = new std::string(node.token().content());
-                return obj;
+                return instantiate(StringClass, std::move(std::string(node.token().content())));
             }
             break;
             default:    
@@ -298,15 +286,13 @@ const std::shared_ptr<uva::lang::object> uva::lang::interpreter::node_to_object(
             return it->second;
         }
     } else if(node.type() == uva::lang::parser::ast_node_type::ast_node_arraydecl) {
-        std::shared_ptr<uva::lang::object> obj = std::make_shared<uva::lang::object>(ArrayClass);
-
-        obj->native = new std::vector<std::shared_ptr<uva::lang::object>>();
+        std::vector<std::shared_ptr<uva::lang::object>> array;
 
         for(auto& child : node.childrens()) {
-            ((std::vector<std::shared_ptr<uva::lang::object>>*)obj->native)->push_back(node_to_object(child));
+            array.push_back(node_to_object(child));
         }
 
-        return obj;
+        return instantiate(ArrayClass, std::move(array));
     }
 
     return nullptr;
