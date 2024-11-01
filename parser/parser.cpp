@@ -17,7 +17,28 @@ uva::lang::parser::parser()
 {
 }
 
-uva::lang::parser::ast_node parser::parse_node(uva::lang::lexer& lexer)
+uva::lang::parser::ast_node uva::lang::parser::parse_fn_call_params(uva::lang::lexer &lexer)
+{
+    ast_node params_node(ast_node_type::ast_node_fn_params);
+
+    ast_node param_node = parse_node(lexer);
+
+    while(param_node.token().content() != ")") {
+        if(param_node.type() == uva::lang::parser::ast_node_type::ast_node_valuedecl || param_node.type() == uva::lang::parser::ast_node_type::ast_node_fn_call) {
+            params_node.add_child(param_node);
+        } else if(param_node.token().content() == ",") {
+            // Do nothing
+        } else {
+            param_node.token().throw_error_at_current_position("Expected literal or identifier");
+        }
+
+        param_node = parse_node(lexer);
+    }
+
+    return params_node;
+}
+
+uva::lang::parser::ast_node parser::parse_node(uva::lang::lexer &lexer)
 {
     uva::lang::lexer::token token = lexer.next_token();
 
@@ -273,25 +294,10 @@ uva::lang::parser::ast_node parser::parse_node(uva::lang::lexer& lexer)
                 method_node.add_child(std::move(ast_node(std::move(token), ast_node_type::ast_node_declname)));
 
                 token = lexer.next_token(); // ( again
-                token = lexer.next_token();
+                
+                ast_node params = parse_fn_call_params(lexer);
 
-                std::string_view content;
-
-                while((content = token.content()) != ")") {
-                    if(token.type() != lexer::token_type::token_literal && token.type() != lexer::token_type::token_identifier) {
-                        token.throw_error_at_current_position("Expected literal or identifier in function call");
-                    }
-
-                    method_node.add_child(std::move(ast_node(std::move(token), ast_node_type::ast_node_valuedecl)));
-
-                    token = lexer.next_token();
-
-                    if(token.content() == ",") {
-                        token = lexer.next_token();
-                    } else if(token.content() != ")") {
-                        token.throw_error_at_current_position("Expected ',' or ')'");
-                    }
-                }
+                method_node.add_child(std::move(params));
 
                 return method_node;
             }
@@ -320,40 +326,53 @@ uva::lang::parser::ast_node parser::parse_node(uva::lang::lexer& lexer)
 
                 token = lexer.next_token(); // ! again
 
-                // The parser separates the identifier from the '!' token.
-                // In this case, the () is not required
-
                 ast_node method_node(ast_node_type::ast_node_fn_call);
 
                 uva::lang::lexer::token name_token(original_name_token.start, token.end, original_name_token.content() + token.content(), lexer::token_type::token_identifier);
 
                 method_node.add_child(std::move(ast_node(std::move(name_token), ast_node_type::ast_node_declname)));
 
-                std::string_view content;
+                // The parser separates the identifier from the '!' token.
+                // In this case, the () is not required
 
-                token = lexer.next_token(); // The first token after the '!' token
+                token = lexer.next_token();
 
-                if(token.content() != "(") {
-                    lexer.rollback_token();
+                if(token.content() == "(") {
+                    ast_node params_node = parse_fn_call_params(lexer);
+                    method_node.add_child(std::move(params_node));
                 } else {
-                    token = lexer.next_token();
-
-                    while((content = token.content()) != ")") {
-                        if(token.type() != lexer::token_type::token_literal && token.type() != lexer::token_type::token_identifier) {
-                            token.throw_error_at_current_position("Expected literal or identifier in function call");
-                        }
-
-                        method_node.add_child(std::move(ast_node(std::move(token), ast_node_type::ast_node_valuedecl)));
-
-                        token = lexer.next_token();
-
-                        if(token.content() == ",") {
-                            token = lexer.next_token();
-                        } else if(token.content() != ")") {
-                            token.throw_error_at_current_position("Expected ',' or ')'");
-                        }
-                    }
+                    lexer.rollback_token();
                 }
+
+                return method_node;
+            } else if(token.type() == uva::lang::lexer::token_operator) {
+                // An identifier + operator is a method call
+
+                uva::lang::lexer::token operator_token = token;
+
+                // Go back to the identifier
+
+                token = lexer.previous_token();
+
+                ast_node method_node(ast_node_type::ast_node_fn_call);
+                ast_node left = ast_node(std::move(token), ast_node_type::ast_node_valuedecl);
+
+                ast_node declname = ast_node(ast_node_type::ast_node_declname);
+                declname.add_child(std::move(left));
+
+                token = lexer.next_token(); // operator again
+
+                declname.add_child(std::move(ast_node(std::move(token), ast_node_type::ast_node_declname)));
+
+                method_node.add_child(std::move(declname));
+
+                ast_node params_node = ast_node(ast_node_type::ast_node_fn_params);
+
+                ast_node right = parse_node(lexer);
+
+                params_node.add_child(std::move(right));
+
+                method_node.add_child(std::move(params_node));
 
                 return method_node;
             } else {

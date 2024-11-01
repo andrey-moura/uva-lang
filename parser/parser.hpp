@@ -28,6 +28,7 @@ namespace uva
                 ast_node_fn_decl,
                 ast_node_fn_return,
                 ast_node_fn_call,
+                ast_node_fn_params,
 
                 ast_node_valuedecl,
                 ast_node_arraydecl,
@@ -136,6 +137,8 @@ namespace uva
             };
         protected:
             std::filesystem::path current_path;
+        protected:
+            uva::lang::parser::ast_node parse_fn_call_params(uva::lang::lexer& lexer);
         public:
             std::filesystem::path absolute(const std::string& path) {
                 return current_path / path;
