@@ -68,7 +68,7 @@ int main(int argc, char** argv) {
 
         if(ret) {
             // TODO: Treat the return value
-            int ret_value = *ret->as<int>();
+            int ret_value = ret->as<int>();
             return ret_value;
         }
     } catch (const std::exception& e) {

@@ -23,8 +23,12 @@ namespace uva
             bool is_present() const;
 
             template<typename T>
-            T* as() {
-                return static_cast<T*>(native);
+            const T& as() const {
+                return *static_cast<T*>(native);
+            }
+            template<typename T>
+            T& as() {
+                return *static_cast<T*>(native);
             }
         };
     };

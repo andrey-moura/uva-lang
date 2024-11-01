@@ -65,11 +65,14 @@ namespace uva
             /// @brief The global array class.
             std::shared_ptr<uva::lang::structure> ArrayClass;
 
-            /// @brief Create an instance of @cls with the name @name at the global context.
-            /// @param cls The class to instantiate.
-            /// @param name The name of the instancieted object.
-            /// @return The instancieted object
-            std::shared_ptr<uva::lang::object> instantiate(std::shared_ptr<uva::lang::structure> cls, const std::string& name);
+            template<typename T>
+            std::shared_ptr<uva::lang::object> instantiate(std::shared_ptr<uva::lang::structure> cls, T value)
+            {
+                auto obj = std::make_shared<uva::lang::object>(cls);
+                obj->native = new T(std::move(value));
+
+                return obj;
+            }
 
             std::shared_ptr<uva::lang::object> call(std::shared_ptr<uva::lang::object> object, const uva::lang::method& method, std::vector<std::shared_ptr<uva::lang::object>> params);
 
