@@ -117,6 +117,7 @@ namespace uva
             /// @brief Decrement the iterator and return the next token.
             /// @return The previous token.
             const uva::lang::lexer::token& previous_token();
+            bool has_previous_token() const { return iterator > 0; }
             /// @brief Rollback the token iterator. The next call to next_token will return the same token.
             void rollback_token();
         protected:

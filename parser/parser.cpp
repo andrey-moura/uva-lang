@@ -278,7 +278,7 @@ uva::lang::parser::ast_node parser::parse_node(uva::lang::lexer &lexer)
             return ast_node(std::move(token), ast_node_type::ast_node_valuedecl);
         break;
         case lexer::token_type::token_identifier:
-            // Can be: variable reference/assingment, method call
+            // Can be: variable reference/assingment, Function call
             
             // First check if it has '(' after the identifier
 
@@ -288,16 +288,62 @@ uva::lang::parser::ast_node parser::parse_node(uva::lang::lexer &lexer)
                 // Go back to the identifier
                 token = lexer.previous_token();
 
-                // Method call
+                // Function call
                 ast_node method_node(ast_node_type::ast_node_fn_call);
-
                 method_node.add_child(std::move(ast_node(std::move(token), ast_node_type::ast_node_declname)));
 
-                token = lexer.next_token(); // ( again
+                token = lexer.next_token(); // (
                 
                 ast_node params = parse_fn_call_params(lexer);
 
                 method_node.add_child(std::move(params));
+
+                // Can have fn1().fn2().fn3()...
+
+                token = lexer.next_token();
+
+                while(token.content() == ".") {
+                    ast_node next_node = parse_node(lexer);
+
+                    if(next_node.type() != ast_node_type::ast_node_fn_call) {
+                        token.throw_error_at_current_position("Expected function call after '.'");
+                    }
+
+                    ast_node* next_node_object = next_node.child_from_type(ast_node_type::ast_node_fn_object);
+
+                    ast_node object_node(ast_node_type::ast_node_fn_object);
+                    object_node.add_child(std::move(method_node));
+
+                    method_node = std::move(next_node);
+
+                    if(next_node_object == nullptr) {
+                        method_node.add_child(std::move(object_node));   
+                    } else {
+                        // Need to recursively add the method to the last fn_object
+
+                        while(true) {
+                            if(next_node_object->childrens().empty()) {
+                                break;
+                            }
+
+                            next_node_object = next_node_object->childrens().data();
+
+                            auto temp = next_node_object->child_from_type(ast_node_type::ast_node_fn_object);
+
+                            if(temp == nullptr) {
+                                break;
+                            }
+
+                            next_node_object = temp;
+                        }
+
+                        next_node_object->add_child(std::move(object_node));
+                    }
+
+                    token = lexer.next_token();
+                }
+
+                lexer.rollback_token();
 
                 return method_node;
             }
@@ -313,9 +359,10 @@ uva::lang::parser::ast_node parser::parse_node(uva::lang::lexer &lexer)
                     token.throw_error_at_current_position("Expected function call after '.'");
                 }
                 
-                ast_node* name_node = next_node.child_from_type(ast_node_type::ast_node_declname);
-                name_node->add_child(std::move(ast_node(std::move(previous_token), ast_node_type::ast_node_declname)));
-                name_node->add_child(std::move(ast_node(std::move(name_node->token()), ast_node_type::ast_node_declname)));
+                ast_node object_node(ast_node_type::ast_node_fn_object);
+                object_node.add_child(std::move(ast_node(std::move(previous_token), ast_node_type::ast_node_declname)));
+
+                next_node.add_child(std::move(object_node));
 
                 return next_node;
             }
