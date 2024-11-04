@@ -55,8 +55,6 @@ std::shared_ptr<uva::lang::object> uva::lang::interpreter::execute(uva::lang::pa
 
             uva::lang::parser::ast_node* object_node = source_code.child_from_type(uva::lang::parser::ast_node_type::ast_node_fn_object);
 
-            uva::console::log_debug("fn call: " + std::string(source_code.decname()));
-
             if(object_node) {
                 // function call from a class/object/function return value
 
