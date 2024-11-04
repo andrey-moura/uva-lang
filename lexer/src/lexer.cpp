@@ -236,7 +236,7 @@ const uva::lang::lexer::token& uva::lang::lexer::next_token()
 
 const uva::lang::lexer::token& uva::lang::lexer::previous_token()
 {
-    if(iterator < 1) {
+    if(!has_previous_token()) {
         throw std::runtime_error("unexpected begin of file");
     }
 

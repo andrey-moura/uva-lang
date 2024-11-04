@@ -29,6 +29,8 @@ namespace uva
                 ast_node_fn_return,
                 ast_node_fn_call,
                 ast_node_fn_params,
+                ast_node_fn_object,
+
 
                 ast_node_valuedecl,
                 ast_node_arraydecl,
@@ -83,6 +85,10 @@ namespace uva
                     return m_token;
                 }
 
+                std::vector<ast_node>& childrens() {
+                    return m_children;
+                }
+
                 const std::vector<ast_node>& childrens() const {
                     return m_children;
                 }
@@ -115,15 +121,15 @@ namespace uva
                     return &child_from_type(__type)->token();
                 }
 
-                std::string_view child_content_from_type(const ast_node_type& __type) const {
+                const std::string& child_content_from_type(const ast_node_type& __type) const {
                     return child_token_from_type(__type)->content();
                 }
 
-                std::string_view decname() const {
+                const std::string& decname() const {
                     return child_content_from_type(ast_node_type::ast_node_declname);
                 }
 
-                std::string_view value() const {
+                const std::string& value() const {
                     return child_content_from_type(ast_node_type::ast_node_valuedecl);
                 }
 
