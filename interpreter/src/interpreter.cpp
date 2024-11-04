@@ -122,7 +122,7 @@ std::shared_ptr<uva::lang::object> uva::lang::interpreter::execute(uva::lang::pa
                         it = object->cls->methods.find(function_name);
 
                         if(it == object->cls->methods.end()) {
-                            throw std::runtime_error("function '" + function_name + "' not found");
+                            throw std::runtime_error("function '" + function_name + "' not found in class " + object->cls->name);
                         }
                     } else {
                         throw std::runtime_error("function '" + function_name + "' not found");
