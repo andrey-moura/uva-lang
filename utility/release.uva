@@ -4,7 +4,7 @@ class Application
 {
     function run()
     {
-        // Get commit hash, prefix and message.
+        // // Get commit hash, prefix and message.
         var ret = system("git log --oneline --no-decorate --no-merges > releases/release_notes.txt");
 
         // Check if the command was successful. If not, return the error code.
@@ -14,10 +14,28 @@ class Application
         }
 
         // Read the content of the file.
-        var content = File.read("releases/release_notes.txt");
+        var file_lines = File.read_all_lines("releases/release_notes.txt");
 
-        puts(content);
+        foreach(var line in file_lines) {
+            var first_space = line.find(" ");
 
-        return 0;
+            // Remove the commit hash.
+            line.erase!(0, first_space + 1);
+
+            var second_space = line.find(" ");
+
+            if(second_space != -1) {
+                // Separetes the commit prefix.
+                var prefix = line.substr(0, second_space);
+                prefix.to_lower_case!
+
+                if(prefix == "fix:" || prefix == "feat:") {
+                    var message = line.substr(second_space + 1, -1);
+                    message.capitalize!
+
+                    puts(message);
+                }
+            }
+        }
     }
 }
