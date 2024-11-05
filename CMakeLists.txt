@@ -33,6 +33,7 @@ endif()
 include("interpreter/CMakeLists.txt")
 include("lexer/CMakeLists.txt")
 include("lang/CMakeLists.txt")
+include("uva-ui/CMakeLists.txt")
 
 if(DEFINED WX_ENABLED)
 	include("uva-wx/CMakeLists.txt")
@@ -44,6 +45,13 @@ add_executable(uva
     uva/src/winmain.cpp
 )
 
-target_link_libraries(uva uva-interpreter uva-lang uva-core uva-console uva-file uva-string ${wxWidgets_LIBRARIES})
+target_link_libraries(uva uva-interpreter uva-ui uva-lang uva-core uva-console uva-file uva-string ${wxWidgets_LIBRARIES})
+
+if(UNIX AND NOT APPLE)
+    target_link_options(uva PRIVATE "-rdynamic")
+    target_link_libraries(uva dl)
+elseif(WIN32)
+    set_target_properties(uva PROPERTIES WIN32_EXECUTABLE TRUE)
+endif()
 
 install(TARGETS uva DESTINATION bin)
