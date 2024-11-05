@@ -120,6 +120,8 @@ namespace uva
             bool has_previous_token() const { return iterator > 0; }
             /// @brief Rollback the token iterator. The next call to next_token will return the same token.
             void rollback_token();
+            /// @brief Check if there is a next token.
+            bool has_next_token() const { return iterator < m_tokens.size(); }
         protected:
         public:
             //extern std::vector<std::pair<std::string_view, uva::lang::lexer::cursor_type>> cursor_type_from_string_map;

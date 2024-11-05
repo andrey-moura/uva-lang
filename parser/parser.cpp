@@ -65,8 +65,29 @@ uva::lang::parser::ast_node parser::parse_node(uva::lang::lexer &lexer)
 
                 token = lexer.next_token();
 
-                if(token.content() != "{") {
-                    token.throw_error_at_current_position("Expected '{' after class name");
+                if(token.content() == "extends" || token.content() == ":" || token.content() == "<") {
+                    ast_node next_node = parse_node(lexer);
+
+                    if(next_node.type() != ast_node_type::ast_node_valuedecl) {
+                        token.throw_error_at_current_position("Expected base class name");
+                    }
+
+                    next_node.set_type(ast_node_type::ast_node_declname);
+
+                    ast_node base_class_node = ast_node(ast_node_type::ast_node_classdecl_base);
+                    base_class_node.add_child(next_node);
+
+                    class_node.add_child(base_class_node);
+
+                    token = lexer.next_token();
+
+                    if(token.content() != "{") {
+                        token.throw_error_at_current_position("Expected '{' after base class name");
+                    }
+                } else {
+                    if(token.content() != "{") {
+                        token.throw_error_at_current_position("Expected '{' after class name");
+                    }
                 }
 
                 ast_node class_child = parse_node(lexer);
@@ -355,6 +376,10 @@ uva::lang::parser::ast_node parser::parse_node(uva::lang::lexer &lexer)
 
                 ast_node next_node = parse_node(lexer);
 
+                if(next_node.type() == ast_node_type::ast_node_valuedecl) {
+                    return ast_node(uva::lang::lexer::token(previous_token.start, next_node.token().end, previous_token.content() + token.content() + next_node.token().content(), uva::lang::lexer::token_type::token_identifier), ast_node_type::ast_node_valuedecl);
+                }
+
                 if(next_node.type() != ast_node_type::ast_node_fn_call) {
                     token.throw_error_at_current_position("Expected function call after '.'");
                 }
@@ -492,6 +517,9 @@ uva::lang::parser::ast_node parser::parse_node(uva::lang::lexer &lexer)
             }
         }
         break;
+        case lexer::token_type::token_eof:
+            return ast_node(std::move(token), ast_node_type::ast_node_undefined);
+            break;
         default:
             token.throw_error_at_current_position("Unexpected token");
             break;
@@ -506,9 +534,10 @@ uva::lang::parser::ast_node uva::lang::parser::parse_all(uva::lang::lexer &lexer
 {
     ast_node root_node(ast_node_type::ast_node_unit);
 
-    // TODO: Parse other nodes
+    do {
+        ast_node child = parse_node(lexer);
+        root_node.add_child(std::move(child));
+    } while(lexer.has_next_token());
 
-    ast_node child = parse_node(lexer);
-    root_node.add_child(std::move(child));
     return root_node;
 }

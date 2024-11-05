@@ -28,13 +28,25 @@ std::shared_ptr<uva::lang::object> uva::lang::interpreter::execute(uva::lang::pa
 
             auto cls = std::make_shared<uva::lang::structure>(std::string(class_name));
 
-            for(auto& method : source_code.childrens()) {
-                switch (method.type())
+            for(auto& class_child : source_code.childrens()) {
+                switch (class_child.type())
                 {
                 case uva::lang::parser::ast_node_type::ast_node_fn_decl: {
-                    std::string_view method_name = method.decname();
+                    std::string_view method_name = class_child.decname();
 
-                    cls->methods[std::string(method_name)] = uva::lang::method(std::string(method_name), method_storage_type::instance_method, {}, method);
+                    cls->methods[std::string(method_name)] = uva::lang::method(std::string(method_name), method_storage_type::instance_method, {}, class_child);
+                }
+                break;
+                case uva::lang::parser::ast_node_type::ast_node_classdecl_base: {
+                    std::string_view base_class_name = class_child.decname();
+
+                    auto base_class = find_class(base_class_name);
+
+                    if(!base_class) {
+                        throw std::runtime_error("base class " + std::string(base_class_name) + " not found");
+                    }
+
+                    cls->base = base_class;
                 }
                 break;
                 default:
@@ -235,6 +247,12 @@ std::shared_ptr<uva::lang::object> uva::lang::interpreter::execute_all(std::vect
     std::shared_ptr<uva::lang::object> result = nullptr;
 
     for(auto it = begin; it != end; it++) {
+        const uva::lang::parser::ast_node& node = *it;
+
+        if(node.type() == uva::lang::parser::ast_node_type::ast_node_undefined && node.token().type() == uva::lang::lexer::token_type::token_eof) {
+            break;
+        }
+
         result = execute(*it, object);
 
         if(it->type() == uva::lang::parser::ast_node_type::ast_node_fn_return) {
