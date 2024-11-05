@@ -20,7 +20,77 @@ std::shared_ptr<uva::lang::structure> uva::lang::integer_class::create(interpret
             int value = object->as<int>();
 
             return interpreter->instantiate(interpreter->StringClass, std::move(std::to_string(value)));
-        })}
+        })},
+        {"+", uva::lang::method("+", method_storage_type::instance_method, {"other"}, [interpreter](uva::lang::object* object, std::vector<std::shared_ptr<uva::lang::object>> params) {
+            int value = object->as<int>();
+            int other = params[0]->as<int>();
+
+            return interpreter->instantiate(interpreter->IntegerClass, value + other);
+        })},
+        {"-", uva::lang::method("-", method_storage_type::instance_method, {"other"}, [interpreter](uva::lang::object* object, std::vector<std::shared_ptr<uva::lang::object>> params) {
+            int value = object->as<int>();
+            int other = params[0]->as<int>();
+
+            return interpreter->instantiate(interpreter->IntegerClass, value - other);
+        })},
+        {"*", uva::lang::method("*", method_storage_type::instance_method, {"other"}, [interpreter](uva::lang::object* object, std::vector<std::shared_ptr<uva::lang::object>> params) {
+            int value = object->as<int>();
+            int other = params[0]->as<int>();
+
+            return interpreter->instantiate(interpreter->IntegerClass, value * other);
+        })},
+        {"/", uva::lang::method("/", method_storage_type::instance_method, {"other"}, [interpreter](uva::lang::object* object, std::vector<std::shared_ptr<uva::lang::object>> params) {
+            int value = object->as<int>();
+            int other = params[0]->as<int>();
+
+            return interpreter->instantiate(interpreter->IntegerClass, value / other);
+        })},
+        {"%", uva::lang::method("%", method_storage_type::instance_method, {"other"}, [interpreter](uva::lang::object* object, std::vector<std::shared_ptr<uva::lang::object>> params) {
+            int value = object->as<int>();
+            int other = params[0]->as<int>();
+
+            return interpreter->instantiate(interpreter->IntegerClass, value % other);
+        })},
+        {"!=", uva::lang::method("!=", method_storage_type::instance_method, {"other"}, [interpreter](uva::lang::object* object, std::vector<std::shared_ptr<uva::lang::object>> params) {
+            int value = object->as<int>();
+            int other = params[0]->as<int>();
+
+            if(value != other) {
+                return std::make_shared<uva::lang::object>(interpreter->TrueClass);
+            }
+
+            return std::make_shared<uva::lang::object>(interpreter->FalseClass);
+        })},
+        {"==", uva::lang::method("==", method_storage_type::instance_method, {"other"}, [interpreter](uva::lang::object* object, std::vector<std::shared_ptr<uva::lang::object>> params) {
+            int value = object->as<int>();
+            int other = params[0]->as<int>();
+
+            if(value == other) {
+                return std::make_shared<uva::lang::object>(interpreter->TrueClass);
+            }
+
+            return std::make_shared<uva::lang::object>(interpreter->FalseClass);
+        })},
+        {"<", uva::lang::method("<", method_storage_type::instance_method, {"other"}, [interpreter](uva::lang::object* object, std::vector<std::shared_ptr<uva::lang::object>> params) {
+            int value = object->as<int>();
+            int other = params[0]->as<int>();
+
+            if(value < other) {
+                return std::make_shared<uva::lang::object>(interpreter->TrueClass);
+            }
+
+            return std::make_shared<uva::lang::object>(interpreter->FalseClass);
+        })},
+        {">", uva::lang::method(">", method_storage_type::instance_method, {"other"}, [interpreter](uva::lang::object* object, std::vector<std::shared_ptr<uva::lang::object>> params) {
+            int value = object->as<int>();
+            int other = params[0]->as<int>();
+
+            if(value > other) {
+                return std::make_shared<uva::lang::object>(interpreter->TrueClass);
+            }
+
+            return std::make_shared<uva::lang::object>(interpreter->FalseClass);
+        })},
     };
 
     return IntegerClass;
