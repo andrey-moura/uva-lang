@@ -14,7 +14,7 @@ using namespace uva;
 std::shared_ptr<uva::lang::object> application;
 std::vector<uva::lang::extension*> extensions;
 
-int main(int argc, char** argv) {
+int uva_main(int argc, char** argv) {
     try {
         //vm_instance = std::make_shared<uva::lang::vm>();
 
@@ -44,6 +44,7 @@ int main(int argc, char** argv) {
         uva::lang::parser::ast_node root_node = p.parse_all(l);
 
         uva::lang::interpreter interpreter;
+
         interpreter.execute_all(root_node);
 
         auto application_class = interpreter.find_class("Application");
