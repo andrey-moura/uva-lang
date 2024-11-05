@@ -23,7 +23,9 @@ namespace uva
                 ast_node_undefined,
                 ast_node_unit,
                 ast_node_context,
+
                 ast_node_classdecl,
+                ast_node_classdecl_base,
 
                 ast_node_fn_decl,
                 ast_node_fn_return,
