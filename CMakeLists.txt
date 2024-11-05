@@ -39,7 +39,7 @@ if(DEFINED WX_ENABLED)
 endif()
 
 add_executable(uva
-    uva/uva.cpp
+    uva/src/uva.cpp
 )
 
 target_link_libraries(uva uva-interpreter uva-lang uva-core uva-console uva-file uva-string ${wxWidgets_LIBRARIES})
