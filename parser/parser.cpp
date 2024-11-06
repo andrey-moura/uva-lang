@@ -5,6 +5,7 @@
 
 #include <exception>
 #include <iostream>
+#include <regex>
 
 #include <lang/object.hpp>
 #include <lang/class.hpp>
@@ -12,6 +13,48 @@
 
 using namespace uva;
 using namespace lang;
+
+std::string wildcard_to_regex(const std::string& wildcard) {
+    std::string regex_pattern = "^";
+    for (char ch : wildcard) {
+        switch (ch) {
+            case '*':
+                regex_pattern += ".*"; // '*' corresponde a qualquer sequência de caracteres
+                break;
+            case '?':
+                regex_pattern += ".";  // '?' corresponde a um único caractere
+                break;
+            case '.':
+                regex_pattern += "\\."; // Escape do ponto, pois em regex, '.' é um caractere especial
+                break;
+            default:
+                regex_pattern += ch;    // Adiciona o caractere literal
+                break;
+        }
+    }
+    regex_pattern += "$"; // Final da expressão regular
+    return regex_pattern;
+}
+
+// Função para listar arquivos com base em um wildcard
+std::vector<std::string> list_files_with_wildcard(const std::filesystem::path& base_path, std::string pattern) {
+    std::vector<std::string> files;
+    pattern = "*/" + pattern; // Adiciona um coringa para buscar em subdiretórios
+    std::regex regex_pattern(wildcard_to_regex(pattern));  // Converte o padrão para regex
+
+    for (const auto& entry : std::filesystem::recursive_directory_iterator(base_path)) {
+        if (std::filesystem::is_regular_file(entry.path())) {
+            std::string filename = entry.path().string();
+
+            // Verifica se o arquivo corresponde ao padrão
+            if (std::regex_match(filename, regex_pattern)) {
+                files.push_back(filename);
+            }
+        }
+    }
+
+    return files;
+}
 
 uva::lang::parser::parser()
 {
@@ -271,6 +314,36 @@ uva::lang::parser::ast_node parser::parse_node(uva::lang::lexer &lexer)
                 foreach_node.add_child(std::move(context_node));
 
                 return foreach_node;
+            } else if(token.content() == "require") {
+                lexer.rollback_token();
+
+                ast_node require_node = parse_fn_call(lexer);
+
+                ast_node* params = require_node.child_from_type(ast_node_type::ast_node_fn_params);
+
+                if(params == nullptr || params->childrens().empty()) {
+                    token.throw_error_at_current_position("Expected file name after 'require'");
+                }
+
+                const uva::lang::lexer::token& file_name_token = params->childrens().front().token();
+
+                if(file_name_token.type() != lexer::token_type::token_literal || file_name_token.kind() != lexer::token_kind::token_string) {
+                    file_name_token.throw_error_at_current_position("Expected string literal");
+                }
+
+                const std::string& file_path_string = file_name_token.content();
+
+                auto files = list_files_with_wildcard(std::filesystem::current_path(), file_path_string);
+                ast_node expansion_node = ast_node(ast_node_type::ast_node_expansion);
+
+                for(const std::string& file : files) {
+                    std::string file_content = uva::file::read_all_text<char>(file);
+                    uva::lang::lexer l(file, file_content);
+
+                    expansion_node.add_child(std::move(parse_all(l)));
+                }
+
+                return expansion_node;
             }
             else {
                 token.throw_error_at_current_position("Unexpected keyword");
@@ -308,63 +381,9 @@ uva::lang::parser::ast_node parser::parse_node(uva::lang::lexer &lexer)
             if(token.content() == "(") {
                 // Go back to the identifier
                 token = lexer.previous_token();
+                token = lexer.previous_token();
 
-                // Function call
-                ast_node method_node(ast_node_type::ast_node_fn_call);
-                method_node.add_child(std::move(ast_node(std::move(token), ast_node_type::ast_node_declname)));
-
-                token = lexer.next_token(); // (
-                
-                ast_node params = parse_fn_call_params(lexer);
-
-                method_node.add_child(std::move(params));
-
-                // Can have fn1().fn2().fn3()...
-
-                token = lexer.next_token();
-
-                while(token.content() == ".") {
-                    ast_node next_node = parse_node(lexer);
-
-                    if(next_node.type() != ast_node_type::ast_node_fn_call) {
-                        token.throw_error_at_current_position("Expected function call after '.'");
-                    }
-
-                    ast_node* next_node_object = next_node.child_from_type(ast_node_type::ast_node_fn_object);
-
-                    ast_node object_node(ast_node_type::ast_node_fn_object);
-                    object_node.add_child(std::move(method_node));
-
-                    method_node = std::move(next_node);
-
-                    if(next_node_object == nullptr) {
-                        method_node.add_child(std::move(object_node));   
-                    } else {
-                        // Need to recursively add the method to the last fn_object
-
-                        while(true) {
-                            if(next_node_object->childrens().empty()) {
-                                break;
-                            }
-
-                            next_node_object = next_node_object->childrens().data();
-
-                            auto temp = next_node_object->child_from_type(ast_node_type::ast_node_fn_object);
-
-                            if(temp == nullptr) {
-                                break;
-                            }
-
-                            next_node_object = temp;
-                        }
-
-                        next_node_object->add_child(std::move(object_node));
-                    }
-
-                    token = lexer.next_token();
-                }
-
-                lexer.rollback_token();
+                ast_node method_node = parse_fn_call(lexer);
 
                 return method_node;
             }
@@ -536,8 +555,83 @@ uva::lang::parser::ast_node uva::lang::parser::parse_all(uva::lang::lexer &lexer
 
     do {
         ast_node child = parse_node(lexer);
-        root_node.add_child(std::move(child));
+
+        if(child.type() == ast_node_type::ast_node_expansion) {
+            for(auto& expansion_child : child.childrens()) {
+                for(auto& expansion_child_child : expansion_child.childrens()) {
+                    if(expansion_child_child.token().type() != lexer::token_type::token_eof) {
+                        root_node.add_child(std::move(expansion_child_child));
+                    }
+                }
+            }
+        } else {
+            root_node.add_child(std::move(child));
+        }
     } while(lexer.has_next_token());
 
     return root_node;
+}
+
+uva::lang::parser::ast_node uva::lang::parser::parse_fn_call(uva::lang::lexer &lexer)
+{
+    // Function call
+    uva::lang::lexer::token token = lexer.next_token(); 
+
+    ast_node method_node(ast_node_type::ast_node_fn_call);
+    method_node.add_child(std::move(ast_node(std::move(token), ast_node_type::ast_node_declname)));
+
+    token = lexer.next_token(); // (
+    
+    ast_node params = parse_fn_call_params(lexer);
+
+    method_node.add_child(std::move(params));
+
+    // Can have fn1().fn2().fn3()...
+
+    token = lexer.next_token();
+
+    while(token.content() == ".") {
+        ast_node next_node = parse_node(lexer);
+
+        if(next_node.type() != ast_node_type::ast_node_fn_call) {
+            token.throw_error_at_current_position("Expected function call after '.'");
+        }
+
+        ast_node* next_node_object = next_node.child_from_type(ast_node_type::ast_node_fn_object);
+
+        ast_node object_node(ast_node_type::ast_node_fn_object);
+        object_node.add_child(std::move(method_node));
+
+        method_node = std::move(next_node);
+
+        if(next_node_object == nullptr) {
+            method_node.add_child(std::move(object_node));   
+        } else {
+            // Need to recursively add the method to the last fn_object
+
+            while(true) {
+                if(next_node_object->childrens().empty()) {
+                    break;
+                }
+
+                next_node_object = next_node_object->childrens().data();
+
+                auto temp = next_node_object->child_from_type(ast_node_type::ast_node_fn_object);
+
+                if(temp == nullptr) {
+                    break;
+                }
+
+                next_node_object = temp;
+            }
+
+            next_node_object->add_child(std::move(object_node));
+        }
+
+        token = lexer.next_token();
+    }
+
+    lexer.rollback_token();
+
+    return method_node;
 }
