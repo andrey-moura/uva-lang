@@ -18,7 +18,7 @@ namespace uva
             std::shared_ptr<uva::lang::structure> cls;
             void* native = nullptr;
             std::shared_ptr<object> base_instance = nullptr;
-            object* derived_instance = nullptr;
+            std::shared_ptr<object> derived_instance = nullptr;
 
             bool is_present() const;
 
