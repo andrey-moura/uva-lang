@@ -74,7 +74,7 @@ namespace uva
                 return obj;
             }
 
-            std::shared_ptr<uva::lang::object> call(std::shared_ptr<uva::lang::object> object, const uva::lang::method& method, std::vector<std::shared_ptr<uva::lang::object>> params);
+            std::shared_ptr<uva::lang::object> call(std::shared_ptr<uva::lang::structure> cls, std::shared_ptr<uva::lang::object> object, const uva::lang::method& method, std::vector<std::shared_ptr<uva::lang::object>> params);
 
             std::shared_ptr<uva::lang::structure> find_class(const std::string_view& name) {
                 for(auto& cls : classes) {

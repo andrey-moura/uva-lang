@@ -64,6 +64,7 @@ bool is_keyword(const std::string& str) {
         keywords["class"]    = true;
         keywords["if"]       = true;
         keywords["foreach"]  = true;
+        keywords["new"]      = true;
         keywords["require"]  = true;
     }
 
@@ -219,6 +220,7 @@ void uva::lang::lexer::tokenize()
     uva::lang::lexer::token token = read_next_token();
 
     do {
+        token.m_file_name = m_file_name;
         m_tokens.push_back(token);
         token = read_next_token();
     } while(!token.is_eof());
@@ -287,9 +289,17 @@ std::string_view uva::lang::lexer::token::human_start_position() const
     static std::string result;
     result.clear();
 
+    result += m_file_name;
+    result.push_back(':');
     result += std::to_string(start.line+1);
     result.push_back(':');
     result += std::to_string(start.column+1);
 
     return result;
+}
+
+void uva::lang::lexer::token::merge(const token &other)
+{
+    m_content += other.m_content;
+    end = other.end;
 }
