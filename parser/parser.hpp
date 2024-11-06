@@ -21,7 +21,10 @@ namespace uva
         public:
             enum ast_node_type {
                 ast_node_undefined,
+
                 ast_node_unit,
+                ast_node_expansion,
+
                 ast_node_context,
 
                 ast_node_classdecl,
@@ -156,6 +159,9 @@ namespace uva
         public:
             uva::lang::parser::ast_node parse_node(uva::lang::lexer& lexer);
             uva::lang::parser::ast_node parse_all(uva::lang::lexer& lexer);
+
+            uva::lang::lexer::token parse_identifier(uva::lang::lexer& lexer);
+            ast_node                parse_fn_call(uva::lang::lexer& lexer);
         };
     }
 }; // namespace uva
