@@ -172,7 +172,10 @@ uva::lang::parser::ast_node parser::parse_node(uva::lang::lexer &lexer)
                 token = lexer.next_token();
 
                 if(token.type() != lexer::token_type::token_identifier) {
-                    token.throw_error_at_current_position("Expected method name after 'function'");
+                    // new is a keyword, but it is not a valid method name (constructor)
+                    if(token.type() == lexer::token_type::token_keyword && token.content() != "new") {
+                        token.throw_error_at_current_position("Expected method name after 'function'");
+                    }
                 }
 
                 method_node.add_child(std::move(ast_node(std::move(token), ast_node_type::ast_node_declname)));
@@ -314,6 +317,27 @@ uva::lang::parser::ast_node parser::parse_node(uva::lang::lexer &lexer)
                 foreach_node.add_child(std::move(context_node));
 
                 return foreach_node;
+            } else if(token.content() == "new") {
+                uva::lang::lexer::token class_name_token = parse_identifier(lexer);
+
+                ast_node object_node(ast_node_type::ast_node_fn_object);
+                object_node.add_child(std::move(ast_node(std::move(class_name_token), ast_node_type::ast_node_declname)));
+
+                ast_node fn_node(ast_node_type::ast_node_fn_call);
+                fn_node.add_child(std::move(ast_node(std::move(token), ast_node_type::ast_node_declname)));
+
+                token = lexer.next_token();
+
+                if(token.content() != "(") {
+                    token.throw_error_at_current_position("Expected '(' after 'new'");
+                }
+
+                ast_node params = parse_fn_call_params(lexer);
+                fn_node.add_child(std::move(params));
+
+                fn_node.add_child(std::move(object_node));
+
+                return fn_node;
             } else if(token.content() == "require") {
                 lexer.rollback_token();
 
@@ -570,6 +594,34 @@ uva::lang::parser::ast_node uva::lang::parser::parse_all(uva::lang::lexer &lexer
     } while(lexer.has_next_token());
 
     return root_node;
+}
+
+uva::lang::lexer::token uva::lang::parser::parse_identifier(uva::lang::lexer &lexer)
+{
+    uva::lang::lexer::token token      = lexer.next_token();
+    uva::lang::lexer::token identifier = token;
+
+    while(true) {
+        token = lexer.next_token();
+
+        if(token.content() == "." || token.content() == "->" || token.content() == "::") {
+            identifier.merge(token);
+            
+            token = lexer.next_token();
+
+            if(token.type() != lexer::token_type::token_identifier) {
+                token.throw_error_at_current_position("Expected identifier after '.'");
+            }
+
+            identifier.merge(token);
+        } else {
+            lexer.rollback_token();
+            break;
+        }
+
+    }
+
+    return identifier;
 }
 
 uva::lang::parser::ast_node uva::lang::parser::parse_fn_call(uva::lang::lexer &lexer)

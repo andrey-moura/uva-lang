@@ -45,6 +45,8 @@ namespace uva
                 token_type m_type;
                 token_kind m_kind;
             public:
+                std::string_view m_file_name;
+            public:
                 token(token_position start, token_position end, std::string content, token_type type);
                 token(token_position start, token_position end, std::string content, token_type type, token_kind kind);
                 token() = default;
@@ -56,6 +58,8 @@ namespace uva
                 void throw_error_at_current_position(std::string what) const;
                 void throw_unexpected_eof_if_is_eol() const;
                 std::string_view human_start_position() const;
+
+                void merge(const token& other);
             public:
                 /// @brief Return the content of the token.
                 const std::string & content() const { return m_content; }
