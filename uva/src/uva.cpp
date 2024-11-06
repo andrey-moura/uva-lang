@@ -55,7 +55,7 @@ int main(int argc, char** argv) {
         auto run_it = application_class->methods.find("run");
 
         if(run_it == application_class->methods.end()) {
-            throw std::runtime_error("run method not defined in class Application. Define it so uva know where to start the application");
+            throw std::runtime_error("run function not defined in class Application. Define it so uva know where to start the application");
         }
         
         application = std::make_shared<uva::lang::object>(application_class);
