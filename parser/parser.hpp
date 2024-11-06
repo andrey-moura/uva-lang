@@ -145,6 +145,9 @@ namespace uva
         protected:
             std::filesystem::path current_path;
         protected:
+            /// @brief Parse a function call parameters. You must consume the ')' token.
+            /// @param lexer The lexer.
+            /// @return A function call parameters node.
             uva::lang::parser::ast_node parse_fn_call_params(uva::lang::lexer& lexer);
         public:
             std::filesystem::path absolute(const std::string& path) {
