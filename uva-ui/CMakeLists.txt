@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.10)
 
 set(CMAKE_CXX_STANDARD 20)
 
-find_package(SDL2 REQUIRED)
+find_package(SDL2)
 
 if(SDL2_FOUND)
     message(STATUS "SDL2 found")

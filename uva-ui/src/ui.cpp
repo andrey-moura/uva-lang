@@ -112,20 +112,20 @@ int main(int argc, char** argv) {
 
                 uva::lang::ui::window* window = new uva::lang::ui::window(title);
 
-                object->native = window;
+                object->set_native_ptr(window);
 
                 return nullptr;
             })},
             { "show", uva::lang::method("show", uva::lang::method_storage_type::instance_method, {"maximized"}, [&interpreter](uva::lang::object* object, std::vector<std::shared_ptr<uva::lang::object>> params){
                 uva::lang::object* maximized = params[0].get();
-                uva::lang::ui::window* window = (uva::lang::ui::window*)object->native;
-                window->show(maximized && maximized->is_present());
+                uva::lang::ui::window& window = object->as<uva::lang::ui::window>();
+                window.show(maximized && maximized->is_present());
 
                 return nullptr;
             })},
             { "hide", uva::lang::method("hide", uva::lang::method_storage_type::instance_method, {}, [&interpreter](uva::lang::object* object, std::vector<std::shared_ptr<uva::lang::object>> params){
-                uva::lang::ui::window* window = (uva::lang::ui::window*)object->native;
-                window->hide();
+                uva::lang::ui::window& window = object->as<uva::lang::ui::window>();
+                window.hide();
 
                 return nullptr;
             })},
