@@ -26,5 +26,5 @@ if(SDL2_FOUND)
 
     install(TARGETS uva-ui DESTINATION bin)
 else()
-    message(FATAL_ERROR "SDL2 not found, uva-ui will not be built")
+    message("SDL2 not found, uva-ui will not be built")
 endif()
