@@ -25,6 +25,8 @@ namespace uva
             void* native_ptr = nullptr;
             // The native object
             uint8_t native[MAX_NATIVE_SIZE] = {0};
+            // The object destructor ptr.
+            void (*native_destructor)(object* obj) = nullptr;
         public:
             /// @brief Initialize the object with a value.
             /// @tparam T The type of the value.
@@ -49,6 +51,12 @@ namespace uva
             static std::enable_if<!std::is_pointer<T>::value, std::shared_ptr<uva::lang::object>>::type instantiate(std::shared_ptr<uva::lang::structure> cls, T value)
             {
                 auto obj = std::make_shared<uva::lang::object>(cls);
+
+                bool should_destroy = obj->set_native<T>(value);
+
+                if(should_destroy) {
+                    set_destructor<T>(obj.get());
+                }
 
                 return obj;
             }
@@ -75,6 +83,22 @@ namespace uva
                 this->native_ptr = (void*)ptr;
                 set_destructor<T>(this);
             }
+        private:
+            template <typename T>
+            static void set_destructor(object* obj) {
+                obj->native_destructor = [](object* obj) {
+                    if(obj->native_ptr) {
+                        delete (T*)obj->native_ptr;
+                    } else {
+                        if constexpr(std::is_arithmetic<T>::value) {
+                            // Do nothing
+                        } else {
+                            ((T*)(&obj->native))->~T();
+                        }
+                    }
+                };
+            }
+        public:
             bool is_present() const;
 
             template<typename T>

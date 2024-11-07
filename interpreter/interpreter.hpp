@@ -88,13 +88,16 @@ namespace uva
             /// @brief The call stack.
             std::vector<interpreter_context> stack;
 
-            void push_context() { stack.push_back(current_context); }
+            void push_context() {
+                stack.push_back(std::move(current_context));
+                current_context = interpreter_context();
+            }
             void pop_context() { 
                 if(stack.empty()) {
                     throw std::runtime_error("interpreter: unexpected end of file");
                 }
 
-                current_context = stack.back();
+                current_context = std::move(stack.back());
                 stack.pop_back();
             }
         protected:
