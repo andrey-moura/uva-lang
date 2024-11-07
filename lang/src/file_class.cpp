@@ -19,7 +19,7 @@ std::shared_ptr<uva::lang::structure> uva::lang::file_class::create(uva::lang::i
                 throw std::runtime_error("file '" + path.string() + "' does not exist");
             }
 
-            return interpreter->instantiate(interpreter->StringClass, std::move(uva::file::read_all_text<char>(path)));
+            return uva::lang::object::instantiate(interpreter->StringClass, std::move(uva::file::read_all_text<char>(path)));
         })},
         { "read_all_lines", uva::lang::method("read_all_lines", method_storage_type::class_method, {"path"}, [interpreter](uva::lang::object* object, std::vector<std::shared_ptr<uva::lang::object>> params) {
             const std::string& input_path = params[0]->as<std::string>();
@@ -34,10 +34,10 @@ std::shared_ptr<uva::lang::structure> uva::lang::file_class::create(uva::lang::i
             std::vector<std::shared_ptr<uva::lang::object>> lines;
 
             for(auto& line : file) {
-                lines.push_back(interpreter->instantiate(interpreter->StringClass, std::move(line)));
+                lines.push_back(uva::lang::object::instantiate(interpreter->StringClass, std::move(line)));
             }
 
-            return interpreter->instantiate(interpreter->ArrayClass, std::move(lines));
+            return uva::lang::object::instantiate(interpreter->ArrayClass, std::move(lines));
         })},
     };
     

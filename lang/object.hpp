@@ -10,25 +10,88 @@ namespace uva
     namespace lang {
         class object;
         class structure;
+        constexpr size_t MAX_NATIVE_SIZE = 32;
         class object
         {
         public:
             object(std::shared_ptr<uva::lang::structure> c) : cls(c) {};
             ~object();
+        public:
             std::shared_ptr<uva::lang::structure> cls;
-            void* native = nullptr;
             std::shared_ptr<object> base_instance = nullptr;
             std::shared_ptr<object> derived_instance = nullptr;
+        protected:
+            // A pointer to the native object
+            void* native_ptr = nullptr;
+            // The native object
+            uint8_t native[MAX_NATIVE_SIZE] = {0};
+        public:
+            /// @brief Initialize the object with a value.
+            /// @tparam T The type of the value.
+            /// @param cls The class of the object.
+            /// @param value The pointer to the value. This will be deleted when the object is destroyed.
+            /// @return Returns a shared pointer to the object.
+            template<typename T>
+            static std::shared_ptr<uva::lang::object> instantiate(std::shared_ptr<uva::lang::structure> cls, T* value)
+            {
+                auto obj = std::make_shared<uva::lang::object>(cls);
+                obj->set_native_ptr<T>(obj.get(), value);
 
+                return obj;
+            }
+
+            /// @brief Initialize the object with a value.
+            /// @tparam T The type of the value.
+            /// @param cls The class of the object.
+            /// @param value The value.
+            /// @return Returns a shared pointer to the object.
+            template<typename T>
+            static std::enable_if<!std::is_pointer<T>::value, std::shared_ptr<uva::lang::object>>::type instantiate(std::shared_ptr<uva::lang::structure> cls, T value)
+            {
+                auto obj = std::make_shared<uva::lang::object>(cls);
+
+                return obj;
+            }
+
+            template<typename T>
+            bool set_native(T value) {
+                if constexpr(sizeof(T) <= MAX_NATIVE_SIZE) {
+                    if constexpr(std::is_arithmetic<T>::value) {
+                        // Boolean, integer, float, etc.
+                        *((T*)(&this->native)) = value;
+                        return true;
+                    } else {
+                        new ((T*)(&this->native)) T(std::move(value));
+                        return true;
+                    }
+                } else {
+                    this->native_ptr = new T(std::move(value));
+                    return true;
+                }
+            }
+
+            template<typename T>
+            void set_native_ptr(T* ptr) {
+                this->native_ptr = (void*)ptr;
+                set_destructor<T>(this);
+            }
             bool is_present() const;
 
             template<typename T>
             const T& as() const {
-                return *static_cast<T*>(native);
+                if(native_ptr) {
+                    return *static_cast<T*>(native_ptr);
+                }
+
+                return *static_cast<T*>((void*)native);
             }
             template<typename T>
             T& as() {
-                return *static_cast<T*>(native);
+                if(native_ptr) {
+                    return *static_cast<T*>(native_ptr);
+                }
+
+                return *static_cast<T*>((void*)native);
             }
         };
     };

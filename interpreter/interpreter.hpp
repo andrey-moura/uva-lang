@@ -65,15 +65,6 @@ namespace uva
             /// @brief The global array class.
             std::shared_ptr<uva::lang::structure> ArrayClass;
 
-            template<typename T>
-            std::shared_ptr<uva::lang::object> instantiate(std::shared_ptr<uva::lang::structure> cls, T value)
-            {
-                auto obj = std::make_shared<uva::lang::object>(cls);
-                obj->native = new T(std::move(value));
-
-                return obj;
-            }
-
             std::shared_ptr<uva::lang::object> call(std::shared_ptr<uva::lang::structure> cls, std::shared_ptr<uva::lang::object> object, const uva::lang::method& method, std::vector<std::shared_ptr<uva::lang::object>> params);
 
             std::shared_ptr<uva::lang::structure> find_class(const std::string_view& name) {
