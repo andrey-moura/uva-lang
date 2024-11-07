@@ -340,6 +340,8 @@ std::shared_ptr<uva::lang::object> uva::lang::interpreter::call(std::shared_ptr<
         ret = object;
     }
 
+    pop_context();
+
     return ret;
 }
 

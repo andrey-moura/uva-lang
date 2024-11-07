@@ -8,6 +8,11 @@
 uva::lang::object::~object()
 {
     if(cls) {
+        if(native_destructor) {
+            uva::console::log_debug("{}#{} native destructor", cls->name, (void*)this);
+            native_destructor(this);
+        }
+
         uva::console::log_debug("{}#{} destroyed", cls->name, (void*)this);
     }
 }
