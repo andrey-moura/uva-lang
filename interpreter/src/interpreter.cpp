@@ -268,8 +268,6 @@ std::shared_ptr<uva::lang::object> uva::lang::interpreter::execute(uva::lang::pa
             auto* vardecl = source_code.child_from_type(uva::lang::parser::ast_node_type::ast_node_vardecl);
 
             std::string var_name(vardecl->decname());
-
-
             for(auto& value : array_values) {
                 current_context.variables[var_name] = value;
                 execute_all(*source_code.child_from_type(uva::lang::parser::ast_node_type::ast_node_context), object);
