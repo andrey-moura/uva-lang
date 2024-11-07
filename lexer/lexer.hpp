@@ -25,7 +25,8 @@ namespace uva
                 token_literal,
                 token_delimiter,
                 token_operator,
-                token_eof
+                token_eof,
+                token_type_max
             };
             enum token_kind {
                 token_null,
@@ -118,6 +119,8 @@ namespace uva
             /// @brief Increment the iterator and return the next token.
             /// @return The next token.
             const uva::lang::lexer::token& next_token();
+            /// @brief Return the next token without incrementing the iterator.
+            const uva::lang::lexer::token& see_next();
             /// @brief Decrement the iterator and return the next token.
             /// @return The previous token.
             const uva::lang::lexer::token& previous_token();
