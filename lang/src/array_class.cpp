@@ -22,7 +22,7 @@ std::shared_ptr<uva::lang::structure> uva::lang::array_class::create(uva::lang::
                 result += item->cls->methods["to_s"].call(item.get())->as<std::string>();
             }
 
-            return interpreter->instantiate(interpreter->StringClass, std::move(result));
+            return uva::lang::object::instantiate(interpreter->StringClass, std::move(result));
         })}
     };
     

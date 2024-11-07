@@ -268,8 +268,6 @@ std::shared_ptr<uva::lang::object> uva::lang::interpreter::execute(uva::lang::pa
             auto* vardecl = source_code.child_from_type(uva::lang::parser::ast_node_type::ast_node_vardecl);
 
             std::string var_name(vardecl->decname());
-
-
             for(auto& value : array_values) {
                 current_context.variables[var_name] = value;
                 execute_all(*source_code.child_from_type(uva::lang::parser::ast_node_type::ast_node_context), object);
@@ -375,12 +373,12 @@ const std::shared_ptr<uva::lang::object> uva::lang::interpreter::node_to_object(
             break;
             case lexer::token_kind::token_integer: {
                 std::shared_ptr<uva::lang::object> obj = std::make_shared<uva::lang::object>(IntegerClass);
-                return instantiate(IntegerClass, std::stoi(node.token().content()));
+                return uva::lang::object::instantiate(IntegerClass, std::stoi(node.token().content()));
             }
             break;
             case lexer::token_kind::token_string: {
                 std::shared_ptr<uva::lang::object> obj = std::make_shared<uva::lang::object>(StringClass);
-                return instantiate(StringClass, std::move(std::string(node.token().content())));
+                return uva::lang::object::instantiate(StringClass, std::move(std::string(node.token().content())));
             }
             break;
             default:    
@@ -402,7 +400,7 @@ const std::shared_ptr<uva::lang::object> uva::lang::interpreter::node_to_object(
             array.push_back(node_to_object(child));
         }
 
-        return instantiate(ArrayClass, std::move(array));
+        return uva::lang::object::instantiate(ArrayClass, std::move(array));
     }
 
     return nullptr;
