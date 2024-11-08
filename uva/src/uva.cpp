@@ -44,7 +44,8 @@ int main(int argc, char** argv) {
         uva::lang::parser::ast_node root_node = p.parse_all(l);
 
         uva::lang::interpreter interpreter;
-        interpreter.execute_all(root_node);
+        std::shared_ptr<uva::lang::object> tmp;
+        interpreter.execute_all(root_node, tmp);
 
         auto application_class = interpreter.find_class("Application");
 
