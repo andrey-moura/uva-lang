@@ -152,7 +152,9 @@ int main(int argc, char** argv) {
 
         uva::lang::parser::ast_node root_node = p.parse_all(l);
 
-        interpreter.execute_all(root_node);
+        std::shared_ptr<uva::lang::object> tmp;
+
+        interpreter.execute_all(root_node, tmp);
 
         auto application_class = interpreter.find_class("Application");
 
@@ -174,7 +176,9 @@ int main(int argc, char** argv) {
             throw std::runtime_error("run method not defined in class Application. Define it so uva know where to start the application");
         }
 
-        interpreter.call(nullptr, nullptr, run_it->second, {});
+        std::shared_ptr<uva::lang::object> application_instance = uva::lang::object::instantiate(application_class, nullptr);
+
+        interpreter.call(application_class, application_instance, run_it->second, {});
 
         SDL_Event event;
         bool running = true;

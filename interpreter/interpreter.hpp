@@ -40,10 +40,10 @@ namespace uva
 
             /// @brief Exeuctes a syntax tree into the interpreter. Note that if the code has while loops with no exit condition, this method will never return.
             /// @param cls The syntax tree to exeuctes. All its childs (not recursively) will be executed.
-            std::shared_ptr<uva::lang::object> execute(uva::lang::parser::ast_node source_code, std::shared_ptr<uva::lang::object> object = nullptr);
+            std::shared_ptr<uva::lang::object> execute(uva::lang::parser::ast_node source_code, std::shared_ptr<uva::lang::object>& object);
 
-            std::shared_ptr<uva::lang::object> execute_all(std::vector<uva::lang::parser::ast_node>::const_iterator begin, std::vector<uva::lang::parser::ast_node>::const_iterator end, std::shared_ptr<uva::lang::object> object = nullptr);
-            std::shared_ptr<uva::lang::object> execute_all(uva::lang::parser::ast_node source_code, std::shared_ptr<uva::lang::object> object = nullptr);
+            std::shared_ptr<uva::lang::object> execute_all(std::vector<uva::lang::parser::ast_node>::const_iterator begin, std::vector<uva::lang::parser::ast_node>::const_iterator end, std::shared_ptr<uva::lang::object>& object);
+            std::shared_ptr<uva::lang::object> execute_all(uva::lang::parser::ast_node source_code, std::shared_ptr<uva::lang::object>& object);
 
             /// @brief The global false class.
             std::shared_ptr<uva::lang::structure> FalseClass;
@@ -64,6 +64,9 @@ namespace uva
 
             /// @brief The global array class.
             std::shared_ptr<uva::lang::structure> ArrayClass;
+
+            /// @brief The global null class.
+            std::shared_ptr<uva::lang::structure> NullClass;
 
             std::shared_ptr<uva::lang::object> call(std::shared_ptr<uva::lang::structure> cls, std::shared_ptr<uva::lang::object> object, const uva::lang::method& method, std::vector<std::shared_ptr<uva::lang::object>> params);
 

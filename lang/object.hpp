@@ -14,12 +14,14 @@ namespace uva
         class object
         {
         public:
-            object(std::shared_ptr<uva::lang::structure> c) : cls(c) {};
+            object(std::shared_ptr<uva::lang::structure> c);
             ~object();
         public:
             std::shared_ptr<uva::lang::structure> cls;
             std::shared_ptr<object> base_instance = nullptr;
             std::shared_ptr<object> derived_instance = nullptr;
+
+            std::map<std::string, std::shared_ptr<uva::lang::object>> instance_variables;
         protected:
             // A pointer to the native object
             void* native_ptr = nullptr;

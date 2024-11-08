@@ -147,11 +147,6 @@ namespace uva
             };
         protected:
             std::filesystem::path current_path;
-        protected:
-            /// @brief Parse a function call parameters. You must consume the ')' token.
-            /// @param lexer The lexer.
-            /// @return A function call parameters node.
-            uva::lang::parser::ast_node parse_fn_call_params(uva::lang::lexer& lexer);
         public:
             std::filesystem::path absolute(const std::string& path) {
                 return current_path / path;
@@ -160,8 +155,55 @@ namespace uva
             uva::lang::parser::ast_node parse_node(uva::lang::lexer& lexer);
             uva::lang::parser::ast_node parse_all(uva::lang::lexer& lexer);
 
-            uva::lang::lexer::token parse_identifier(uva::lang::lexer& lexer);
-            ast_node                parse_fn_call(uva::lang::lexer& lexer);
+        // Commons extract functions used by parsers
+        protected:
+            /// @brief Extract an identifier. It can contain '.', '->' or '::'. Example in 'variable->attribute.fn()' the identifier is 'variable->attribute'.
+            /// @param lexer The lexer.
+            /// @return An identifier node.
+            uva::lang::lexer::token extract_identifier(uva::lang::lexer& lexer);
+            /// @brief Extract a function call parameters. You must consume the ')' token.
+            /// @param lexer The lexer.
+            /// @return A function call parameters node.
+            uva::lang::parser::ast_node extract_fn_call_params(uva::lang::lexer& lexer);
+            /// @brief Extract a function call.
+            /// @param lexer The lexer.
+            /// @return A function call node.
+            uva::lang::parser::ast_node extract_fn_call(uva::lang::lexer& lexer);
+        // Parsers members
+        protected:
+            using parser_function = uva::lang::parser::ast_node(uva::lang::parser::*)(uva::lang::lexer&);
+            /// @brief The parsers functions. The size is constant to allow the compiler to optimize the code.
+            static parser_function s_parsers[uva::lang::lexer::token_type::token_type_max];
+        // Parsers functions
+        protected:
+            /// @brief Simply call parse again.
+            /// @param lexer The lexer.
+            /// @return The next valid node.
+            uva::lang::parser::ast_node parse_comment(uva::lang::lexer& lexer);
+            /// @brief Parse a keyword.
+            /// @param lexer The lexer.
+            /// @return A keyword node.
+            uva::lang::parser::ast_node parse_keyword(uva::lang::lexer& lexer);
+            /// @brief Parse an identifier.
+            /// @param lexer The lexer.
+            /// @return A function call, an member access or a binary operation.
+            uva::lang::parser::ast_node parse_identifier(uva::lang::lexer& lexer);
+            /// @brief Parse a literal.
+            /// @param lexer The lexer.
+            /// @return A literal node.
+            uva::lang::parser::ast_node parse_literal(uva::lang::lexer& lexer);
+            /// @brief Parse a delimiter.
+            /// @param lexer The lexer.
+            /// @return A delimiter node.
+            uva::lang::parser::ast_node parse_delimiter(uva::lang::lexer& lexer);
+            /// @brief Parse an operator.
+            /// @param lexer The lexer.
+            /// @return An operator node.
+            uva::lang::parser::ast_node parse_operator(uva::lang::lexer& lexer);
+            /// @brief Parse a context.
+            /// @param lexer The lexer.
+            /// @return A context node.
+            uva::lang::parser::ast_node parse_eof(uva::lang::lexer& lexer);
         };
     }
 }; // namespace uva

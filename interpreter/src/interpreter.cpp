@@ -19,7 +19,7 @@ void uva::lang::interpreter::load(std::shared_ptr<uva::lang::structure> cls)
     classes.push_back(cls);
 }
 
-std::shared_ptr<uva::lang::object> uva::lang::interpreter::execute(uva::lang::parser::ast_node source_code, std::shared_ptr<uva::lang::object> object)
+std::shared_ptr<uva::lang::object> uva::lang::interpreter::execute(uva::lang::parser::ast_node source_code, std::shared_ptr<uva::lang::object>& object)
 {
     switch (source_code.type())
     {
@@ -35,6 +35,11 @@ std::shared_ptr<uva::lang::object> uva::lang::interpreter::execute(uva::lang::pa
                     std::string_view method_name = class_child.decname();
 
                     cls->methods[std::string(method_name)] = uva::lang::method(std::string(method_name), method_storage_type::instance_method, {}, class_child);
+                }
+                break;
+                case uva::lang::parser::ast_node_type::ast_node_vardecl: {
+                    std::string_view var_name = class_child.decname();
+                    cls->instance_variables[std::string(var_name)] = NullClass;
                 }
                 break;
                 case uva::lang::parser::ast_node_type::ast_node_classdecl_base: {
@@ -63,13 +68,19 @@ std::shared_ptr<uva::lang::object> uva::lang::interpreter::execute(uva::lang::pa
         break;
         case uva::lang::parser::ast_node_fn_call: {
             uva::lang::method* method_to_call = nullptr;
+
+            // This is a pointer to a shared pointer because the object can be changed
+            std::shared_ptr<uva::lang::object>* object_to_call_ptr = nullptr;
+            // And we have a shared_ptr in case the object is created, os it still alive in the current context
             std::shared_ptr<uva::lang::object> object_to_call = nullptr;
+
             std::shared_ptr<uva::lang::structure> class_to_call = nullptr;
 
             uva::lang::parser::ast_node* object_node = source_code.child_from_type(uva::lang::parser::ast_node_type::ast_node_fn_object);
 
             const std::string& function_name(source_code.decname());
             bool is_super = function_name == "super";
+            bool is_assignment = function_name == "=";
 
             if(object_node) {
                 // function call from a class/object/function return value
@@ -79,30 +90,57 @@ std::shared_ptr<uva::lang::object> uva::lang::interpreter::execute(uva::lang::pa
                 if(object_node->type() == uva::lang::parser::ast_node_type::ast_node_declname) {
                     const std::string& class_or_object_name = object_node->token().content();
 
-                    auto object_it = current_context.variables.find(class_or_object_name);
+                    std::map<std::string, std::shared_ptr<uva::lang::object>>::iterator object_it;
 
-                    if(object_it != current_context.variables.end()) {
-                        object_to_call = object_it->second;
+                    if(object) {
+                        object_it = object->instance_variables.find(class_or_object_name);
 
-                        auto method_it = object_to_call->cls->methods.find(function_name);
-                        
-                        if(method_it == object_to_call->cls->methods.end()) {
-                            if(object_to_call->cls->base) {
-                                method_it = object_to_call->cls->base->methods.find(function_name);
+                        if(object_it != object->instance_variables.end()) {
+                            object_to_call_ptr = &object_it->second;
+                        }
+                    }
 
-                                if(method_it != object_to_call->cls->base->methods.end()) {
-                                    method_to_call = &method_it->second;
-                                    class_to_call = object_to_call->cls->base;
-                                    object_to_call = object_to_call->base_instance;
+                    if(!object_to_call) {
+                        object_it = current_context.variables.find(class_or_object_name);
+
+                        if(object_it != current_context.variables.end()) {
+                            object_to_call_ptr = &object_it->second;
+                        }
+                    }
+
+                    if(object_to_call_ptr) {
+                        object_to_call = *object_to_call_ptr;
+                    }
+
+                    if(object_to_call) {
+                        if(is_assignment) {
+                            const auto& params_node = source_code.child_from_type(uva::lang::parser::ast_node_type::ast_node_fn_params);
+
+                            object_to_call = node_to_object(params_node->childrens().front());
+                            *object_to_call_ptr = object_to_call;
+
+                            return object;
+                        } else {
+                            auto method_it = object_to_call->cls->methods.find(function_name);
+                            
+                            if(method_it == object_to_call->cls->methods.end()) {
+                                if(object_to_call->cls->base) {
+                                    method_it = object_to_call->cls->base->methods.find(function_name);
+
+                                    if(method_it != object_to_call->cls->base->methods.end()) {
+                                        method_to_call = &method_it->second;
+                                        class_to_call = object_to_call->cls->base;
+                                        object_to_call = object_to_call->base_instance;
+                                    } else {
+                                        throw std::runtime_error("class " + object_to_call->cls->name + " does not have a method called " + function_name);
+                                    }
                                 } else {
                                     throw std::runtime_error("class " + object_to_call->cls->name + " does not have a method called " + function_name);
                                 }
                             } else {
-                                throw std::runtime_error("class " + object_to_call->cls->name + " does not have a method called " + function_name);
+                                method_to_call = &method_it->second;
+                                class_to_call = object_to_call->cls;
                             }
-                        } else {
-                            method_to_call = &method_it->second;
-                            class_to_call = object_to_call->cls;
                         }
                     } else {
                         for(auto& cls : classes) {
@@ -232,7 +270,7 @@ std::shared_ptr<uva::lang::object> uva::lang::interpreter::execute(uva::lang::pa
         }
         break;
         case uva::lang::parser::ast_node_type::ast_node_conditional: {
-            std::shared_ptr<uva::lang::object> ret = execute(*source_code.condition());
+            std::shared_ptr<uva::lang::object> ret = execute(*source_code.condition(), object);
 
             if(ret && ret->is_present()) {
                 auto if_childs = source_code.childrens();
@@ -282,7 +320,7 @@ std::shared_ptr<uva::lang::object> uva::lang::interpreter::execute(uva::lang::pa
     return nullptr;
 }
 
-std::shared_ptr<uva::lang::object> uva::lang::interpreter::execute_all(std::vector<uva::lang::parser::ast_node>::const_iterator begin, std::vector<uva::lang::parser::ast_node>::const_iterator end, std::shared_ptr<uva::lang::object> object)
+std::shared_ptr<uva::lang::object> uva::lang::interpreter::execute_all(std::vector<uva::lang::parser::ast_node>::const_iterator begin, std::vector<uva::lang::parser::ast_node>::const_iterator end, std::shared_ptr<uva::lang::object>& object)
 {
     std::shared_ptr<uva::lang::object> result = nullptr;
 
@@ -307,7 +345,7 @@ std::shared_ptr<uva::lang::object> uva::lang::interpreter::execute_all(std::vect
     return nullptr;
 }
 
-std::shared_ptr<uva::lang::object> uva::lang::interpreter::execute_all(uva::lang::parser::ast_node source_code, std::shared_ptr<uva::lang::object> object)
+std::shared_ptr<uva::lang::object> uva::lang::interpreter::execute_all(uva::lang::parser::ast_node source_code, std::shared_ptr<uva::lang::object>& object)
 {
     return execute_all(source_code.childrens().begin(), source_code.childrens().end(), object);
 }
@@ -354,6 +392,7 @@ void uva::lang::interpreter::init()
     this->load(FileClass    = uva::lang::file_class::create(this));
     this->load(StdClass     = uva::lang::std_class::create(this));
     this->load(ArrayClass   = uva::lang::array_class::create(this));
+    this->load(NullClass    = uva::lang::null_class::create());
 
     for(auto& extension : extensions) {
         extension->load_in_interpreter(this);
@@ -388,7 +427,8 @@ const std::shared_ptr<uva::lang::object> uva::lang::interpreter::node_to_object(
             break;
         }
     } else if(node.type() == uva::lang::parser::ast_node_type::ast_node_fn_call) {
-        return execute(node);
+        std::shared_ptr<uva::lang::object> obj;
+        return execute(node, obj);
     } else if(node.type() == uva::lang::parser::ast_node_type::ast_node_valuedecl) {
         auto it = current_context.variables.find(node.token().content());
 

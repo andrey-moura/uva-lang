@@ -238,6 +238,15 @@ const uva::lang::lexer::token& uva::lang::lexer::next_token()
     return m_tokens[iterator++];
 }
 
+const uva::lang::lexer::token &uva::lang::lexer::see_next()
+{
+    if(!has_next_token()) {
+        throw std::runtime_error("unexpected end of file");
+    }
+
+    return m_tokens[iterator];
+}
+
 const uva::lang::lexer::token& uva::lang::lexer::previous_token()
 {
     if(!has_previous_token()) {
