@@ -529,9 +529,9 @@ uva::lang::parser::ast_node uva::lang::parser::parse_identifier(uva::lang::lexer
     const uva::lang::lexer::token& next_token = lexer.next_token();
 
     if(next_token.content() == "(") {
-        // Go back to the identifier
-        lexer.rollback_token();
-
+        lexer.rollback_token(); // Rollback the '(' token
+        lexer.rollback_token(); // Rollback the identifier token
+        
         ast_node method_node = extract_fn_call(lexer);
 
         return method_node;
@@ -596,7 +596,7 @@ uva::lang::parser::ast_node uva::lang::parser::parse_identifier(uva::lang::lexer
 
         // Check if we have a chain of operators
 
-        uva::lang::lexer::token token = token = lexer.next_token();
+        uva::lang::lexer::token token = lexer.next_token();
 
         while(token.type() == lexer::token_type::token_operator) {
 
@@ -621,9 +621,10 @@ uva::lang::parser::ast_node uva::lang::parser::parse_identifier(uva::lang::lexer
         return node;
     }
     else {
-        // Variable reference
-        //ast_node node(std::move(identifier), ast_node_type::ast_node_valuedecl);
-        //return node;
+        lexer.rollback_token();
+
+        ast_node node(std::move(identifier), ast_node_type::ast_node_valuedecl);
+        return node;
     }
 
     identifier.throw_error_at_current_position("Unexpected identifier");

@@ -5,6 +5,18 @@
 
 #include <console.hpp>
 
+uva::lang::object::object(std::shared_ptr<uva::lang::structure> c)
+    : cls(c)
+{
+    for(auto& instance_variable : cls->instance_variables) {
+        instance_variables[instance_variable.first] = uva::lang::object::instantiate(instance_variable.second, nullptr);
+    }
+
+    if(cls) {
+        uva::console::log_debug("{}#{} created", cls->name, (void*)this);
+    }
+}
+
 uva::lang::object::~object()
 {
     if(cls) {
