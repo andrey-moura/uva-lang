@@ -116,7 +116,9 @@ namespace uva
             void tokenize();
         // iterating
         public:
-            /// @brief Increment the iterator and return the next token.
+            /// @brief Increment the iterator
+            void consume_token();
+            /// @brief Return the next token and increment the iterator.
             /// @return The next token.
             const uva::lang::lexer::token& next_token();
             /// @brief Return the next token without incrementing the iterator.

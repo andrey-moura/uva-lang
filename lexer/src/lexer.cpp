@@ -228,14 +228,21 @@ void uva::lang::lexer::tokenize()
     m_tokens.push_back(token);
 }
 
-const uva::lang::lexer::token& uva::lang::lexer::next_token()
+void uva::lang::lexer::consume_token()
 {
-    if(iterator >= m_tokens.size()) {
+    if(!has_next_token()) {
         // If the parser is trying to get a token that does not exist, it is an error.
         throw std::runtime_error("unexpected end of file");
     }
 
-    return m_tokens[iterator++];
+    iterator++;
+}
+
+const uva::lang::lexer::token &uva::lang::lexer::next_token()
+{
+    uva::lang::lexer::token& token = m_tokens[iterator];
+    consume_token();
+    return token;
 }
 
 const uva::lang::lexer::token &uva::lang::lexer::see_next()
