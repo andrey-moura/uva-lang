@@ -33,6 +33,7 @@ endif()
 include("interpreter/CMakeLists.txt")
 include("lexer/CMakeLists.txt")
 include("lang/CMakeLists.txt")
+include("compiler/CMakeLists.txt")
 include("uva-ui/CMakeLists.txt")
 
 if(DEFINED WX_ENABLED)
