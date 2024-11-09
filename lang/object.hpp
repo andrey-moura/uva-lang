@@ -87,6 +87,14 @@ namespace uva
                 this->native_ptr = (void*)ptr;
                 set_destructor<T>(this);
             }
+
+            template<typename T>
+            T* move_native_ptr() {
+                T* ptr = (T*)this->native_ptr;
+                this->native_ptr = nullptr;
+                this->native_destructor = nullptr;
+                return ptr;
+            }
         private:
             template <typename T>
             static void set_destructor(object* obj) {
