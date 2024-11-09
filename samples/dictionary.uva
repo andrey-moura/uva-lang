@@ -6,7 +6,7 @@ class Application
             "message": "Hello from a map!"
         };
 
-        puts(map["message"]);
+        puts(dictionary["message"]);
 
         return 0;
     }

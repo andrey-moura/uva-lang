@@ -2,11 +2,11 @@ class Application
 {
     function run() {
         if(false) {
-            puts("This should not be printed!");
+            puts("This should not be printed");
         } 
         
         if(true) {
-            puts("Hellow world from if!")
+            puts("Hellow from an if!")
         }
 
         return 0;

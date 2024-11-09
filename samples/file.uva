@@ -2,7 +2,7 @@ class Application
 {
     function run()
     {
-        var message = File.read("file.txt");
+        var message = File.read("samples/hello.txt");
         puts(message);
     }
 };
