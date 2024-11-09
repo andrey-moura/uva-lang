@@ -44,8 +44,6 @@ if (NOT GUI_BACKEND STREQUAL "NONE")
         message(FATAL_ERROR "Unsupported platform")
     endif()
 
-    include_directories(${CMAKE_SOURCE_DIR}/lib/external/SDL-preview-3.1.6/include)
-
     target_link_libraries(uva-ui uva-interpreter uva-lang uva-core uva-console uva-file uva-string)
 
     install(TARGETS uva-ui DESTINATION bin)
