@@ -14,6 +14,13 @@ using namespace uva;
 std::shared_ptr<uva::lang::object> application;
 std::vector<uva::lang::extension*> extensions;
 
+#ifndef _NDEBUG
+    #define try if(true)
+    #define catch(e) if(false)
+
+    std::exception e;
+#endif
+
 int main(int argc, char** argv) {
     try {
         //vm_instance = std::make_shared<uva::lang::vm>();
