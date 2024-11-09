@@ -132,10 +132,10 @@ std::shared_ptr<uva::lang::object> uva::lang::interpreter::execute(uva::lang::pa
                                         class_to_call = object_to_call->cls->base;
                                         object_to_call = object_to_call->base_instance;
                                     } else {
-                                        throw std::runtime_error("class " + object_to_call->cls->name + " does not have a method called " + function_name);
+                                        throw std::runtime_error("class " + object_to_call->cls->name + " does not have a function called " + function_name);
                                     }
                                 } else {
-                                    throw std::runtime_error("class " + object_to_call->cls->name + " does not have a method called " + function_name);
+                                    throw std::runtime_error("class " + object_to_call->cls->name + " does not have a function called " + function_name);
                                 }
                             } else {
                                 method_to_call = &method_it->second;
