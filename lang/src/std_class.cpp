@@ -27,7 +27,7 @@ std::shared_ptr<uva::lang::structure> uva::lang::std_class::create(uva::lang::in
             std::shared_ptr<uva::lang::object> command = params[0]->cls->methods["to_s"].call(params[0]);
             int code = ((std::system(command->as<std::string>().c_str())) & 0xff00) >> 8;
 
-            return uva::lang::object::instantiate(interpreter->IntegerClass, code);
+            return uva::lang::object::instantiate(interpreter, interpreter->IntegerClass, code);
         })},
     };
     

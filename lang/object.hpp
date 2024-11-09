@@ -10,6 +10,7 @@ namespace uva
     namespace lang {
         class object;
         class structure;
+        class interpreter;
         constexpr size_t MAX_NATIVE_SIZE = 32;
         class object : public std::enable_shared_from_this<object>
         {
@@ -29,6 +30,8 @@ namespace uva
             uint8_t native[MAX_NATIVE_SIZE] = {0};
             // The object destructor ptr.
             void (*native_destructor)(object* obj) = nullptr;
+            
+            void initialize(uva::lang::interpreter* interpreter);
         public:
             /// @brief Initialize the object with a value.
             /// @tparam T The type of the value.
@@ -36,11 +39,12 @@ namespace uva
             /// @param value The pointer to the value. This will be deleted when the object is destroyed.
             /// @return Returns a shared pointer to the object.
             template<typename T>
-            static std::shared_ptr<uva::lang::object> instantiate(std::shared_ptr<uva::lang::structure> cls, T* value)
+            static std::shared_ptr<uva::lang::object> instantiate(uva::lang::interpreter* interpreter, std::shared_ptr<uva::lang::structure> cls, T* value)
             {
                 auto obj = std::make_shared<uva::lang::object>(cls);
-                obj->instance_variables["this"] = obj;
                 obj->set_native_ptr<T>(obj.get(), value);
+
+                obj->initialize(interpreter);
 
                 return obj;
             }
@@ -51,16 +55,17 @@ namespace uva
             /// @param value The value.
             /// @return Returns a shared pointer to the object.
             template<typename T>
-            static std::enable_if<!std::is_pointer<T>::value, std::shared_ptr<uva::lang::object>>::type instantiate(std::shared_ptr<uva::lang::structure> cls, T value)
+            static std::enable_if<!std::is_pointer<T>::value, std::shared_ptr<uva::lang::object>>::type instantiate(uva::lang::interpreter* interpreter, std::shared_ptr<uva::lang::structure> cls, T value)
             {
                 auto obj = std::make_shared<uva::lang::object>(cls);
-                obj->instance_variables["this"] = obj;
 
                 bool should_destroy = obj->set_native<T>(std::move(value));
 
                 if(should_destroy) {
                     set_destructor<T>(obj.get());
                 }
+
+                obj->initialize(interpreter);
 
                 return obj;
             }

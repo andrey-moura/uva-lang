@@ -19,13 +19,13 @@ std::shared_ptr<uva::lang::structure> uva::lang::string_class::create(uva::lang:
 
         {"to_s", uva::lang::method("to_s", method_storage_type::instance_method, {}, [interpreter, StringClass](std::shared_ptr<uva::lang::object> object, std::vector<std::shared_ptr<uva::lang::object>> params) {
             const std::string& value = object->as<std::string>();
-            return uva::lang::object::instantiate(StringClass, value);
+            return uva::lang::object::instantiate(interpreter, StringClass, value);
         })},
 
         {"find", uva::lang::method("find", method_storage_type::instance_method, {"what"}, [interpreter, StringClass](std::shared_ptr<uva::lang::object> object, std::vector<std::shared_ptr<uva::lang::object>> params) {
             const std::string& value = object->as<std::string>();
             size_t pos = value.find(params[0]->as<std::string>());
-            return uva::lang::object::instantiate(interpreter->IntegerClass, (int32_t)pos);
+            return uva::lang::object::instantiate(interpreter, interpreter->IntegerClass, (int32_t)pos);
         })},
 
         {"substr", uva::lang::method("substr", method_storage_type::instance_method, {"start", "size"}, [interpreter, StringClass](std::shared_ptr<uva::lang::object> object, std::vector<std::shared_ptr<uva::lang::object>> params) {
@@ -33,7 +33,7 @@ std::shared_ptr<uva::lang::structure> uva::lang::string_class::create(uva::lang:
             size_t start = params[0]->as<int32_t>();
             size_t size = params[1]->as<int32_t>();
 
-            return uva::lang::object::instantiate(StringClass, value.substr(start, size));
+            return uva::lang::object::instantiate(interpreter, StringClass, value.substr(start, size));
         })},
 
         {"to_lower_case!", uva::lang::method("to_lower_case!", method_storage_type::instance_method, {}, [interpreter, StringClass](std::shared_ptr<uva::lang::object> object, std::vector<std::shared_ptr<uva::lang::object>> params) {
@@ -53,7 +53,7 @@ std::shared_ptr<uva::lang::structure> uva::lang::string_class::create(uva::lang:
                 c = std::tolower(c);
             }
 
-            return uva::lang::object::instantiate(StringClass, value);
+            return uva::lang::object::instantiate(interpreter, StringClass, value);
         })},
 
         {"erase!", uva::lang::method("erase!", method_storage_type::instance_method, {"start", "size"}, [interpreter, StringClass](std::shared_ptr<uva::lang::object> object, std::vector<std::shared_ptr<uva::lang::object>> params) {
@@ -105,12 +105,12 @@ std::shared_ptr<uva::lang::structure> uva::lang::string_class::create(uva::lang:
             const std::string& value = object->as<std::string>();
             const std::string& other = params[0]->as<std::string>();
 
-            return uva::lang::object::instantiate(StringClass, value + other);
+            return uva::lang::object::instantiate(interpreter, StringClass, value + other);
         })},
 
         {"size", uva::lang::method("size", method_storage_type::instance_method, {}, [interpreter, StringClass](std::shared_ptr<uva::lang::object> object, std::vector<std::shared_ptr<uva::lang::object>> params) {
             const std::string& value = object->as<std::string>();
-            return uva::lang::object::instantiate(interpreter->IntegerClass, (int32_t)value.size());
+            return uva::lang::object::instantiate(interpreter, interpreter->IntegerClass, (int32_t)value.size());
         })},
 
         {"empty?", uva::lang::method("empty?", method_storage_type::instance_method, {}, [interpreter, StringClass](std::shared_ptr<uva::lang::object> object, std::vector<std::shared_ptr<uva::lang::object>> params) {
