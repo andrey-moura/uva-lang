@@ -38,6 +38,7 @@ namespace uva
 
                 ast_node_valuedecl,
                 ast_node_arraydecl,
+                ast_node_dictionarydecl,
                 ast_node_vardecl,
                 ast_node_foreach,
 
@@ -169,6 +170,10 @@ namespace uva
             /// @param lexer The lexer.
             /// @return A function call node.
             uva::lang::parser::ast_node extract_fn_call(uva::lang::lexer& lexer);
+            /// @brief Extract a value declaration.
+            /// @param lexer The lexer.
+            /// @return A value declaration node.
+            uva::lang::parser::ast_node extract_value(uva::lang::lexer& lexer);
         // Parsers members
         protected:
             using parser_function = uva::lang::parser::ast_node(uva::lang::parser::*)(uva::lang::lexer&);
