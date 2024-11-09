@@ -1,0 +1,16 @@
+class ApplicationBase
+{
+    function say_hello()
+    {
+        puts("Hello from base class!");
+    }
+}
+
+class Application extends ApplicationBase
+{
+    function run()
+    {
+        say_hello();
+        return 0;
+    }
+}
