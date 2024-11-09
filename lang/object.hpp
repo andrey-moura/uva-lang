@@ -54,7 +54,7 @@ namespace uva
             {
                 auto obj = std::make_shared<uva::lang::object>(cls);
 
-                bool should_destroy = obj->set_native<T>(value);
+                bool should_destroy = obj->set_native<T>(std::move(value));
 
                 if(should_destroy) {
                     set_destructor<T>(obj.get());
