@@ -39,6 +39,7 @@ namespace uva
             static std::shared_ptr<uva::lang::object> instantiate(std::shared_ptr<uva::lang::structure> cls, T* value)
             {
                 auto obj = std::make_shared<uva::lang::object>(cls);
+                obj->instance_variables["this"] = obj;
                 obj->set_native_ptr<T>(obj.get(), value);
 
                 return obj;
@@ -53,6 +54,7 @@ namespace uva
             static std::enable_if<!std::is_pointer<T>::value, std::shared_ptr<uva::lang::object>>::type instantiate(std::shared_ptr<uva::lang::structure> cls, T value)
             {
                 auto obj = std::make_shared<uva::lang::object>(cls);
+                obj->instance_variables["this"] = obj;
 
                 bool should_destroy = obj->set_native<T>(std::move(value));
 
