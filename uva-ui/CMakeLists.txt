@@ -10,7 +10,8 @@ include_directories(${CMAKE_CURRENT_LIST_DIR})
 set(GUI_BACKEND "NONE")
 
 if(WIN32)
-    set(GUI_BACKEND "win32")
+    # set(GUI_BACKEND "win32")
+    # TODO: Implement win32 backend
 elseif(LINUX)
     find_package(PkgConfig)
 
