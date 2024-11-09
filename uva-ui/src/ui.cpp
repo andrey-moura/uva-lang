@@ -3,6 +3,10 @@
 #include <vector>
 #include <memory>
 
+#include <uva-ui/app.hpp>
+#include <uva-ui/frame.hpp>
+#include <uva-ui/theme.hpp>
+
 #include <uva/file.hpp>
 #include <console.hpp>
 
@@ -10,122 +14,118 @@
 #include <interpreter/interpreter.hpp>
 #include <lang/lang.hpp>
 
-#include <SDL2/SDL.h>
-
 std::vector<uva::lang::extension*> extensions;
+uva::lang::interpreter interpreter;
 
-#ifndef _NDEBUG
-    #define try if(true)
-    #define catch(e) if(false)
-
-    std::exception e;
-#endif
-
-std::map<void*, void*> s_frames;
-
-namespace uva
+class uvalang_ui_theme : public uva::lang::ui::theme
 {
-    namespace lang
+public:
+    uvalang_ui_theme(std::shared_ptr<uva::lang::object> object)
+        : uva::lang::ui::theme()
     {
-        namespace ui
-        {
-            class window
-            {
-            private:
-                SDL_Window* m_frame = nullptr;
-                
-                SDL_Surface* m_surface = nullptr;
-                SDL_Renderer* m_renderer = nullptr;
-            public:
-                window(const std::string& title)
-                {
-                    m_frame = SDL_CreateWindow(title.c_str(), SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 800, 600, SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIDDEN);
 
-                    if(!m_frame) {
-                        throw std::runtime_error("SDL_CreateWindow failed: " + std::string(SDL_GetError()));
-                    }
+    }
+protected:
+    std::shared_ptr<uva::lang::object> object;
+public:
+    virtual std::map<std::string, std::string> window() override
+    {
+        std::cout << "window" << std::endl;
 
-                    m_renderer = SDL_CreateRenderer(m_frame, -1, SDL_RENDERER_SOFTWARE);
+        auto window_it = object->cls->methods.find("window");
 
-                    s_frames[m_frame] = this;
-                }
+        if(window_it == object->cls->methods.end()) {
+            throw std::runtime_error("window method not found in theme class");
+        }
 
-                ~window()
-                {
-                    SDL_DestroyWindow(m_frame);
-                }
+        std::shared_ptr<uva::lang::object> window_object = interpreter.call(object->cls, object, window_it->second, {});
 
-                void show(bool maximized = false)
-                {
-                    if(maximized) {
-                        SDL_MaximizeWindow(m_frame);
-                    }
+        if(window_object->cls != interpreter.DictionaryClass) {
+            throw std::runtime_error("window method must return a map");
+        }
 
-                    SDL_ShowWindow(m_frame);
-                }
+        std::map<std::string, std::string> window_map;
 
-                void hide()
-                {
-                    SDL_HideWindow(m_frame);
-                }
+        for(auto& [key, value] : window_object->as<uva::lang::dictionary>()) {
+            std::string key_str = interpreter.call(key->cls, key, interpreter.StringClass->methods["to_s"], {})->as<std::string>();
+            std::string value_str = interpreter.call(key->cls, value, interpreter.StringClass->methods["to_s"], {})->as<std::string>();
 
-                void draw()
-                {
-                    SDL_SetRenderDrawColor(m_renderer, 0, 255, 0, 255);
-                    SDL_RenderClear(m_renderer);
+            window_map[key_str] = value_str;
+        }
 
-                    SDL_RenderPresent(m_renderer);
-                }
-
-                void event(SDL_WindowEvent& event)
-                {
-                    switch (event.event)
-                    {
-                    case SDL_WINDOWEVENT_EXPOSED:
-                        draw();
-                        break;
-                    default:
-                        break;
-                    }
-                }
-            };
-        };
-    };
+        return window_map;
+    }
 };
 
-int main(int argc, char** argv) {
-    int result = SDL_Init(SDL_INIT_VIDEO);
+class uvalang_ui_app : public uva::lang::ui::app
+{
+protected:
+    std::shared_ptr<uva::lang::structure> ui_application_class = std::make_shared<uva::lang::structure>("UI.Application");
+    std::shared_ptr<uva::lang::structure> ui_window_class = std::make_shared<uva::lang::structure>("UI.Frame");
+public:
+    uvalang_ui_app(std::string_view __name, std::string_view vendor)
+        : uva::lang::ui::app(__name, vendor)
+    {
 
-    if(result != 0) {
-        uva::console::log_error("SDL_Init failed: %s", SDL_GetError());
-        return 1;
     }
 
-    try {
-        uva::lang::interpreter interpreter;
+    virtual void on_init() override
+    {
+        ui_application_class->methods = {
+            { "new", uva::lang::method("new", uva::lang::method_storage_type::instance_method, {}, [this](std::shared_ptr<uva::lang::object> object, std::vector<std::shared_ptr<uva::lang::object>> params){
+                uvalang_ui_app* app = this;
+                object->set_native_ptr(app);
 
-        std::shared_ptr<uva::lang::structure> ui_application_class = std::make_shared<uva::lang::structure>("UI.Application");
-        std::shared_ptr<uva::lang::structure> ui_window_class = std::make_shared<uva::lang::structure>("UI.Frame");
+                return nullptr;
+            })},
+            { "set_theme", uva::lang::method("set_theme", uva::lang::method_storage_type::instance_method, {"theme"}, [this](std::shared_ptr<uva::lang::object> object, std::vector<std::shared_ptr<uva::lang::object>> params){
+                std::shared_ptr<uva::lang::object> theme_object = params[0];
+
+                if(!theme_object->cls->base || theme_object->cls->base->name != "UI.Theme") {
+                    throw std::runtime_error("theme must have the UI.Theme base class");
+                }
+
+                // The theme is now owned by the application
+                uvalang_ui_theme* theme_native = theme_object->move_native_ptr<uvalang_ui_theme>();
+
+                uvalang_ui_app* app = &object->as<uvalang_ui_app>();
+
+                app->set_theme(theme_native);
+
+                return nullptr;
+            })},
+        };
+
         ui_window_class->methods = {
-            { "new", uva::lang::method("new", uva::lang::method_storage_type::instance_method, {"title"}, [&interpreter, ui_window_class](uva::lang::object* object, std::vector<std::shared_ptr<uva::lang::object>> params){
+            { "new", uva::lang::method("new", uva::lang::method_storage_type::instance_method, {"title"}, [this](std::shared_ptr<uva::lang::object> object, std::vector<std::shared_ptr<uva::lang::object>> params){
                 std::string title = params[0]->as<std::string>();
 
-                uva::lang::ui::window* window = new uva::lang::ui::window(title);
+                uva::lang::ui::frame* frame = new uva::lang::ui::frame(title);
 
-                object->set_native_ptr(window);
+                object->set_native_ptr(frame);
 
                 return nullptr;
             })},
-            { "show", uva::lang::method("show", uva::lang::method_storage_type::instance_method, {"maximized"}, [&interpreter](uva::lang::object* object, std::vector<std::shared_ptr<uva::lang::object>> params){
+            { "show", uva::lang::method("show", uva::lang::method_storage_type::instance_method, {"maximized"}, [this](std::shared_ptr<uva::lang::object> object, std::vector<std::shared_ptr<uva::lang::object>> params){
                 uva::lang::object* maximized = params[0].get();
-                uva::lang::ui::window& window = object->as<uva::lang::ui::window>();
-                window.show(maximized && maximized->is_present());
+                uva::lang::ui::frame& frame = object->as<uva::lang::ui::frame>();
+                frame.show(maximized && maximized->is_present());
 
                 return nullptr;
             })},
-            { "hide", uva::lang::method("hide", uva::lang::method_storage_type::instance_method, {}, [&interpreter](uva::lang::object* object, std::vector<std::shared_ptr<uva::lang::object>> params){
-                uva::lang::ui::window& window = object->as<uva::lang::ui::window>();
-                window.hide();
+            { "hide", uva::lang::method("hide", uva::lang::method_storage_type::instance_method, {}, [this](std::shared_ptr<uva::lang::object> object, std::vector<std::shared_ptr<uva::lang::object>> params){
+                uva::lang::ui::frame& frame = object->as<uva::lang::ui::frame>();
+                frame.hide();
+
+                return nullptr;
+            })},
+        };
+
+        std::shared_ptr<uva::lang::structure> ui_theme_class = std::make_shared<uva::lang::structure>("UI.Theme");
+        ui_theme_class->methods = {
+            { "new", uva::lang::method("new", uva::lang::method_storage_type::instance_method, {}, [this](std::shared_ptr<uva::lang::object> object, std::vector<std::shared_ptr<uva::lang::object>> params){
+                uvalang_ui_theme* theme = new uvalang_ui_theme(object);
+                object->set_native_ptr(theme);
 
                 return nullptr;
             })},
@@ -133,6 +133,7 @@ int main(int argc, char** argv) {
 
         interpreter.load(ui_application_class);
         interpreter.load(ui_window_class);
+        interpreter.load(ui_theme_class);
 
         std::filesystem::path file_path = std::filesystem::absolute("application.uva");
 
@@ -170,42 +171,35 @@ int main(int argc, char** argv) {
             throw std::runtime_error("Application class not found");
         }
 
+        std::shared_ptr<uva::lang::object> application_instance = uva::lang::object::instantiate(application_class, nullptr);
+
+        auto new_it = application_class->methods.find("new");
+
+        if(new_it != application_class->methods.end()) {
+            interpreter.call(application_class, application_instance, new_it->second, {});
+        }
+
         auto run_it = application_class->methods.find("run");
 
         if(run_it == application_class->methods.end()) {
             throw std::runtime_error("run method not defined in class Application. Define it so uva know where to start the application");
         }
 
-        std::shared_ptr<uva::lang::object> application_instance = uva::lang::object::instantiate(application_class, nullptr);
-
         interpreter.call(application_class, application_instance, run_it->second, {});
+    }
+};
 
-        SDL_Event event;
-        bool running = true;
+#ifndef _NDEBUG
+    #define try if(true)
+    #define catch(e) if(false)
 
-        while(running) {
-            while(SDL_PollEvent(&event)) {
-                switch (event.type)
-                {
-                case SDL_QUIT:
-                    running = false;
-                    break;
-                case SDL_WINDOWEVENT: {
-                    SDL_Window* window = SDL_GetWindowFromID(event.window.windowID);
+    std::exception e;
+#endif
 
-                    if(window) {
-                        uva::lang::ui::window* frame = (uva::lang::ui::window*)s_frames[window];
-                        frame->event(event.window);
-                    }
-                    break;
-                }
-                default:
-                    break;
-                }
-            }
-        }
-
-        return 0;
+int main(int argc, char** argv) {
+    try {
+        uvalang_ui_app app("uva-ui", "uva");
+        return app.run();
     } catch(const std::exception& e) {
         uva::console::log_error(e.what());
     }
