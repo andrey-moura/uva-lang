@@ -377,7 +377,7 @@ std::shared_ptr<uva::lang::object> uva::lang::interpreter::call(std::shared_ptr<
     if(method.block_ast.childrens().size()) {
         ret = execute(*method.block_ast.block(), object);
     } else if(method.function) {
-        ret = method.function(object.get(), params);
+        ret = method.function(object, params);
     }
 
     if(is_constructor) {

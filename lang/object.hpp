@@ -11,7 +11,7 @@ namespace uva
         class object;
         class structure;
         constexpr size_t MAX_NATIVE_SIZE = 32;
-        class object
+        class object : public std::enable_shared_from_this<object>
         {
         public:
             object(std::shared_ptr<uva::lang::structure> c);

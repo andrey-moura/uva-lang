@@ -42,7 +42,7 @@ bool uva::lang::object::is_present() const
     } else {
         auto this_without_const = const_cast<object*>(this);
 
-        auto obj = it->second.call( this_without_const );
+        auto obj = it->second.call( this_without_const->shared_from_this() );
 
         if(obj->cls->name == "TrueClass") {
             return true;

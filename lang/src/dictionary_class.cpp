@@ -7,7 +7,7 @@ std::shared_ptr<uva::lang::structure> uva::lang::dictionary_class::create(uva::l
     auto DictionaryClass = std::make_shared<uva::lang::structure>("Dictionary");
 
     DictionaryClass->methods = {
-        {"is_present", uva::lang::method("is_present", method_storage_type::instance_method, {}, [interpreter](uva::lang::object* object, std::vector<std::shared_ptr<uva::lang::object>> params) {
+        {"is_present", uva::lang::method("is_present", method_storage_type::instance_method, {}, [interpreter](std::shared_ptr<uva::lang::object> object, std::vector<std::shared_ptr<uva::lang::object>> params) {
             const std::string& value = object->as<std::string>();
 
             if(value.empty()) {
@@ -16,7 +16,7 @@ std::shared_ptr<uva::lang::structure> uva::lang::dictionary_class::create(uva::l
 
             return std::make_shared<uva::lang::object>(interpreter->TrueClass);
         })},
-        {"[]", uva::lang::method("[]", method_storage_type::instance_method, {"key"}, [interpreter](uva::lang::object* object, std::vector<std::shared_ptr<uva::lang::object>> params) {
+        {"[]", uva::lang::method("[]", method_storage_type::instance_method, {"key"}, [interpreter](std::shared_ptr<uva::lang::object> object, std::vector<std::shared_ptr<uva::lang::object>> params) {
             std::shared_ptr<uva::lang::object> key = params[0];
 
             auto& dictionary = object->as<uva::lang::dictionary>();
