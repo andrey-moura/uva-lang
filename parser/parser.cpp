@@ -594,6 +594,20 @@ uva::lang::parser::ast_node uva::lang::parser::parse_identifier(uva::lang::lexer
 
         node.add_child(std::move(params_node));
 
+        // Check if the operator is '[', in this case, we need to close it with ']'
+
+        ast_node* declname = node.child_from_type(ast_node_type::ast_node_declname);
+
+        if(declname->token().content() == "[") {
+            uva::lang::lexer::token token = lexer.next_token();
+
+            if(token.content() != "]") {
+                token.throw_error_at_current_position("Expected ']' after '[]'");
+            }
+
+            declname->set_token(uva::lang::lexer::token(declname->token().start, declname->token().end, "[]", uva::lang::lexer::token_type::token_operator));
+        }
+
         // Check if we have a chain of operators
 
         uva::lang::lexer::token token = lexer.next_token();
