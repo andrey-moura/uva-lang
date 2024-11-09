@@ -2,16 +2,13 @@
 
 #include <lang/class.hpp>
 #include <lang/method.hpp>
+#include <interpreter/interpreter.hpp>
 
 #include <console.hpp>
 
 uva::lang::object::object(std::shared_ptr<uva::lang::structure> c)
     : cls(c)
 {
-    for(auto& instance_variable : cls->instance_variables) {
-        instance_variables[instance_variable.first] = uva::lang::object::instantiate(instance_variable.second, nullptr);
-    }
-
     if(cls) {
         uva::console::log_debug("{}#{} created", cls->name, (void*)this);
     }
@@ -26,6 +23,30 @@ uva::lang::object::~object()
         }
 
         uva::console::log_debug("{}#{} destroyed", cls->name, (void*)this);
+    }
+}
+
+void uva::lang::object::initialize(uva::lang::interpreter *interpreter)
+{
+    for(auto& instance_variable : cls->instance_variables) {
+        instance_variables[instance_variable.first] = uva::lang::object::instantiate(interpreter, instance_variable.second, nullptr);
+    }
+
+    instance_variables["this"] = shared_from_this();
+
+    if(cls->base) {
+        base_instance = uva::lang::object::instantiate(interpreter, cls->base, nullptr);
+        //base_instance->initialize(interpreter);
+    }
+
+    auto new_it = cls->methods.find("new");
+
+    if(new_it != cls->methods.end()) {
+        auto new_it = cls->methods.find("new");
+
+        if(new_it != cls->methods.end()) {
+            interpreter->call(cls, shared_from_this(), new_it->second, {});
+        }
     }
 }
 

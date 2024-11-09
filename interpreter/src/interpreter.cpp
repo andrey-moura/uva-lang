@@ -208,6 +208,10 @@ std::shared_ptr<uva::lang::object> uva::lang::interpreter::execute(uva::lang::pa
                                     it = object->cls->base->methods.find(function_name);
 
                                     if(it != object->cls->base->methods.end()) {
+                                        if(!object->base_instance) {
+                                            throw std::runtime_error("object has no base instance");
+                                        }
+
                                         method_to_call = &it->second;
                                         class_to_call = object->cls->base;
                                         object_to_call = object->base_instance;
@@ -321,7 +325,7 @@ std::shared_ptr<uva::lang::object> uva::lang::interpreter::execute(uva::lang::pa
                 uva::lang::dictionary& dictionary_values = array_or_dictionary->as<uva::lang::dictionary>();
                 for(auto& [key, value] : dictionary_values) {
                     std::vector<std::shared_ptr<uva::lang::object>> params = { key, value };
-                    std::shared_ptr<uva::lang::object> params_object = uva::lang::object::instantiate(ArrayClass, params);
+                    std::shared_ptr<uva::lang::object> params_object = uva::lang::object::instantiate(this, ArrayClass, params);
 
                     current_context.variables[var_name] = params_object;
 
@@ -379,7 +383,10 @@ std::shared_ptr<uva::lang::object> uva::lang::interpreter::call(std::shared_ptr<
     if(is_constructor) {
         // Special case
         // The object is created before the method is called
-        object = std::make_shared<uva::lang::object>(cls);
+        // If the object was instantiated in from native code, it will be passed as a parameter
+        if(!object) {
+            object = std::make_shared<uva::lang::object>(cls);
+        }
     }
 
     std::shared_ptr<uva::lang::object> ret = nullptr;
@@ -435,12 +442,12 @@ const std::shared_ptr<uva::lang::object> uva::lang::interpreter::node_to_object(
             break;
             case lexer::token_kind::token_integer: {
                 std::shared_ptr<uva::lang::object> obj = std::make_shared<uva::lang::object>(IntegerClass);
-                return uva::lang::object::instantiate(IntegerClass, std::stoi(node.token().content()));
+                return uva::lang::object::instantiate(this, IntegerClass, std::stoi(node.token().content()));
             }
             break;
             case lexer::token_kind::token_string: {
                 std::shared_ptr<uva::lang::object> obj = std::make_shared<uva::lang::object>(StringClass);
-                return uva::lang::object::instantiate(StringClass, std::move(std::string(node.token().content())));
+                return uva::lang::object::instantiate(this, StringClass, std::move(std::string(node.token().content())));
             }
             break;
             default:    
@@ -463,7 +470,7 @@ const std::shared_ptr<uva::lang::object> uva::lang::interpreter::node_to_object(
             array.push_back(node_to_object(child));
         }
 
-        return uva::lang::object::instantiate(ArrayClass, std::move(array));
+        return uva::lang::object::instantiate(this, ArrayClass, std::move(array));
     } else if(node.type() == uva::lang::parser::ast_node_type::ast_node_dictionarydecl) {
         uva::lang::dictionary map;
 
@@ -477,7 +484,7 @@ const std::shared_ptr<uva::lang::object> uva::lang::interpreter::node_to_object(
             map.push_back({ key, value });
         }
 
-        return uva::lang::object::instantiate(DictionaryClass, std::move(map));
+        return uva::lang::object::instantiate(this, DictionaryClass, std::move(map));
     }
 
     throw std::runtime_error("interpreter: unknown node type");

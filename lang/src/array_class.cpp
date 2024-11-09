@@ -23,7 +23,7 @@ std::shared_ptr<uva::lang::structure> uva::lang::array_class::create(uva::lang::
 
             result += "]";
 
-            return uva::lang::object::instantiate(interpreter->StringClass, std::move(result));
+            return uva::lang::object::instantiate(interpreter, interpreter->StringClass, std::move(result));
         })},
         {"join", uva::lang::method("join", method_storage_type::instance_method, {"separator"}, [interpreter](std::shared_ptr<uva::lang::object> object, std::vector<std::shared_ptr<uva::lang::object>> params) {
             const std::string& separator = params[0]->as<std::string>();
@@ -39,7 +39,7 @@ std::shared_ptr<uva::lang::structure> uva::lang::array_class::create(uva::lang::
                 result += item->cls->methods["to_s"].call(item)->as<std::string>();
             }
 
-            return uva::lang::object::instantiate(interpreter->StringClass, std::move(result));
+            return uva::lang::object::instantiate(interpreter, interpreter->StringClass, std::move(result));
         })}
     };
     
