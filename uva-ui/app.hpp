@@ -28,6 +28,10 @@ namespace uva
                     m_theme = theme;
                 }
             public:
+                uva::lang::ui::theme* theme() {
+                    return m_theme;
+                }
+            public:
                 virtual void on_init() = 0;
             };
         };

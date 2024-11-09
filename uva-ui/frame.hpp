@@ -6,6 +6,8 @@
 #include <string>
 #include <string_view>
 
+#include <uva/var.hpp>
+
 #include <uva-ui/os_specific_data_member.hpp>
 
 namespace uva
@@ -22,6 +24,8 @@ namespace uva
             public:
                 void show(bool maximized = false);
                 void hide();
+            public:
+                //virtual var render() = 0;
             };
         };
     }

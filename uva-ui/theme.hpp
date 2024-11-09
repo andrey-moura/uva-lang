@@ -3,6 +3,8 @@
 #include <string>
 #include <map>
 
+#include <uva/var.hpp>
+
 namespace uva
 {
     namespace lang
@@ -14,7 +16,7 @@ namespace uva
             public:
                 theme();
             public:
-                virtual std::map<std::string, std::string> window() = 0;
+                //virtual var window() = 0;
             };
         };
     };
