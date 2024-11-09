@@ -301,6 +301,13 @@ uva::lang::parser::ast_node uva::lang::parser::extract_value(uva::lang::lexer& l
         } 
     }
     break;
+    case uva::lang::lexer::token_type::token_keyword:
+        if(token.content() == "new") {
+           return parse_node(lexer);
+        } else {
+            token.throw_error_at_current_position("Unexpected keyword");
+        }
+        break;
     default:
         token.throw_error_at_current_position("Expected literal or identifier");
         break;
