@@ -295,20 +295,30 @@ std::shared_ptr<uva::lang::object> uva::lang::interpreter::execute(uva::lang::pa
         case uva::lang::parser::ast_node_type::ast_node_foreach: {
             auto* valuedecl = source_code.child_from_type(uva::lang::parser::ast_node_type::ast_node_valuedecl);
 
-            std::shared_ptr<uva::lang::object> array = node_to_object(*valuedecl);
-
-            if(array->cls != ArrayClass) {
-                throw std::runtime_error("foreach should iterate over an array");
-            }
-
-            std::vector<std::shared_ptr<uva::lang::object>>& array_values = array->as<std::vector<std::shared_ptr<uva::lang::object>>>();
+            std::shared_ptr<uva::lang::object> array_or_dictionary = node_to_object(*valuedecl);
 
             auto* vardecl = source_code.child_from_type(uva::lang::parser::ast_node_type::ast_node_vardecl);
 
             std::string var_name(vardecl->decname());
-            for(auto& value : array_values) {
-                current_context.variables[var_name] = value;
-                execute_all(*source_code.child_from_type(uva::lang::parser::ast_node_type::ast_node_context), object);
+
+            if(array_or_dictionary->cls == ArrayClass) {
+                std::vector<std::shared_ptr<uva::lang::object>>& array_values = array_or_dictionary->as<std::vector<std::shared_ptr<uva::lang::object>>>();
+                for(auto& value : array_values) {
+                    current_context.variables[var_name] = value;
+                    execute_all(*source_code.child_from_type(uva::lang::parser::ast_node_type::ast_node_context), object);
+                }
+            } else if(array_or_dictionary->cls == DictionaryClass) {
+                uva::lang::dictionary& dictionary_values = array_or_dictionary->as<uva::lang::dictionary>();
+                for(auto& [key, value] : dictionary_values) {
+                    std::vector<std::shared_ptr<uva::lang::object>> params = { key, value };
+                    std::shared_ptr<uva::lang::object> params_object = uva::lang::object::instantiate(ArrayClass, params);
+
+                    current_context.variables[var_name] = params_object;
+
+                    execute_all(*source_code.child_from_type(uva::lang::parser::ast_node_type::ast_node_context), object);
+                }
+            } else {
+                throw std::runtime_error("foreach should iterate over an array or a dictionary");
             }
         }
         break;
@@ -392,6 +402,7 @@ void uva::lang::interpreter::init()
     this->load(FileClass    = uva::lang::file_class::create(this));
     this->load(StdClass     = uva::lang::std_class::create(this));
     this->load(ArrayClass   = uva::lang::array_class::create(this));
+    this->load(DictionaryClass = uva::lang::dictionary_class::create(this));
     this->load(NullClass    = uva::lang::null_class::create());
 
     for(auto& extension : extensions) {
@@ -443,7 +454,23 @@ const std::shared_ptr<uva::lang::object> uva::lang::interpreter::node_to_object(
         }
 
         return uva::lang::object::instantiate(ArrayClass, std::move(array));
+    } else if(node.type() == uva::lang::parser::ast_node_type::ast_node_dictionarydecl) {
+        uva::lang::dictionary map;
+
+        for(auto& child : node.childrens()) {
+            const uva::lang::parser::ast_node* name_node = child.child_from_type(uva::lang::parser::ast_node_type::ast_node_declname);
+            const uva::lang::parser::ast_node* value_node = child.child_from_type(uva::lang::parser::ast_node_type::ast_node_valuedecl);
+
+            std::shared_ptr<uva::lang::object> key   = node_to_object(*name_node);
+            std::shared_ptr<uva::lang::object> value = node_to_object(*value_node);
+
+            map.push_back({ key, value });
+        }
+
+        return uva::lang::object::instantiate(DictionaryClass, std::move(map));
     }
+
+    throw std::runtime_error("interpreter: unknown node type");
 
     return nullptr;
 }

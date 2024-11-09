@@ -208,23 +208,122 @@ uva::lang::parser::ast_node uva::lang::parser::extract_fn_call(uva::lang::lexer 
     return method_node;
 }
 
+uva::lang::parser::ast_node uva::lang::parser::extract_value(uva::lang::lexer& lexer)
+{
+    uva::lang::lexer::token token = lexer.see_next();
+
+    switch (token.type())
+    {
+    case uva::lang::lexer::token_type::token_literal:
+        // Eaisiest case, just return the value
+        return uva::lang::parser::ast_node(lexer.next_token(), uva::lang::parser::ast_node_type::ast_node_valuedecl);
+        break;
+    case uva::lang::lexer::token_type::token_identifier:
+        // Can be a function call or a member access
+        return parse_identifier(lexer);
+        break;
+    case uva::lang::lexer::token_operator: {
+        // Can be array []
+
+        if(token.content() == "[") {
+            ast_node array_node(ast_node_type::ast_node_arraydecl);
+
+            // The token was seen, so we need to consume it
+            token = lexer.next_token();
+
+            while(token.content() != "]") {
+                ast_node value_node = extract_value(lexer);
+
+                if(value_node.type() != ast_node_type::ast_node_valuedecl) {
+                    token.throw_error_at_current_position("Expected value in array");
+                }
+
+                array_node.add_child(std::move(value_node));
+
+                token = lexer.next_token();
+
+                if(token.content() != "," && token.content() != "]") {
+                    token.throw_error_at_current_position("Expected ',' or ']'");
+                }
+            }
+
+            return array_node;
+        } else {
+            token.throw_error_at_current_position("Unexpected operator");
+        }
+    }
+    case uva::lang::lexer::token_type::token_delimiter: {
+        // Can be a map {}
+
+        if(token.content() == "{") {
+            ast_node map_node(ast_node_type::ast_node_dictionarydecl);
+
+            // The token was seen, so we need to consume it
+            token = lexer.next_token();
+
+            while(token.content() != "}") {
+                ast_node key_node = extract_value(lexer);
+
+                if(key_node.type() != ast_node_type::ast_node_valuedecl) {
+                    token.throw_error_at_current_position("Expected key in map");
+                }
+
+                token = lexer.next_token();
+
+                if(token.content() != ":") {
+                    token.throw_error_at_current_position("Expected ':' after key in map");
+                }
+
+                ast_node value_node = extract_value(lexer);
+
+                if(value_node.type() != ast_node_type::ast_node_valuedecl) {
+                    token.throw_error_at_current_position("Expected value in map");
+                }
+
+                ast_node pair_node = ast_node(ast_node_type::ast_node_valuedecl);
+
+                key_node.set_type(ast_node_type::ast_node_declname);
+                value_node.set_type(ast_node_type::ast_node_valuedecl);
+
+                pair_node.add_child(std::move(key_node));
+                pair_node.add_child(std::move(value_node));
+
+                map_node.add_child(std::move(pair_node));
+
+                token = lexer.next_token();
+
+                if(token.content() != "," && token.content() != "}") {
+                    token.throw_error_at_current_position("Expected ',' or '}'");
+                }
+            }
+
+            return map_node;
+        } 
+    }
+    break;
+    default:
+        token.throw_error_at_current_position("Expected literal or identifier");
+        break;
+    }
+
+    return ast_node();
+}
+
 uva::lang::parser::ast_node uva::lang::parser::extract_fn_call_params(uva::lang::lexer &lexer)
 {
     ast_node params_node(ast_node_type::ast_node_fn_params);
 
-    ast_node param_node = parse_node(lexer);
+    uva::lang::lexer::token token = lexer.see_next();
 
-    while(param_node.token().content() != ")") {
-        if(param_node.type() == uva::lang::parser::ast_node_type::ast_node_valuedecl || param_node.type() == uva::lang::parser::ast_node_type::ast_node_fn_call) {
-            params_node.add_child(param_node);
-        } else if(param_node.token().content() == ",") {
-            // Do nothing
-        } else {
-            param_node.token().throw_error_at_current_position("Expected literal or identifier");
-        }
+    while(token.content() != ")") {
+        ast_node param_node = extract_value(lexer);
+        params_node.add_child(std::move(param_node));
 
-        param_node = parse_node(lexer);
+        token = lexer.see_next();
     }
+
+    // The ')' token was seen, so we need to consume it
+    lexer.next_token();
 
     return params_node;
 }
@@ -304,7 +403,7 @@ uva::lang::parser::ast_node uva::lang::parser::parse_keyword(uva::lang::lexer &l
             token.throw_error_at_current_position("Expected '=' after variable name");
         }
 
-        ast_node value_node = parse_node(lexer);
+        ast_node value_node = extract_value(lexer);
 
         var_node.add_child(value_node);
 
