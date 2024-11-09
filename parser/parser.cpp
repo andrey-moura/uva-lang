@@ -468,13 +468,7 @@ uva::lang::parser::ast_node uva::lang::parser::parse_keyword(uva::lang::lexer &l
     } else if(token.content() == "return") {
         ast_node return_node(std::move(token), ast_node_type::ast_node_fn_return);
 
-        token = lexer.next_token();
-
-        if(token.type() != lexer::token_type::token_literal && token.type() != lexer::token_type::token_identifier) {
-            token.throw_error_at_current_position("Expected literal or identifier after 'return'");
-        }
-
-        return_node.add_child(std::move(ast_node(std::move(token), ast_node_type::ast_node_valuedecl)));
+        return_node.add_child(extract_value(lexer));
 
         return return_node;
     }
