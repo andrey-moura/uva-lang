@@ -35,10 +35,6 @@ include("lexer/CMakeLists.txt")
 include("lang/CMakeLists.txt")
 include("uva-ui/CMakeLists.txt")
 
-if(DEFINED WX_ENABLED)
-	include("uva-wx/CMakeLists.txt")
-endif()
-
 add_executable(uva
     uva/src/uva.cpp
 )
