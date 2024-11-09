@@ -2,9 +2,8 @@ class Application
 {
     function run()
     {
-        puts("This is line 1");
-        print("This is line 2");
-        puts(" - This still line 2");
+        print("Hello from ");
+        puts("output!");
         return 0;
     }
 }

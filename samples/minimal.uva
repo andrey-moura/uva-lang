@@ -2,7 +2,7 @@ class Application
 {
     function run()
     {
-        puts("Hello, World!");
+        puts("Hello from minimal!");
         return 0;
     }
 }

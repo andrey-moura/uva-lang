@@ -2,40 +2,6 @@ class Application
 {
     function run()
     {
-        puts("Hello, World!");
-        print("Here's more text.");
-        puts(" This is even more text.");
-
-        say_hello();
-
-        var message = "Hello from a variable!";
-
-        puts(message);
-
-        if(true) {
-            puts("Hello from an if statement!");
-        }
-
-        if(false) {
-            puts("This should not be printed.");
-        }
-
-        system("echo Hello from a system call!");
-
-        var file_content = File.read("file.txt");
-
-        puts(file_content);
-
-        var array = ["Hello", "from", "an", "array!"];
-        var message = array.join(" ");
-
-        puts(message);
-
-        return 0;
-    }
-    
-    function say_hello()
-    {
-        puts("Hello from a function!");
+        system("for i in samples/*.uva; do if [ $i != samples/all.uva ]; then uva $i; fi; done");
     }
 }

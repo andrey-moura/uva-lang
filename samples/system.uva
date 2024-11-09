@@ -1,7 +1,7 @@
 class Application
 {
     function run() {
-        var ret = system("whoami");
+        var ret = system("echo Hello from system!");
         return ret;
     }
 }
