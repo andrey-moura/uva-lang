@@ -11,7 +11,7 @@ std::shared_ptr<uva::lang::structure> uva::lang::file_class::create(uva::lang::i
     auto FileClass = std::make_shared<uva::lang::structure>("File");
 
     FileClass->methods = {
-        { "read", uva::lang::method("read", method_storage_type::class_method, {"path"}, [interpreter](uva::lang::object* object, std::vector<std::shared_ptr<uva::lang::object>> params) {
+        { "read", uva::lang::method("read", method_storage_type::class_method, {"path"}, [interpreter](std::shared_ptr<uva::lang::object> object, std::vector<std::shared_ptr<uva::lang::object>> params) {
             const std::string& input_path = params[0]->as<std::string>();
             std::filesystem::path path = std::filesystem::absolute(input_path);
 
@@ -21,7 +21,7 @@ std::shared_ptr<uva::lang::structure> uva::lang::file_class::create(uva::lang::i
 
             return uva::lang::object::instantiate(interpreter->StringClass, std::move(uva::file::read_all_text<char>(path)));
         })},
-        { "read_all_lines", uva::lang::method("read_all_lines", method_storage_type::class_method, {"path"}, [interpreter](uva::lang::object* object, std::vector<std::shared_ptr<uva::lang::object>> params) {
+        { "read_all_lines", uva::lang::method("read_all_lines", method_storage_type::class_method, {"path"}, [interpreter](std::shared_ptr<uva::lang::object> object, std::vector<std::shared_ptr<uva::lang::object>> params) {
             const std::string& input_path = params[0]->as<std::string>();
             std::filesystem::path path = std::filesystem::absolute(input_path);
 

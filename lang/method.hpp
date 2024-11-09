@@ -23,7 +23,7 @@ namespace uva {
             uva::lang::parser::ast_node block_ast;
             method_storage_type storage_type;
             std::vector<std::string> params;
-            std::function<std::shared_ptr<uva::lang::object>(uva::lang::object* object, std::vector<std::shared_ptr<uva::lang::object>> params)> function;
+            std::function<std::shared_ptr<uva::lang::object>(std::shared_ptr<uva::lang::object> object, std::vector<std::shared_ptr<uva::lang::object>> params)> function;
 
             method() = default;
 
@@ -32,12 +32,12 @@ namespace uva {
 
             };
 
-            method(const std::string& name, method_storage_type __storage_type, std::vector<std::string> params, std::function<std::shared_ptr<uva::lang::object>(uva::lang::object* object, std::vector<std::shared_ptr<uva::lang::object>> params)> fn)
+            method(const std::string& name, method_storage_type __storage_type, std::vector<std::string> params, std::function<std::shared_ptr<uva::lang::object>(std::shared_ptr<uva::lang::object> object, std::vector<std::shared_ptr<uva::lang::object>> params)> fn)
                 : name(name), function(fn), storage_type(__storage_type), params(std::move(params)) {
 
             }
 
-            std::shared_ptr<uva::lang::object> call(uva::lang::object* o);
+            std::shared_ptr<uva::lang::object> call(std::shared_ptr<uva::lang::object> o);
             std::shared_ptr<uva::lang::object> call(uva::lang::structure* c);
         };
     }
