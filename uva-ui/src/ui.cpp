@@ -171,13 +171,7 @@ public:
             throw std::runtime_error("Application class not found");
         }
 
-        std::shared_ptr<uva::lang::object> application_instance = uva::lang::object::instantiate(application_class, nullptr);
-
-        auto new_it = application_class->methods.find("new");
-
-        if(new_it != application_class->methods.end()) {
-            interpreter.call(application_class, application_instance, new_it->second, {});
-        }
+        std::shared_ptr<uva::lang::object> application_instance = uva::lang::object::instantiate(&interpreter, application_class, nullptr);
 
         auto run_it = application_class->methods.find("run");
 
