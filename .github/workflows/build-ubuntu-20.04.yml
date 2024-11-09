@@ -28,4 +28,4 @@ jobs:
       run: cmake -B build .
 
     - name: Build project
-      run: cmake --build build --config Release
+      run: cmake --build build --config Release --parallel

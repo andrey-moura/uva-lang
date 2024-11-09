@@ -21,7 +21,7 @@ On Linux or Windows Developer Command Prompt
     git clone https://github.com/andrey-moura/uva-lang --recursive
     cd uva-lang
     cmake -B build .
-    cmake --build build --config Release
+    cmake --build build --config Release --parallel
 ```
 
 # Install
