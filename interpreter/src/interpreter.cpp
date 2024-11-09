@@ -100,7 +100,7 @@ std::shared_ptr<uva::lang::object> uva::lang::interpreter::execute(uva::lang::pa
                         }
                     }
 
-                    if(!object_to_call) {
+                    if(!object_to_call_ptr) {
                         object_it = current_context.variables.find(class_or_object_name);
 
                         if(object_it != current_context.variables.end()) {
