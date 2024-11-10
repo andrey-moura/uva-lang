@@ -27,6 +27,8 @@ namespace uva {
             std::map<std::string, std::shared_ptr<uva::lang::object>> class_variables;
             std::string source_content;
 
+            var(*object_to_var)(std::shared_ptr<const uva::lang::object> obj) = nullptr;
+
             std::shared_ptr<uva::lang::object> call(const uva::lang::method& method, const var& params= null);
             std::shared_ptr<uva::lang::object> call(const std::string& method, const var& params = null)
             {

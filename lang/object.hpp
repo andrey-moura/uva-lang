@@ -5,6 +5,8 @@
 #include <map>
 #include <memory>
 
+#include <uva/var.hpp>
+
 namespace uva
 {
     namespace lang {
@@ -134,6 +136,8 @@ namespace uva
 
                 return *static_cast<T*>((void*)native);
             }
+
+            var to_var() const;
         };
     };
 };
