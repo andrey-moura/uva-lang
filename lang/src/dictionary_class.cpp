@@ -5,7 +5,17 @@
 std::shared_ptr<uva::lang::structure> uva::lang::dictionary_class::create(uva::lang::interpreter* interpreter)
 {
     auto DictionaryClass = std::make_shared<uva::lang::structure>("Dictionary");
+    DictionaryClass->object_to_var = [](std::shared_ptr<const uva::lang::object> obj) {
+        uva::lang::dictionary data = obj->as<uva::lang::dictionary>();
 
+        var::dictionary_type result;
+
+        for(auto& pair : data) {
+            result[pair.first->to_var()] = pair.second->to_var();
+        }
+
+        return var(std::move(result));
+    };
     DictionaryClass->methods = {
         {"is_present", uva::lang::method("is_present", method_storage_type::instance_method, {}, [interpreter](std::shared_ptr<uva::lang::object> object, std::vector<std::shared_ptr<uva::lang::object>> params) {
             const std::string& value = object->as<std::string>();

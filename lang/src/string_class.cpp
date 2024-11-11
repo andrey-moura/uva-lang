@@ -5,6 +5,9 @@
 std::shared_ptr<uva::lang::structure> uva::lang::string_class::create(uva::lang::interpreter* interpreter)
 {
     auto StringClass = std::make_shared<uva::lang::structure>("StringClass");
+    StringClass->object_to_var = [](std::shared_ptr<const uva::lang::object> obj) {
+        return var(obj->as<std::string>());
+    };
 
     StringClass->methods = {
         {"is_present", uva::lang::method("is_present", method_storage_type::instance_method, {}, [interpreter, StringClass](std::shared_ptr<uva::lang::object> object, std::vector<std::shared_ptr<uva::lang::object>> params) {

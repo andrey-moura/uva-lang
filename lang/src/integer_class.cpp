@@ -5,6 +5,9 @@
 std::shared_ptr<uva::lang::structure> uva::lang::integer_class::create(interpreter* interpreter)
 {
     std::shared_ptr<uva::lang::structure> IntegerClass = std::make_shared<uva::lang::structure>("IntegerClass");
+    IntegerClass->object_to_var = [](std::shared_ptr<const uva::lang::object> obj) {
+        return var(obj->as<int>());
+    };
 
     IntegerClass->methods = {
         {"is_present", uva::lang::method("is_present", method_storage_type::instance_method, {}, [interpreter](std::shared_ptr<uva::lang::object> object, std::vector<std::shared_ptr<uva::lang::object>> params) {

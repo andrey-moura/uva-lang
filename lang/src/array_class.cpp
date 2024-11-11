@@ -6,6 +6,18 @@
 std::shared_ptr<uva::lang::structure> uva::lang::array_class::create(uva::lang::interpreter* interpreter)
 {
     auto ArrayClass = std::make_shared<uva::lang::structure>("Array");
+    ArrayClass->object_to_var = [](std::shared_ptr<const uva::lang::object> obj) {
+        std::vector<std::shared_ptr<uva::lang::object>> objects = obj->as<std::vector<std::shared_ptr<uva::lang::object>>>();
+
+        var::array_type result;
+        result.reserve(objects.size());
+
+        for(auto& obj : objects) {
+            result.push_back(obj->to_var());
+        }
+
+        return var(std::move(result));
+    };
 
     ArrayClass->methods = {
         {"to_s", uva::lang::method("to_s", method_storage_type::instance_method, {}, [interpreter](std::shared_ptr<uva::lang::object> object, std::vector<std::shared_ptr<uva::lang::object>> params) {
