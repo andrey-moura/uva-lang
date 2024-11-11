@@ -25,7 +25,7 @@ namespace uva
                 void show(bool maximized = false);
                 void hide();
             public:
-                //virtual var render() = 0;
+                virtual var render() = 0;
             };
         };
     }

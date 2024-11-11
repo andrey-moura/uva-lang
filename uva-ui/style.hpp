@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <string_view>
 #include <map>
 
 #include <uva/var.hpp>
@@ -11,10 +12,10 @@ namespace uva
     {
         namespace ui
         {
-            class theme
+            class style
             {
             public:
-                theme();
+                style();
             public:
                 virtual var request(std::string_view what) = 0;
             };

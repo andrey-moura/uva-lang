@@ -6,6 +6,7 @@
 
 #include <uva-ui/os_specific_data_member.hpp>
 #include <uva-ui/theme.hpp>
+#include <uva-ui/style.hpp>
 
 namespace uva
 {
@@ -20,6 +21,7 @@ namespace uva
                 ~app();
             protected:
                 uva::lang::ui::theme* m_theme = nullptr;
+                uva::lang::ui::style* m_style = nullptr;
             public:
                 int run();
 
@@ -27,9 +29,18 @@ namespace uva
                     delete m_theme;
                     m_theme = theme;
                 }
+
+                void set_style(uva::lang::ui::style* style) {
+                    delete m_style;
+                    m_style = style;
+                }
             public:
                 uva::lang::ui::theme* theme() {
                     return m_theme;
+                }
+
+                uva::lang::ui::style* style() {
+                    return m_style;
                 }
             public:
                 virtual void on_init() = 0;
