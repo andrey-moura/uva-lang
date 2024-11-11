@@ -23,7 +23,7 @@ std::vector<uva::lang::extension*> extensions;
 
 int main(int argc, char** argv) {
     try {
-        std::filesystem::path uva_executable_path = std::filesystem::absolute(argv[0]);
+        std::filesystem::path uva_executable_path = argv[0];
         //vm_instance = std::make_shared<uva::lang::vm>();
 
         std::filesystem::path file_path;
