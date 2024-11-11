@@ -617,6 +617,16 @@ uva::lang::parser::ast_node uva::lang::parser::parse_keyword(uva::lang::lexer &l
         }
 
         return expansion_node;
+    } else if(token.content() == "boot") {
+        // This instruction should be handled before the parser is called.
+        // If the interpreter finds a boot instruction, it means that the instruction is
+        // somehere in the middle of the code. There's no reason to raise an error, so we
+        // simply raise an awarness message.
+
+        uva::console::log_warning("Boot instruction found in the middle of the code. This instruction should be the first instruction of the source code. Ignoring it.");
+
+        ast_node boot_call = extract_fn_call(lexer);
+        return parse_node(lexer);
     }
     
     token.throw_error_at_current_position("Unexpected keyword");

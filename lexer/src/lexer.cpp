@@ -66,6 +66,7 @@ bool is_keyword(const std::string& str) {
         keywords["foreach"]  = true;
         keywords["new"]      = true;
         keywords["require"]  = true;
+        keywords["boot"]     = true;
     }
 
     return keywords.find(str) != keywords.end();

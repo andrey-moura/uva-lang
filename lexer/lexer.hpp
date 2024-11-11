@@ -131,6 +131,8 @@ namespace uva
             void rollback_token();
             /// @brief Check if there is a next token.
             bool has_next_token() const { return iterator < m_tokens.size(); }
+            /// @brief Reset the iterator to 0.
+            void reset() { iterator = 0; }
         protected:
         public:
             //extern std::vector<std::pair<std::string_view, uva::lang::lexer::cursor_type>> cursor_type_from_string_map;
