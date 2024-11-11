@@ -478,8 +478,8 @@ const std::shared_ptr<uva::lang::object> uva::lang::interpreter::node_to_object(
             const uva::lang::parser::ast_node* name_node = child.child_from_type(uva::lang::parser::ast_node_type::ast_node_declname);
             const uva::lang::parser::ast_node* value_node = child.child_from_type(uva::lang::parser::ast_node_type::ast_node_valuedecl);
 
-            std::shared_ptr<uva::lang::object> key   = node_to_object(*name_node);
-            std::shared_ptr<uva::lang::object> value = node_to_object(*value_node);
+            std::shared_ptr<uva::lang::object> key   = node_to_object(name_node->childrens().front());
+            std::shared_ptr<uva::lang::object> value = node_to_object(value_node->childrens().front());
 
             map.push_back({ key, value });
         }

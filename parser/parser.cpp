@@ -234,7 +234,7 @@ uva::lang::parser::ast_node uva::lang::parser::extract_value(uva::lang::lexer& l
             while(token.content() != "]") {
                 ast_node value_node = extract_value(lexer);
 
-                if(value_node.type() != ast_node_type::ast_node_valuedecl) {
+                if(value_node.type() != ast_node_type::ast_node_valuedecl && value_node.type() != ast_node_type::ast_node_dictionarydecl && value_node.type() != ast_node_type::ast_node_arraydecl) {
                     token.throw_error_at_current_position("Expected value in array");
                 }
 
@@ -276,17 +276,20 @@ uva::lang::parser::ast_node uva::lang::parser::extract_value(uva::lang::lexer& l
 
                 ast_node value_node = extract_value(lexer);
 
-                if(value_node.type() != ast_node_type::ast_node_valuedecl) {
+                if(value_node.type() != ast_node_type::ast_node_valuedecl && value_node.type() != ast_node_type::ast_node_dictionarydecl && value_node.type() != ast_node_type::ast_node_arraydecl) {
                     token.throw_error_at_current_position("Expected value in map");
                 }
 
                 ast_node pair_node = ast_node(ast_node_type::ast_node_valuedecl);
 
-                key_node.set_type(ast_node_type::ast_node_declname);
-                value_node.set_type(ast_node_type::ast_node_valuedecl);
+                ast_node key_value_node = ast_node(ast_node_type::ast_node_declname);
+                key_value_node.add_child(std::move(key_node));
 
-                pair_node.add_child(std::move(key_node));
-                pair_node.add_child(std::move(value_node));
+                ast_node value_value_node = ast_node(ast_node_type::ast_node_valuedecl);
+                value_value_node.add_child(std::move(value_node));
+
+                pair_node.add_child(std::move(key_value_node));
+                pair_node.add_child(std::move(value_value_node));
 
                 map_node.add_child(std::move(pair_node));
 
