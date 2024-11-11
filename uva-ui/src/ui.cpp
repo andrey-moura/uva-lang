@@ -10,6 +10,7 @@
 #include <uva-ui/app.hpp>
 #include <uva-ui/frame.hpp>
 #include <uva-ui/theme.hpp>
+#include <uva-ui/style.hpp>
 
 #include <extension/extension.hpp>
 #include <interpreter/interpreter.hpp>
@@ -18,30 +19,21 @@
 std::vector<uva::lang::extension*> extensions;
 uva::lang::interpreter interpreter;
 
-var call_and_convert_to_dictionary(std::shared_ptr<uva::lang::object> object, const std::string& method_name)
+var call_and_convert_to_dictionary(std::shared_ptr<uva::lang::object> object, std::string_view method_name)
 {
-    auto it = object->cls->methods.find(method_name);
+    auto it = object->cls->methods.find(std::string(method_name));
 
     if(it == object->cls->methods.end()) {
-        throw std::runtime_error("method not found");
+        return null;
     }
 
     std::shared_ptr<uva::lang::object> result = interpreter.call(object->cls, object, it->second, {});
 
     if(result->cls != interpreter.DictionaryClass) {
-        throw std::runtime_error("method must return a dictionary");
+        return null;
     }
 
-    std::vector<std::pair<std::string, std::string>> result_vector;
-
-    for(auto& [key, value] : result->as<uva::lang::dictionary>()) {
-        std::string key_str = interpreter.call(key->cls, key, interpreter.StringClass->methods["to_s"], {})->as<std::string>();
-        std::string value_str = interpreter.call(key->cls, value, interpreter.StringClass->methods["to_s"], {})->as<std::string>();
-
-        result_vector.push_back({ std::move(key_str), std::move(value_str) });
-    }
-
-    return {};
+    return result->to_var();
 }
 
 class uvalang_ui_theme : public uva::lang::ui::theme
@@ -55,10 +47,10 @@ public:
 protected:
     std::shared_ptr<uva::lang::object> object;
 public:
-    // virtual var window() override
-    // {
-    //     return call_and_convert_to_dictionary(object, "window");
-    // }
+    virtual var request(std::string_view what) override
+    {
+        return call_and_convert_to_dictionary(object, what);
+    }
 };
 
 class uvalang_ui_frame : public uva::lang::ui::frame
@@ -72,11 +64,27 @@ public:
 protected:
     std::shared_ptr<uva::lang::object> object;
 public:
-    //virtual var render() override
-    //{
-        // return call_and_convert_to_dictionary(object, "render");
-        //return {};
-    //}
+    virtual var render() override
+    {
+        return call_and_convert_to_dictionary(object, "render");
+    }
+};
+
+class uvalang_ui_style : public uva::lang::ui::style
+{
+public:
+    uvalang_ui_style(std::shared_ptr<uva::lang::object> __object)
+        : uva::lang::ui::style(), object(__object)
+    {
+
+    }
+public:
+    virtual var request(std::string_view what) override
+    {
+        return call_and_convert_to_dictionary(object, what);
+    }
+protected:
+    std::shared_ptr<uva::lang::object> object;
 };
 
 class uvalang_ui_app : public uva::lang::ui::app
@@ -116,13 +124,29 @@ public:
 
                 return nullptr;
             })},
+            { "set_style", uva::lang::method("set_style", uva::lang::method_storage_type::instance_method, {"style"}, [this](std::shared_ptr<uva::lang::object> object, std::vector<std::shared_ptr<uva::lang::object>> params){
+                std::shared_ptr<uva::lang::object> style_object = params[0];
+
+                if(!style_object->cls->base || style_object->cls->base->name != "UI.Style") {
+                    throw std::runtime_error("style must have the UI.Style base class");
+                }
+
+                // The style is now owned by the application
+                uvalang_ui_style* style_native = style_object->move_native_ptr<uvalang_ui_style>();
+
+                uva::lang::ui::app* app = &object->base_instance->as<uva::lang::ui::app>();
+
+                app->set_style(style_native);
+
+                return nullptr;
+            })},
         };
 
         ui_window_class->methods = {
             { "new", uva::lang::method("new", uva::lang::method_storage_type::instance_method, {"title"}, [this](std::shared_ptr<uva::lang::object> object, std::vector<std::shared_ptr<uva::lang::object>> params){
                 std::string title = params[0]->as<std::string>();
 
-                uva::lang::ui::frame* frame = new uva::lang::ui::frame(title);
+                uvalang_ui_frame* frame = new uvalang_ui_frame(object, title);
 
                 object->set_native_ptr(frame);
 
@@ -130,13 +154,13 @@ public:
             })},
             { "show", uva::lang::method("show", uva::lang::method_storage_type::instance_method, {"maximized"}, [this](std::shared_ptr<uva::lang::object> object, std::vector<std::shared_ptr<uva::lang::object>> params){
                 uva::lang::object* maximized = params[0].get();
-                uva::lang::ui::frame& frame = object->as<uva::lang::ui::frame>();
+                uvalang_ui_frame& frame = object->as<uvalang_ui_frame>();
                 frame.show(maximized && maximized->is_present());
 
                 return nullptr;
             })},
             { "hide", uva::lang::method("hide", uva::lang::method_storage_type::instance_method, {}, [this](std::shared_ptr<uva::lang::object> object, std::vector<std::shared_ptr<uva::lang::object>> params){
-                uva::lang::ui::frame& frame = object->as<uva::lang::ui::frame>();
+                uvalang_ui_frame& frame = object->as<uvalang_ui_frame>();
                 frame.hide();
 
                 return nullptr;
@@ -153,9 +177,20 @@ public:
             })},
         };
 
+        std::shared_ptr<uva::lang::structure> ui_style_class = std::make_shared<uva::lang::structure>("UI.Style");
+        ui_style_class->methods = {
+            { "new", uva::lang::method("new", uva::lang::method_storage_type::instance_method, {}, [this](std::shared_ptr<uva::lang::object> object, std::vector<std::shared_ptr<uva::lang::object>> params){
+                uvalang_ui_style* style = new uvalang_ui_style(object);
+                object->set_native_ptr(style);
+
+                return nullptr;
+            })},
+        };
+
         interpreter.load(ui_application_class);
         interpreter.load(ui_window_class);
         interpreter.load(ui_theme_class);
+        interpreter.load(ui_style_class);
 
         std::filesystem::path file_path = std::filesystem::absolute("application.uva");
 
