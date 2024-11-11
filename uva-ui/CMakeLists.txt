@@ -35,6 +35,7 @@ if (NOT GUI_BACKEND STREQUAL "NONE")
         
         ${CMAKE_CURRENT_LIST_DIR}/src/theme.cpp
         ${CMAKE_CURRENT_LIST_DIR}/src/ui.cpp
+        ${CMAKE_CURRENT_LIST_DIR}/src/style.cpp
     )
 
     if(WIN32)
