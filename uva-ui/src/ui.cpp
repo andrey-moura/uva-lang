@@ -240,7 +240,7 @@ public:
     }
 };
 
-#ifndef _NDEBUG
+#ifdef __UVA_DEBUG__
     #define try if(true)
     #define catch(e) if(false)
 
