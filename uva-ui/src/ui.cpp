@@ -99,7 +99,7 @@ public:
 
     }
 
-    virtual void on_init() override
+    virtual void on_init(int argc, char** argv) override
     {
         ui_application_class->methods = {
             { "new", uva::lang::method("new", uva::lang::method_storage_type::instance_method, {}, [this](std::shared_ptr<uva::lang::object> object, std::vector<std::shared_ptr<uva::lang::object>> params){
@@ -192,7 +192,13 @@ public:
         interpreter.load(ui_theme_class);
         interpreter.load(ui_style_class);
 
-        std::filesystem::path file_path = std::filesystem::absolute("application.uva");
+        std::filesystem::path file_path;
+
+        if(argc > 1) {
+            file_path = std::filesystem::absolute(argv[1]);
+        } else {
+            file_path = std::filesystem::absolute("application.uva");
+        }
 
         if(!std::filesystem::exists(file_path)) {
             throw std::runtime_error("input file does not exist");
@@ -250,7 +256,7 @@ public:
 int main(int argc, char** argv) {
     try {
         uvalang_ui_app app("uva-ui", "uva");
-        return app.run();
+        return app.run(argc, argv);
     } catch(const std::exception& e) {
         uva::console::log_error(e.what());
     }

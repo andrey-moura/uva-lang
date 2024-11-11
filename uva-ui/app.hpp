@@ -23,7 +23,7 @@ namespace uva
                 uva::lang::ui::theme* m_theme = nullptr;
                 uva::lang::ui::style* m_style = nullptr;
             public:
-                int run();
+                int run(int argc, char** argv);
 
                 void set_theme(uva::lang::ui::theme* theme) {
                     delete m_theme;
@@ -43,7 +43,7 @@ namespace uva
                     return m_style;
                 }
             public:
-                virtual void on_init() = 0;
+                virtual void on_init(int argc, char** argv) = 0;
             };
         };
     };
