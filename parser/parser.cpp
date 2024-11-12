@@ -177,7 +177,7 @@ uva::lang::parser::ast_node uva::lang::parser::extract_value(uva::lang::lexer& l
             // The token was seen, so we need to consume it
             token = lexer.next_token();
 
-            while(token.content() != "]") {
+            while(true) {
                 ast_node value_node = extract_value(lexer);
 
                 if(value_node.type() != ast_node_type::ast_node_valuedecl && value_node.type() != ast_node_type::ast_node_dictionarydecl && value_node.type() != ast_node_type::ast_node_arraydecl) {
@@ -188,8 +188,19 @@ uva::lang::parser::ast_node uva::lang::parser::extract_value(uva::lang::lexer& l
 
                 token = lexer.next_token();
 
-                if(token.content() != "," && token.content() != "]") {
-                    token.throw_error_at_current_position("Expected ',' or ']'");
+                if(token.content() == ",") {
+                    if(lexer.see_next().content() == "]") {
+                        lexer.next_token();
+                        break;
+                    }
+                } else {
+                    if(token.content() == "]") {
+                        break;
+                    } else if(token.is_eof()) {
+                        token.throw_error_at_current_position("Expected ']'");
+                    } else {
+                        continue;
+                    }
                 }
             }
 
@@ -207,7 +218,7 @@ uva::lang::parser::ast_node uva::lang::parser::extract_value(uva::lang::lexer& l
             // The token was seen, so we need to consume it
             token = lexer.next_token();
 
-            while(token.content() != "}") {
+            while(true) {
                 ast_node key_node = extract_value(lexer);
 
                 if(key_node.type() != ast_node_type::ast_node_valuedecl) {
@@ -241,8 +252,19 @@ uva::lang::parser::ast_node uva::lang::parser::extract_value(uva::lang::lexer& l
 
                 token = lexer.next_token();
 
-                if(token.content() != "," && token.content() != "}") {
-                    token.throw_error_at_current_position("Expected ',' or '}'");
+                if(token.content() == ",") {
+                    if(lexer.see_next().content() == "}") {
+                        lexer.next_token();
+                        break;
+                    }
+                } else {
+                    if(token.content() == "}") {
+                        break;
+                    } else if(token.is_eof()) {
+                        token.throw_error_at_current_position("Expected '}'");
+                    } else {
+                        continue;
+                    }
                 }
             }
 
