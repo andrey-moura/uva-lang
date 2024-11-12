@@ -209,6 +209,10 @@ namespace uva
             /// @param lexer The lexer.
             /// @return A context node.
             uva::lang::parser::ast_node parse_eof(uva::lang::lexer& lexer);
+            /// @brief Parse a preprocessing directive.
+            /// @param lexer The lexer.
+            /// @return An exception
+            uva::lang::parser::ast_node parse_preprocessor(uva::lang::lexer& lexer);
         };
     }
 }; // namespace uva

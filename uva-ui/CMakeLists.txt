@@ -46,7 +46,7 @@ if (NOT GUI_BACKEND STREQUAL "NONE")
         message(FATAL_ERROR "Unsupported platform")
     endif()
 
-    target_link_libraries(uva-ui uva-interpreter uva-lang uva-core uva-console uva-file uva-string)
+    target_link_libraries(uva-ui uva-preprocessor uva-interpreter uva-lang uva-core uva-console uva-file uva-string)
 
     install(TARGETS uva-ui DESTINATION bin)
 endif()

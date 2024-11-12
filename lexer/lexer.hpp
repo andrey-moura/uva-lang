@@ -25,6 +25,7 @@ namespace uva
                 token_literal,
                 token_delimiter,
                 token_operator,
+                token_preprocessor,
                 token_eof,
                 token_type_max
             };
@@ -126,6 +127,9 @@ namespace uva
             /// @brief Decrement the iterator and return the next token.
             /// @return The previous token.
             const uva::lang::lexer::token& previous_token();
+            /// @brief The current token.
+            /// @return The current token.
+            const uva::lang::lexer::token& current_token() const { return m_tokens[iterator-1]; }
             bool has_previous_token() const { return iterator > 0; }
             /// @brief Rollback the token iterator. The next call to next_token will return the same token.
             void rollback_token();
@@ -133,6 +137,17 @@ namespace uva
             bool has_next_token() const { return iterator < m_tokens.size(); }
             /// @brief Reset the iterator to 0.
             void reset() { iterator = 0; }
+            /// @brief Erase a number of tokens starting from the current iterator.
+            /// @param count The number of tokens to erase.
+            void erase_tokens(size_t count);
+            /// @brief Erase the EOF token.
+            void erase_eof();
+            /// @brief Insert new tokens at the current iterator and update it.
+            /// @param tokens The tokens to insert.
+            void insert(const std::vector<uva::lang::lexer::token>& tokens);
+            /// @brief The tokens.
+            /// @return The tokens.
+            const std::vector<uva::lang::lexer::token>& tokens() const { return m_tokens; }
         protected:
         public:
             //extern std::vector<std::pair<std::string_view, uva::lang::lexer::cursor_type>> cursor_type_from_string_map;

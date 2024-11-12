@@ -23,52 +23,9 @@ uva::lang::parser::parser_function uva::lang::parser::s_parsers[uva::lang::lexer
     &uva::lang::parser::parse_literal,
     &uva::lang::parser::parse_delimiter,
     &uva::lang::parser::parse_operator,
+    &uva::lang::parser::parse_preprocessor,
     &uva::lang::parser::parse_eof,
 };
-
-// TODO: move to uva::file
-
-std::string wildcard_to_regex(const std::string& wildcard) {
-    std::string regex_pattern = "^";
-    for (char ch : wildcard) {
-        switch (ch) {
-            case '*':
-                regex_pattern += ".*"; // '*' corresponde a qualquer sequência de caracteres
-                break;
-            case '?':
-                regex_pattern += ".";  // '?' corresponde a um único caractere
-                break;
-            case '.':
-                regex_pattern += "\\."; // Escape do ponto, pois em regex, '.' é um caractere especial
-                break;
-            default:
-                regex_pattern += ch;    // Adiciona o caractere literal
-                break;
-        }
-    }
-    regex_pattern += "$"; // Final da expressão regular
-    return regex_pattern;
-}
-
-// Função para listar arquivos com base em um wildcard
-std::vector<std::string> list_files_with_wildcard(const std::filesystem::path& base_path, std::string pattern) {
-    std::vector<std::string> files;
-    pattern = "*/" + pattern; // Adiciona um coringa para buscar em subdiretórios
-    std::regex regex_pattern(wildcard_to_regex(pattern));  // Converte o padrão para regex
-
-    for (const auto& entry : std::filesystem::recursive_directory_iterator(base_path)) {
-        if (std::filesystem::is_regular_file(entry.path())) {
-            std::string filename = entry.path().string();
-
-            // Verifica se o arquivo corresponde ao padrão
-            if (std::regex_match(filename, regex_pattern)) {
-                files.push_back(filename);
-            }
-        }
-    }
-
-    return files;
-}
 
 uva::lang::parser::parser()
 {
@@ -99,18 +56,7 @@ uva::lang::parser::ast_node uva::lang::parser::parse_all(uva::lang::lexer &lexer
 
     do {
         ast_node child = parse_node(lexer);
-
-        if(child.type() == ast_node_type::ast_node_expansion) {
-            for(auto& expansion_child : child.childrens()) {
-                for(auto& expansion_child_child : expansion_child.childrens()) {
-                    if(expansion_child_child.token().type() != lexer::token_type::token_eof) {
-                        root_node.add_child(std::move(expansion_child_child));
-                    }
-                }
-            }
-        } else {
-            root_node.add_child(std::move(child));
-        }
+        root_node.add_child(std::move(child));
     } while(lexer.has_next_token());
 
     return root_node;
@@ -587,46 +533,6 @@ uva::lang::parser::ast_node uva::lang::parser::parse_keyword(uva::lang::lexer &l
         fn_node.add_child(std::move(object_node));
 
         return fn_node;
-    } else if(token.content() == "require") {
-        lexer.rollback_token();
-
-        ast_node require_node = extract_fn_call(lexer);
-
-        ast_node* params = require_node.child_from_type(ast_node_type::ast_node_fn_params);
-
-        if(params == nullptr || params->childrens().empty()) {
-            token.throw_error_at_current_position("Expected file name after 'require'");
-        }
-
-        const uva::lang::lexer::token& file_name_token = params->childrens().front().token();
-
-        if(file_name_token.type() != lexer::token_type::token_literal || file_name_token.kind() != lexer::token_kind::token_string) {
-            file_name_token.throw_error_at_current_position("Expected string literal");
-        }
-
-        const std::string& file_path_string = file_name_token.content();
-
-        auto files = list_files_with_wildcard(std::filesystem::current_path(), file_path_string);
-        ast_node expansion_node = ast_node(ast_node_type::ast_node_expansion);
-
-        for(const std::string& file : files) {
-            std::string file_content = uva::file::read_all_text<char>(file);
-            uva::lang::lexer l(file, file_content);
-
-            expansion_node.add_child(std::move(parse_all(l)));
-        }
-
-        return expansion_node;
-    } else if(token.content() == "boot") {
-        // This instruction should be handled before the parser is called.
-        // If the interpreter finds a boot instruction, it means that the instruction is
-        // somehere in the middle of the code. There's no reason to raise an error, so we
-        // simply raise an awarness message.
-
-        uva::console::log_warning("Boot instruction found in the middle of the code. This instruction should be the first instruction of the source code. Ignoring it.");
-
-        ast_node boot_call = extract_fn_call(lexer);
-        return parse_node(lexer);
     }
     
     token.throw_error_at_current_position("Unexpected keyword");
@@ -836,4 +742,14 @@ uva::lang::parser::ast_node uva::lang::parser::parse_eof(uva::lang::lexer &lexer
 {
     uva::lang::lexer::token token = lexer.next_token();
     return ast_node(std::move(token), ast_node_type::ast_node_undefined);
+}
+
+uva::lang::parser::ast_node uva::lang::parser::parse_preprocessor(uva::lang::lexer &lexer)
+{
+    uva::lang::lexer::token token = lexer.next_token();
+
+    // If the directive has not been removed by the preprocessor, it is probably in an invalid location
+    token.throw_error_at_current_position("Unexpected '"+ token.content() + "' directive");
+
+    return ast_node();
 }

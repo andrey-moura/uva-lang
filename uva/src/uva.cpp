@@ -8,6 +8,7 @@
 #include <uva/file.hpp>
 #include <interpreter/interpreter.hpp>
 #include <extension/extension.hpp>
+#include <preprocessor/preprocessor.hpp>
 
 using namespace uva;
 
@@ -48,47 +49,14 @@ int main(int argc, char** argv) {
 
         uva::lang::lexer l(file_path.string(), source);
 
-        // If the first instruction is a boot instruction, the execution is stopped and a new vm is launched
-        // Loads a token untill the first non comment token
+        uva::lang::preprocessor preprocessor(uva_executable_path);
+        preprocessor.process(file_path.string(), l);
 
-        uva::lang::lexer::token t = l.next_token();
-        while(t.type() == uva::lang::lexer::token_type::token_comment) {
-            t = l.next_token();
+        if(preprocessor.has_specified_vm()) {
+            if(preprocessor.specified_vm() != uva_executable_path.stem()) {
+                return preprocessor.launch_vm(argc, argv);
+            }
         }
-
-        if(t.type() == uva::lang::lexer::token_type::token_keyword && t.content() == "boot") {
-            t = l.next_token();
-
-            if(t.content() != "(") {
-                t.throw_error_at_current_position("Expected '(' after boot");
-                return 1;
-            }
-
-            t = l.next_token();
-
-            if(t.kind() != uva::lang::lexer::token_kind::token_string) {
-                t.throw_error_at_current_position("Expected string after boot");
-                return 1;
-            }
-
-            std::filesystem::path boot_path = uva_executable_path;
-            boot_path.replace_filename(t.content());
-
-            if(!std::filesystem::exists(boot_path)) {
-                throw std::runtime_error("Boot executable does not exist. Expected to find it " + boot_path.string());
-            }
-
-            std::string boot_command = boot_path.string();
-
-            for(int i = 1; i < argc; i++) {
-                boot_command += " ";
-                boot_command += argv[i];
-            }
-
-            return system(boot_command.c_str());
-        }
-
-        l.reset();
 
         uva::lang::parser p;
         uva::lang::parser::ast_node root_node = p.parse_all(l);

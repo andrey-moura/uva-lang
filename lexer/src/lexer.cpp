@@ -55,21 +55,43 @@ bool is_operator(const char& c) {
 }
 
 bool is_keyword(const std::string& str) {
-    static std::map<std::string, bool> keywords;
+    static std::vector<std::string> keywords;
 
     if(keywords.empty()) {
-        keywords["var"]      = true;
-        keywords["function"] = true;
-        keywords["return"]   = true;
-        keywords["class"]    = true;
-        keywords["if"]       = true;
-        keywords["foreach"]  = true;
-        keywords["new"]      = true;
-        keywords["require"]  = true;
-        keywords["boot"]     = true;
+        keywords = {
+            "var",
+            "function",
+            "return",
+            "class",
+            "if",
+            "foreach",
+            "new",
+        };
+
+        std::sort(keywords.begin(), keywords.end());
     }
 
-    return keywords.find(str) != keywords.end();
+    return std::binary_search(keywords.begin(), keywords.end(), str);
+}
+
+bool is_preprocessor(std::string_view str) {
+    if(str.starts_with('#')) {
+        return true;
+    }
+    static std::vector<std::string> preprocessor;
+
+    if(preprocessor.empty()) {
+        preprocessor = {
+            "#include",
+            "#define",
+            "#ifdef",
+            "#endif",
+        };
+
+        std::sort(preprocessor.begin(), preprocessor.end());
+    }
+
+    return std::binary_search(preprocessor.begin(), preprocessor.end(), str);
 }
 
 uva::lang::lexer::lexer(const std::string &__file_name, const std::string_view &__source)
@@ -193,6 +215,14 @@ uva::lang::lexer::token uva::lang::lexer::read_next_token()
         return uva::lang::lexer::token(start, m_start, m_buffer, token_type::token_literal, token_kind::token_string);
     }
 
+    if(is_preprocessor(m_source)) {
+        read_while([](const char& c) {
+            return !isspace(c);
+        });
+
+        return uva::lang::lexer::token(start, m_start, m_buffer, token_type::token_preprocessor);
+    }
+
     // It must be a identifier or a keyword
     read_while([](const char& c) {
         return isalnum(c) || c == '_';
@@ -273,6 +303,30 @@ void uva::lang::lexer::rollback_token()
     }
 
     iterator--;
+}
+
+void uva::lang::lexer::erase_tokens(size_t count)
+{
+    if(iterator + count > m_tokens.size()) {
+        throw std::runtime_error("unexpected end of file");
+    }
+
+    m_tokens.erase(m_tokens.begin() + iterator - 1, m_tokens.begin() + iterator + count - 1);
+
+    iterator--;
+}
+
+void uva::lang::lexer::erase_eof()
+{
+    if(m_tokens.back().is_eof()) {
+        m_tokens.pop_back();
+    }
+}
+
+void uva::lang::lexer::insert(const std::vector<uva::lang::lexer::token> &tokens)
+{
+    m_tokens.insert(m_tokens.begin() + iterator, tokens.begin(), tokens.end());
+    iterator += tokens.size();
 }
 
 uva::lang::lexer::token::token(token_position start, token_position end, std::string content, token_type type)

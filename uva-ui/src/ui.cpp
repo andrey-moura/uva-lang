@@ -12,6 +12,7 @@
 #include <uva-ui/theme.hpp>
 #include <uva-ui/style.hpp>
 
+#include <preprocessor/preprocessor.hpp>
 #include <extension/extension.hpp>
 #include <interpreter/interpreter.hpp>
 #include <lang/lang.hpp>
@@ -93,14 +94,16 @@ protected:
     std::shared_ptr<uva::lang::structure> ui_application_class = std::make_shared<uva::lang::structure>("UI.Application");
     std::shared_ptr<uva::lang::structure> ui_window_class = std::make_shared<uva::lang::structure>("UI.Frame");
 public:
-    uvalang_ui_app(std::string_view __name, std::string_view vendor)
-        : uva::lang::ui::app(__name, vendor)
+    uvalang_ui_app()
+        : uva::lang::ui::app("uva", "uva")
     {
 
     }
 
-    virtual void on_init() override
+    virtual void on_init(int argc, char** argv) override
     {
+        std::filesystem::path uva_executable_path = argv[0];
+
         ui_application_class->methods = {
             { "new", uva::lang::method("new", uva::lang::method_storage_type::instance_method, {}, [this](std::shared_ptr<uva::lang::object> object, std::vector<std::shared_ptr<uva::lang::object>> params){
                 uvalang_ui_app* app = this;
@@ -206,6 +209,15 @@ public:
 
         uva::lang::lexer l(file_path.string(), source);
 
+        uva::lang::preprocessor preprocessor(uva_executable_path);
+        preprocessor.process(file_path.string(), l);
+
+        if(preprocessor.has_specified_vm()) {
+            if(preprocessor.specified_vm() != uva_executable_path.stem()) {
+                exit(preprocessor.launch_vm(argc, argv));
+            }
+        }
+
         uva::lang::parser p;
 
         uva::lang::parser::ast_node root_node = p.parse_all(l);
@@ -240,17 +252,10 @@ public:
     }
 };
 
-#ifdef __UVA_DEBUG__
-    #define try if(true)
-    #define catch(e) if(false)
-
-    std::exception e;
-#endif
-
 int main(int argc, char** argv) {
     try {
-        uvalang_ui_app app("uva-ui", "uva");
-        return app.run();
+        uvalang_ui_app app;
+        return app.run(argc, argv);
     } catch(const std::exception& e) {
         uva::console::log_error(e.what());
     }
