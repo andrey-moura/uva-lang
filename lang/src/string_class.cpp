@@ -20,7 +20,7 @@ std::shared_ptr<uva::lang::structure> uva::lang::string_class::create(uva::lang:
             return std::make_shared<uva::lang::object>(interpreter->TrueClass);
         })},
 
-        {"to_s", uva::lang::method("to_s", method_storage_type::instance_method, {}, [interpreter, StringClass](std::shared_ptr<uva::lang::object> object, std::vector<std::shared_ptr<uva::lang::object>> params) {
+        {"to_string", uva::lang::method("to_string", method_storage_type::instance_method, {}, [interpreter, StringClass](std::shared_ptr<uva::lang::object> object, std::vector<std::shared_ptr<uva::lang::object>> params) {
             const std::string& value = object->as<std::string>();
             return uva::lang::object::instantiate(interpreter, StringClass, value);
         })},
@@ -31,7 +31,7 @@ std::shared_ptr<uva::lang::structure> uva::lang::string_class::create(uva::lang:
             return uva::lang::object::instantiate(interpreter, interpreter->IntegerClass, (int32_t)pos);
         })},
 
-        {"substr", uva::lang::method("substr", method_storage_type::instance_method, {"start", "size"}, [interpreter, StringClass](std::shared_ptr<uva::lang::object> object, std::vector<std::shared_ptr<uva::lang::object>> params) {
+        {"substring", uva::lang::method("substring", method_storage_type::instance_method, {"start", "size"}, [interpreter, StringClass](std::shared_ptr<uva::lang::object> object, std::vector<std::shared_ptr<uva::lang::object>> params) {
             const std::string& value = object->as<std::string>();
             size_t start = params[0]->as<int32_t>();
             size_t size = params[1]->as<int32_t>();

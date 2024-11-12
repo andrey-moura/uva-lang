@@ -20,7 +20,7 @@ std::shared_ptr<uva::lang::structure> uva::lang::array_class::create(uva::lang::
     };
 
     ArrayClass->methods = {
-        {"to_s", uva::lang::method("to_s", method_storage_type::instance_method, {}, [interpreter](std::shared_ptr<uva::lang::object> object, std::vector<std::shared_ptr<uva::lang::object>> params) {
+        {"to_string", uva::lang::method("to_string", method_storage_type::instance_method, {}, [interpreter](std::shared_ptr<uva::lang::object> object, std::vector<std::shared_ptr<uva::lang::object>> params) {
             std::string result = "[";
 
             std::vector<std::shared_ptr<uva::lang::object>>& items = object->as<std::vector<std::shared_ptr<uva::lang::object>>>();
@@ -30,7 +30,7 @@ std::shared_ptr<uva::lang::structure> uva::lang::array_class::create(uva::lang::
                     result += ", ";
                 }
 
-                result += item->cls->methods["to_s"].call(item)->as<std::string>();
+                result += item->cls->methods["to_string"].call(item)->as<std::string>();
             }
 
             result += "]";
@@ -48,7 +48,7 @@ std::shared_ptr<uva::lang::structure> uva::lang::array_class::create(uva::lang::
                     result += separator;
                 }
 
-                result += item->cls->methods["to_s"].call(item)->as<std::string>();
+                result += item->cls->methods["to_string"].call(item)->as<std::string>();
             }
 
             return uva::lang::object::instantiate(interpreter, interpreter->StringClass, std::move(result));

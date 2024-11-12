@@ -19,7 +19,7 @@ std::shared_ptr<uva::lang::structure> uva::lang::integer_class::create(interpret
 
             return std::make_shared<uva::lang::object>(interpreter->TrueClass);
         })},
-        {"to_s", uva::lang::method("to_s", method_storage_type::instance_method, {}, [interpreter](std::shared_ptr<uva::lang::object> object, std::vector<std::shared_ptr<uva::lang::object>> params) {
+        {"to_string", uva::lang::method("to_string", method_storage_type::instance_method, {}, [interpreter](std::shared_ptr<uva::lang::object> object, std::vector<std::shared_ptr<uva::lang::object>> params) {
             int value = object->as<int>();
 
             return uva::lang::object::instantiate(interpreter, interpreter->StringClass, std::move(std::to_string(value)));
