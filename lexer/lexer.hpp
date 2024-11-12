@@ -47,7 +47,7 @@ namespace uva
                 token_type m_type;
                 token_kind m_kind;
             public:
-                std::string_view m_file_name;
+                std::string m_file_name;
             public:
                 token(token_position start, token_position end, std::string content, token_type type);
                 token(token_position start, token_position end, std::string content, token_type type, token_kind kind);
