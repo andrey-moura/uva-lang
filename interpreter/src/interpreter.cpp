@@ -322,7 +322,11 @@ std::shared_ptr<uva::lang::object> uva::lang::interpreter::execute(uva::lang::pa
         }
         break;
         case uva::lang::parser::ast_node_type::ast_node_fn_return: {
-            return node_to_object(source_code.childrens().front());
+            if(source_code.childrens().size()) {
+                return node_to_object(source_code.childrens().front());
+            } else {
+                return std::make_shared<uva::lang::object>(NullClass);
+            }
         }
         break;
         case uva::lang::parser::ast_node_type::ast_node_foreach: {
@@ -432,7 +436,7 @@ std::shared_ptr<uva::lang::object> uva::lang::interpreter::call(std::shared_ptr<
 void uva::lang::interpreter::init()
 {
     this->load(FalseClass   = uva::lang::false_class::create());
-    this->load(TrueClass    = uva::lang::true_class::create());
+    this->load(TrueClass    = uva::lang::true_class::create(this));
     this->load(StringClass  = uva::lang::string_class::create(this));
     this->load(IntegerClass = uva::lang::integer_class::create(this));
     this->load(FileClass    = uva::lang::file_class::create(this));
