@@ -17,7 +17,7 @@ bool is_delimiter(const char& c) {
         delimiters[':'] = true;
     }
 
-    return delimiters[c];
+    return delimiters[(uint8_t)c];
 }
 
 bool is_operator(const char& c) {
@@ -40,7 +40,7 @@ bool is_operator(const char& c) {
         operators['|'] = true;
     }
 
-    return operators[c];
+    return operators[(uint8_t)c];
 }
 
 bool is_keyword(const std::string& str) {
