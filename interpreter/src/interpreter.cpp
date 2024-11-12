@@ -420,7 +420,7 @@ void uva::lang::interpreter::init()
     this->load(StdClass     = uva::lang::std_class::create(this));
     this->load(ArrayClass   = uva::lang::array_class::create(this));
     this->load(DictionaryClass = uva::lang::dictionary_class::create(this));
-    this->load(NullClass    = uva::lang::null_class::create());
+    this->load(NullClass    = uva::lang::null_class::create(this));
 
     for(auto& extension : extensions) {
         extension->load_in_interpreter(this);

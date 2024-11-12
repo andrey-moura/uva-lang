@@ -8,9 +8,10 @@ namespace uva
 {
     namespace lang
     {
+        class interpreter;
         namespace null_class
         {
-            std::shared_ptr<structure> create();
+            std::shared_ptr<structure> create(uva::lang::interpreter* interpreter);
         }
     }
 };
