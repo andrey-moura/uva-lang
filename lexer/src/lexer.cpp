@@ -13,7 +13,6 @@ bool is_delimiter(const char& c) {
         delimiters[')'] = true;
         delimiters[';'] = true;
         delimiters[','] = true;
-        delimiters['.'] = true;
         delimiters[':'] = true;
     }
 
@@ -38,6 +37,8 @@ bool is_operator(const char& c) {
         operators['['] = true;
         operators[']'] = true;
         operators['|'] = true;
+        operators['&'] = true;
+        operators['.'] = true;
     }
 
     return operators[(uint8_t)c];
