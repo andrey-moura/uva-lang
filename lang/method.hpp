@@ -27,8 +27,8 @@ namespace uva {
 
             method() = default;
 
-            method(const std::string& __name, method_storage_type __storage_type, std::vector<std::string> params, uva::lang::parser::ast_node __block)
-                : name(__name), block_ast(std::move(__block)), storage_type(__storage_type) {
+            method(const std::string& __name, method_storage_type __storage_type, std::vector<std::string> __params, uva::lang::parser::ast_node __block)
+                : name(__name), block_ast(std::move(__block)), params(std::move(__params)), storage_type(__storage_type) {
 
             };
 

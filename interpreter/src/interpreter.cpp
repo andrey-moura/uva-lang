@@ -34,7 +34,14 @@ std::shared_ptr<uva::lang::object> uva::lang::interpreter::execute(uva::lang::pa
                 case uva::lang::parser::ast_node_type::ast_node_fn_decl: {
                     std::string_view method_name = class_child.decname();
 
-                    cls->methods[std::string(method_name)] = uva::lang::method(std::string(method_name), method_storage_type::instance_method, {}, class_child);
+                    std::vector<std::string> params;
+                    params.reserve(class_child.childrens().size());
+
+                    for(auto& param : class_child.child_from_type(uva::lang::parser::ast_node_type::ast_node_fn_params)->childrens()) {
+                        params.push_back(param.token().content());
+                    }
+
+                    cls->methods[std::string(method_name)] = uva::lang::method(std::string(method_name), method_storage_type::instance_method, params, class_child);
                 }
                 break;
                 case uva::lang::parser::ast_node_type::ast_node_vardecl: {
@@ -410,6 +417,10 @@ std::shared_ptr<uva::lang::object> uva::lang::interpreter::call(std::shared_ptr<
         if(!object) {
             object = std::make_shared<uva::lang::object>(cls);
         }
+    }
+
+    for(size_t i = 0; i < method.params.size(); i++) {
+        current_context.variables[method.params[i]] = params[i];
     }
 
     std::shared_ptr<uva::lang::object> ret = nullptr;

@@ -298,6 +298,12 @@ uva::lang::parser::ast_node uva::lang::parser::extract_fn_call_params(uva::lang:
         params_node.add_child(std::move(param_node));
 
         token = lexer.see_next();
+
+        if(token.type() == lexer::token_type::token_delimiter && token.content() == ",") {
+            token = lexer.next_token();
+        } else if(token.content() != ")") {
+            token.throw_error_at_current_position("Expected ',' or ')'");
+        }
     }
 
     // The ')' token was seen, so we need to consume it
@@ -409,6 +415,8 @@ uva::lang::parser::ast_node uva::lang::parser::parse_keyword(uva::lang::lexer &l
             token.throw_error_at_current_position("Expected '(' after method name");
         }
 
+        ast_node params_node(ast_node_type::ast_node_fn_params);
+
         token = lexer.next_token();
 
         while(token.content() != ")") {
@@ -416,16 +424,19 @@ uva::lang::parser::ast_node uva::lang::parser::parse_keyword(uva::lang::lexer &l
                 token.throw_error_at_current_position("Expected parameter name");
             }
 
-            method_node.add_child(std::move(ast_node(std::move(token), ast_node_type::ast_node_declname)));
+            params_node.add_child(std::move(ast_node(std::move(token), ast_node_type::ast_node_declname)));
 
             token = lexer.next_token();
 
             if(token.content() == ",") {
+                // consume the ','
                 token = lexer.next_token();
             } else if(token.content() != ")") {
                 token.throw_error_at_current_position("Expected ',' or ')'");
             }
         }
+
+        method_node.add_child(std::move(params_node));
 
         ast_node fn_context = parse_node(lexer);
 
