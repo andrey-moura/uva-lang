@@ -10,7 +10,7 @@ std::shared_ptr<uva::lang::structure> uva::lang::integer_class::create(interpret
     };
 
     IntegerClass->methods = {
-        {"is_present", uva::lang::method("is_present", method_storage_type::instance_method, {}, [interpreter](std::shared_ptr<uva::lang::object> object, std::vector<std::shared_ptr<uva::lang::object>> params) {
+        {"present?", uva::lang::method("present?", method_storage_type::instance_method, {}, [interpreter](std::shared_ptr<uva::lang::object> object, std::vector<std::shared_ptr<uva::lang::object>> params) {
             int i = object->as<int>();
             
             if(i == 0) {

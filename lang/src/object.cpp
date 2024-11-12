@@ -56,10 +56,10 @@ bool uva::lang::object::is_present() const
         throw std::runtime_error("object has no class");
     }
     
-    auto it = cls->methods.find("is_present");
+    auto it = cls->methods.find("present?");
 
     if(it == cls->methods.end()) {
-        throw std::runtime_error("is_present is not defined in class " + cls->name);
+        throw std::runtime_error("present? is not defined in class " + cls->name);
     } else {
         auto this_without_const = const_cast<object*>(this);
 

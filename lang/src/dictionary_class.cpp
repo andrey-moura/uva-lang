@@ -17,7 +17,7 @@ std::shared_ptr<uva::lang::structure> uva::lang::dictionary_class::create(uva::l
         return var(std::move(result));
     };
     DictionaryClass->methods = {
-        {"is_present", uva::lang::method("is_present", method_storage_type::instance_method, {}, [interpreter](std::shared_ptr<uva::lang::object> object, std::vector<std::shared_ptr<uva::lang::object>> params) {
+        {"present?", uva::lang::method("present?", method_storage_type::instance_method, {}, [interpreter](std::shared_ptr<uva::lang::object> object, std::vector<std::shared_ptr<uva::lang::object>> params) {
             const std::string& value = object->as<std::string>();
 
             if(value.empty()) {
