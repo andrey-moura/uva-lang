@@ -1,5 +1,7 @@
 #include <lexer.hpp>
 
+#include <algorithm>
+
 bool is_delimiter(const char& c) {
     static std::vector<bool> delimiters;
     if(delimiters.empty()) {
