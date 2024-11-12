@@ -618,36 +618,48 @@ uva::lang::parser::ast_node uva::lang::parser::parse_identifier(uva::lang::lexer
 
         return method_node;
     } else if(next_token.type() == uva::lang::lexer::token_operator) {
+        if(next_token.content() == "]" || next_token.content() == ")") {
+            // Extracting an identifier inside an operator
+
+            lexer.rollback_token(); // Rollback the operator token
+
+            return ast_node(std::move(identifier), ast_node_type::ast_node_valuedecl);
+        }
         // An identifier + operator
 
+        std::string matching;
+
+        if(next_token.content() == "[") {
+            matching = "]";
+        }
+
+        ast_node right_node = parse_node(lexer);
+
+        if(matching.size()) {
+            uva::lang::lexer::token token = lexer.next_token();
+
+            if(token.content() != matching) {
+                token.throw_error_at_current_position("No matching '" + matching + "' found for '" + next_token.content() + "'");
+            }
+        }
+
         ast_node node(ast_node_type::ast_node_fn_call);
-        node.add_child(std::move(ast_node(std::move(next_token), ast_node_type::ast_node_declname)));
+
+        if(matching.size()) {
+            node.add_child(std::move(ast_node(uva::lang::lexer::token(next_token.start, next_token.end, next_token.content() + matching, uva::lang::lexer::token_type::token_operator), ast_node_type::ast_node_declname)));
+        } else {
+            node.add_child(std::move(ast_node(std::move(next_token), ast_node_type::ast_node_declname)));
+        }
 
         ast_node object_node(ast_node_type::ast_node_fn_object);
         object_node.add_child(std::move(ast_node(std::move(identifier), ast_node_type::ast_node_declname)));
 
         node.add_child(std::move(object_node));
 
-        ast_node right_node = parse_node(lexer);
-
         ast_node params_node = ast_node(ast_node_type::ast_node_fn_params);
         params_node.add_child(std::move(right_node));
 
         node.add_child(std::move(params_node));
-
-        // Check if the operator is '[', in this case, we need to close it with ']'
-
-        ast_node* declname = node.child_from_type(ast_node_type::ast_node_declname);
-
-        if(declname->token().content() == "[") {
-            uva::lang::lexer::token token = lexer.next_token();
-
-            if(token.content() != "]") {
-                token.throw_error_at_current_position("Expected ']' after '[]'");
-            }
-
-            declname->set_token(uva::lang::lexer::token(declname->token().start, declname->token().end, "[]", uva::lang::lexer::token_type::token_operator));
-        }
 
         // Check if we have a chain of operators
 
