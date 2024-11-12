@@ -23,6 +23,13 @@ std::shared_ptr<uva::lang::structure> uva::lang::std_class::create(uva::lang::in
             return nullptr;
         })},
 
+        { "gets", uva::lang::method("gets", method_storage_type::class_method, {}, [interpreter](std::shared_ptr<uva::lang::object> object, std::vector<std::shared_ptr<uva::lang::object>> params) {
+            std::string line;
+            std::getline(std::cin, line);
+
+            return uva::lang::object::instantiate(interpreter, interpreter->StringClass, line);
+        })},
+
         { "system", uva::lang::method("system", method_storage_type::class_method, {"command"}, [interpreter](std::shared_ptr<uva::lang::object> object, std::vector<std::shared_ptr<uva::lang::object>> params) {
             std::shared_ptr<uva::lang::object> command = params[0]->cls->methods["to_s"].call(params[0]);
             int code = ((std::system(command->as<std::string>().c_str())) & 0xff00) >> 8;
