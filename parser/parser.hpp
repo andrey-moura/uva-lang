@@ -46,6 +46,7 @@ namespace uva
                 ast_node_declname,
 
                 ast_node_conditional,
+                ast_node_else,
                 ast_node_condition
             };
             class ast_node

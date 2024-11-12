@@ -287,9 +287,17 @@ std::shared_ptr<uva::lang::object> uva::lang::interpreter::execute(uva::lang::pa
             std::shared_ptr<uva::lang::object> ret = execute(*source_code.condition(), object);
 
             if(ret && ret->is_present()) {
-                auto if_childs = source_code.childrens();
+                auto context = source_code.child_from_type(uva::lang::parser::ast_node_type::ast_node_context);
 
-                ret = execute_all(if_childs.begin()+2, if_childs.end(), object);
+                ret = execute(*context, object);
+            } else {
+                auto e = source_code.child_from_type(uva::lang::parser::ast_node_type::ast_node_else);
+                
+                if(e) {
+                    auto else_context = e->child_from_type(uva::lang::parser::ast_node_type::ast_node_context);
+
+                    ret = execute(*else_context, object);
+                }
             }
 
             return ret;

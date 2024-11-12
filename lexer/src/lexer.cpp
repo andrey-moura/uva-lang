@@ -55,6 +55,7 @@ bool is_keyword(const std::string& str) {
             "if",
             "foreach",
             "new",
+            "else"
         };
 
         std::sort(keywords.begin(), keywords.end());

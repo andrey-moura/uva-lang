@@ -475,6 +475,26 @@ uva::lang::parser::ast_node uva::lang::parser::parse_keyword(uva::lang::lexer &l
 
         if_node.add_child(std::move(if_context));
 
+        // Check if there is an else
+
+        token = lexer.see_next();
+
+        if(token.type() == uva::lang::lexer::token_type::token_keyword && token.content() == "else") {
+            lexer.next_token(); // Consume the else token
+
+            ast_node else_node(ast_node_type::ast_node_else);
+
+            ast_node else_context = parse_node(lexer);
+
+            if(else_context.type() != ast_node_type::ast_node_context) {
+                token.throw_error_at_current_position("Expected context after 'else'");
+            }
+
+            else_node.add_child(std::move(else_context));
+
+            if_node.add_child(std::move(else_node));
+        }
+
         return if_node;
     } else if(token.content() == "foreach")  {
         ast_node foreach_node(ast_node_type::ast_node_foreach);
