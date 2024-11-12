@@ -176,6 +176,17 @@ std::shared_ptr<uva::lang::object> uva::lang::interpreter::execute(uva::lang::pa
 
                     method_to_call = &it->second;
                     class_to_call = object_to_call->cls;
+                } else if(object_node->type() == uva::lang::parser::ast_node_type::ast_node_valuedecl) {
+                    object_to_call = node_to_object(*object_node);
+
+                    auto it = object_to_call->cls->methods.find(std::string(function_name));
+
+                    if(it == object_to_call->cls->methods.end()) {
+                        throw std::runtime_error("class " + object_to_call->cls->name + " does not have a method called " + std::string(function_name));
+                    }
+
+                    method_to_call = &it->second;
+                    class_to_call = object_to_call->cls;
                 }
             } else {
                 if(is_super) {

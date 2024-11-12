@@ -607,11 +607,39 @@ uva::lang::parser::ast_node uva::lang::parser::parse_identifier(uva::lang::lexer
         if(next_node.type() != ast_node_type::ast_node_fn_call) {
             next_token.throw_error_at_current_position("Expected function call after '.'");
         }
+
+        ast_node_type identifier_type;
+
+        switch(identifier.type()) {
+            case uva::lang::lexer::token_type::token_identifier:
+                identifier_type = ast_node_type::ast_node_declname;
+                break;
+            case uva::lang::lexer::token_type::token_literal:
+                identifier_type = ast_node_type::ast_node_valuedecl;
+                break;
+            default:
+                identifier.throw_error_at_current_position("Cannot use " + identifier.content() + " as identifier");
+                break;
+        }
         
         ast_node object_node(ast_node_type::ast_node_fn_object);
-        object_node.add_child(std::move(ast_node(std::move(identifier), ast_node_type::ast_node_declname)));
+        object_node.add_child(std::move(ast_node(std::move(identifier), identifier_type)));
 
         next_node.add_child(std::move(object_node));
+
+        // Check if we have a chain of operators
+        const auto & token = lexer.see_next();
+
+        if(token.type() == uva::lang::lexer::token_type::token_operator) {
+            ast_node sub_node = parse_node(lexer);
+            
+            object_node = ast_node(ast_node_type::ast_node_fn_object);
+            object_node.add_child(std::move(next_node));
+
+            sub_node.add_child(std::move(object_node));
+
+            return sub_node;
+        }
 
         return next_node;
     }
@@ -722,6 +750,32 @@ uva::lang::parser::ast_node uva::lang::parser::parse_identifier(uva::lang::lexer
 uva::lang::parser::ast_node uva::lang::parser::parse_literal(uva::lang::lexer &lexer)
 {
     const uva::lang::lexer::token& token = lexer.next_token();
+
+    // Check if there's something after the literal
+
+    uva::lang::lexer::token next_token = lexer.see_next();
+
+    if(next_token.type() == uva::lang::lexer::token_type::token_operator) {
+        if(next_token.content() == "]" || next_token.content() == ")") {
+            // Extracting a literal inside an operator
+            return ast_node(std::move(token), ast_node_type::ast_node_valuedecl);
+        } else {
+            if(next_token.content() == ".") {
+                lexer.rollback_token(); // Rollback the literal token
+                return parse_identifier(lexer);
+            } else {
+                ast_node op_node = parse_operator(lexer);
+                
+                ast_node object_node = ast_node(ast_node_type::ast_node_fn_object);
+                object_node.add_child(std::move(ast_node(std::move(token), ast_node_type::ast_node_valuedecl)));
+
+                op_node.add_child(std::move(object_node));
+
+                return op_node;
+            }
+        }
+    }
+
     return ast_node(std::move(token), ast_node_type::ast_node_valuedecl);
 }
 
