@@ -450,6 +450,9 @@ const std::shared_ptr<uva::lang::object> uva::lang::interpreter::node_to_object(
                 return uva::lang::object::instantiate(this, StringClass, std::move(std::string(node.token().content())));
             }
             break;
+            case lexer::token_kind::token_null:
+                return std::make_shared<uva::lang::object>(NullClass);
+            break;
             default:    
                 throw std::runtime_error("interpreter: unknown node kind");
             break;
