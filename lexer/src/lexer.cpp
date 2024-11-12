@@ -195,13 +195,60 @@ uva::lang::lexer::token uva::lang::lexer::read_next_token()
     if(c == '\"') {
         discard();
 
-        read_while([](const char& c) {
-            return c != '\"';
-        });
+        while(m_source.size()) {
+            char ch = m_source.front();
 
-        discard();
+            if(ch == '\\') {
+                m_source.remove_prefix(1); // Remove the backslash
+                ch = m_source.front();     // Save the escaped character
+                m_source.remove_prefix(1); // Remove the escaped character
 
-        return uva::lang::lexer::token(start, m_start, m_buffer, token_type::token_literal, token_kind::token_string);
+                m_start.offset += 2;        // The backslash and the escaped character
+                m_start.column += 2;        // The backslash and the escaped character
+
+                switch(ch) {
+                    case '\\':
+                    case '"':
+                    case '\'':
+                        m_buffer.push_back(ch);
+                        break;
+                    case 'n':
+                        m_buffer.push_back('\n');
+                        break;
+                    case 't':
+                        m_buffer.push_back('\t');
+                        break;
+                    case 'r':
+                        m_buffer.push_back('\r');
+                        break;
+                    case 'b':
+                        m_buffer.push_back('\b');
+                        break;
+                    case 'a':
+                        m_buffer.push_back('\b');
+                        break;
+                    case 'f':
+                        m_buffer.push_back('\f');
+                        break;
+                    case 'v':
+                        m_buffer.push_back('\v');
+                        break;
+                    default:
+                        throw std::runtime_error("lexer: cannot escape '" + std::string(1, ch) + "'");
+                        break;
+                }
+                continue;
+            }
+
+            if(ch == '\"') {
+                discard();
+                return uva::lang::lexer::token(start, m_start, m_buffer, token_type::token_literal, token_kind::token_string);
+            }
+
+            read();
+        }
+
+        throw std::runtime_error("lexer: unexpected end of file");
     }
 
     if(is_preprocessor(m_source)) {
