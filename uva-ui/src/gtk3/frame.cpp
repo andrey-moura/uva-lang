@@ -7,10 +7,11 @@
 extern GtkApplication *gtkapp;
 extern uva::lang::ui::app* uvaapp;
 
+cairo_t *current_cr = nullptr;
+
 struct window_data {
     GtkWidget* window;
 };
-
 
 struct view_element {
     // Class list of the elment. It is sorted
@@ -74,7 +75,10 @@ struct view_element {
 
     // Função auxiliar para calcular o tamanho do texto
     std::pair<int, int> calc_text_extent(const std::string& text) {
-        return {350, 10};
+        cairo_text_extents_t extents;
+        cairo_text_extents(current_cr, text.c_str(), &extents);
+
+        return { extents.width, extents.height };
     }
 
     int best_height() {
@@ -231,6 +235,8 @@ void draw_element(GtkWidget *widget, cairo_t *cr, view_element& element, var::di
 
 static gboolean draw_callback(GtkWidget *widget, cairo_t *cr, gpointer data)
 {
+    current_cr = cr;
+
     auto theme_var = uvaapp->theme()->request("frame");
 
     if(!theme_var.is_a<var::dictionary>()) {
