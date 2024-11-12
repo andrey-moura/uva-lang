@@ -1,0 +1,7 @@
+class Application
+{
+    function run()
+    {
+        system("for i in examples/*.uva; do if [ $i != examples/all.uva ]; then uva $i; fi; done");
+    }
+}

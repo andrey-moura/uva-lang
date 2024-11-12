@@ -1,7 +1,0 @@
-class Application
-{
-    function run()
-    {
-        system("for i in samples/*.uva; do if [ $i != samples/all.uva ]; then uva $i; fi; done");
-    }
-}

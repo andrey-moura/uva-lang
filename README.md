@@ -31,12 +31,12 @@ After building, run as sudo on Linux or with an Administrator Command Prompt on 
     cmake --install build
 ```
 
-# Samples
+# Examples
 
 If you want to run a sample, try:
 
 ```sh
-    uva samples/hellow_world.uva
+    uva examples/minimal.uva
 ```
 
 This file has the content:
@@ -46,7 +46,7 @@ This file has the content:
     {
         function run()
         {
-            puts("Hello, World!");
+            puts("Hello from minimal!");
         }
     }
 ```
@@ -54,5 +54,5 @@ This file has the content:
 The result is:
 
 ```
-    Hello, World!
+    Hello from minimal!
 ```
