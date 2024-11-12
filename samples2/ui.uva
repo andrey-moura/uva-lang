@@ -1,0 +1,7 @@
+class Application
+{
+    function run()
+    {
+        system("cd samples/uva-ui/calculator ; ../../../build/uva-ui application.uva");
+    }
+}

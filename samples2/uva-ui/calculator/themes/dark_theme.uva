@@ -1,0 +1,13 @@
+class DarkTheme extends UI.Theme
+{
+    function new() {
+        super();
+    }
+    
+    function frame() {
+        return { 
+            "background": "#181818",
+            "text":       "#ffffff"
+        };
+    }
+}

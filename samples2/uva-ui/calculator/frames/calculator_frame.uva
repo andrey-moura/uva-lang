@@ -1,0 +1,35 @@
+class WelcomeFrame extends UI.Frame
+{
+    function new() {
+        super("Calculator");
+    }
+
+    function render() {
+        return {
+            "class": ["flex-horizontal", "flex-spacer"],
+            "childrens": [
+                {
+                    "class": ["flex-spacer"],
+                    "childrens": [
+                        {
+                            "class": ["h1"],
+                            "text": "1",
+                        },
+                        {
+                            "class": ["h1"],
+                            "text": "2",
+                        },
+                        {
+                            "class": ["h1"],
+                            "text": "3",
+                        },
+                        {
+                            "class": ["h1"],
+                            "text": "+",
+                        },
+                    ]
+                },
+            ]
+        };
+    }
+}
