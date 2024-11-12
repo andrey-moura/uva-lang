@@ -1,6 +1,8 @@
 #include <lang/lang.hpp>
 
-std::shared_ptr<uva::lang::structure> uva::lang::true_class::create()
+#include <interpreter/interpreter.hpp>
+
+std::shared_ptr<uva::lang::structure> uva::lang::true_class::create(uva::lang::interpreter* interpreter)
 {
     auto TrueClass = std::make_shared<uva::lang::structure>("TrueClass");
 
