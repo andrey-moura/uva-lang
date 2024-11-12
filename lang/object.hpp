@@ -61,11 +61,7 @@ namespace uva
             {
                 auto obj = std::make_shared<uva::lang::object>(cls);
 
-                bool should_destroy = obj->set_native<T>(std::move(value));
-
-                if(should_destroy) {
-                    set_destructor<T>(obj.get());
-                }
+                obj->set_native<T>(std::move(value));
 
                 obj->initialize(interpreter);
 
@@ -73,20 +69,27 @@ namespace uva
             }
 
             template<typename T>
-            bool set_native(T value) {
+            void set_native(T value) {
+                if(native_destructor) {
+                    native_destructor(this);
+                }
+
+                bool should_destroy = false;
+
                 if constexpr(sizeof(T) <= MAX_NATIVE_SIZE) {
                     if constexpr(std::is_arithmetic<T>::value) {
                         // Boolean, integer, float, etc.
                         *((T*)(&this->native)) = value;
-                        return true;
                     } else {
                         new ((T*)(&this->native)) T(std::move(value));
-                        return true;
+                        should_destroy = true;
                     }
                 } else {
                     this->native_ptr = new T(std::move(value));
-                    return true;
+                    should_destroy = true;
                 }
+
+                set_destructor<T>(this);
             }
 
             template<typename T>
@@ -106,6 +109,8 @@ namespace uva
             template <typename T>
             static void set_destructor(object* obj) {
                 obj->native_destructor = [](object* obj) {
+                    obj->log_native_destructor();
+
                     if(obj->native_ptr) {
                         delete (T*)obj->native_ptr;
                     } else {
@@ -117,6 +122,8 @@ namespace uva
                     }
                 };
             }
+
+            void log_native_destructor();
         public:
             bool is_present() const;
 

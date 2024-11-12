@@ -18,7 +18,6 @@ uva::lang::object::~object()
 {
     if(cls) {
         if(native_destructor) {
-            uva::console::log_debug("{}#{} native destructor", cls->name, (void*)this);
             native_destructor(this);
         }
 
@@ -48,6 +47,11 @@ void uva::lang::object::initialize(uva::lang::interpreter *interpreter)
             interpreter->call(cls, shared_from_this(), new_it->second, {});
         }
     }
+}
+
+void uva::lang::object::log_native_destructor()
+{
+    uva::console::log_debug("{}#{} native destructor", cls->name, (void*)this);
 }
 
 bool uva::lang::object::is_present() const
