@@ -265,6 +265,10 @@ uva::lang::lexer::token uva::lang::lexer::read_next_token()
         return isalnum(c) || c == '_';
     });
 
+    if(m_buffer.empty()) {
+        return uva::lang::lexer::token(start, m_start, "", token_type::token_undefined);
+    }
+
     // Todo: map
     if(m_buffer == "null") {
         return uva::lang::lexer::token(start, m_start, m_buffer, token_type::token_literal, token_kind::token_null);
@@ -289,6 +293,11 @@ void uva::lang::lexer::tokenize()
 
     do {
         token.m_file_name = m_file_name;
+
+        if(token.type() == token_type::token_undefined) {
+            token.throw_error_at_current_position("Unexpected token");
+        }
+
         m_tokens.push_back(token);
         token = read_next_token();
     } while(!token.is_eof());
