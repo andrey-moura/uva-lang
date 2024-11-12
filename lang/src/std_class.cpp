@@ -27,7 +27,7 @@ std::shared_ptr<uva::lang::structure> uva::lang::std_class::create(uva::lang::in
             std::string line;
             std::getline(std::cin, line);
 
-            return uva::lang::object::instantiate(interpreter, interpreter->StringClass, line);
+            return uva::lang::object::instantiate(interpreter, interpreter->StringClass, std::move(line));
         })},
 
         { "system", uva::lang::method("system", method_storage_type::class_method, {"command"}, [interpreter](std::shared_ptr<uva::lang::object> object, std::vector<std::shared_ptr<uva::lang::object>> params) {
