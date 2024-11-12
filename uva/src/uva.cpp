@@ -109,7 +109,7 @@ int main(int argc, char** argv) {
             throw std::runtime_error("run function not defined in class Application. Define it so uva know where to start the application");
         }
         
-        application = std::make_shared<uva::lang::object>(application_class);
+        application = uva::lang::object::instantiate(&interpreter, application_class, nullptr);
 
         std::shared_ptr<uva::lang::object> ret = interpreter.call(application_class, application, run_it->second, {});
 
