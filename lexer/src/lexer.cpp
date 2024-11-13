@@ -142,7 +142,7 @@ const char &uva::lang::lexer::read()
 
 void uva::lang::lexer::push_token(token_position start, token_type type, std::string content, token_kind kind)
 {
-    m_tokens.emplace_back(start, m_start, content, type, kind, m_file_name);
+    m_tokens.emplace_back(start, m_start, std::move(content), type, kind, m_file_name);
 }
 
 void uva::lang::lexer::read_next_token()
@@ -165,7 +165,7 @@ void uva::lang::lexer::read_next_token()
 
     if(is_delimiter(c)) {
         read();
-        push_token(start, token_type::token_delimiter, m_buffer);
+        push_token(start, token_type::token_delimiter, std::move(m_buffer));
         return;
     }
 
@@ -178,7 +178,7 @@ void uva::lang::lexer::read_next_token()
             return c != '\n';
         });
 
-        push_token(start, token_type::token_comment, m_buffer);
+        push_token(start, token_type::token_comment, std::move(m_buffer));
         return;
     }
 
@@ -188,7 +188,7 @@ void uva::lang::lexer::read_next_token()
             return isdigit(c) || (m_buffer.empty() && c == '-');
         });
 
-        push_token(start, token_type::token_literal, m_buffer, token_kind::token_integer);
+        push_token(start, token_type::token_literal, std::move(m_buffer), token_kind::token_integer);
         return;
     }
 
@@ -200,7 +200,7 @@ void uva::lang::lexer::read_next_token()
             read();
         }
 
-        push_token(start, token_type::token_operator, m_buffer);
+        push_token(start, token_type::token_operator, std::move(m_buffer));
         return;
     }
 
@@ -254,7 +254,7 @@ void uva::lang::lexer::read_next_token()
 
             if(ch == '\"') {
                 discard();
-                push_token(start, token_type::token_literal, m_buffer, token_kind::token_string);
+                push_token(start, token_type::token_literal, std::move(m_buffer), token_kind::token_string);
                 return;
             }
 
@@ -269,7 +269,7 @@ void uva::lang::lexer::read_next_token()
             return !isspace(c);
         });
 
-        push_token(start, token_type::token_preprocessor, m_buffer);
+        push_token(start, token_type::token_preprocessor, std::move(m_buffer));
         return;
     }
 
@@ -285,21 +285,21 @@ void uva::lang::lexer::read_next_token()
 
     // Todo: map
     if(m_buffer == "null") {
-        push_token(start, token_type::token_literal, m_buffer, token_kind::token_null);
+        push_token(start, token_type::token_literal, std::move(m_buffer), token_kind::token_null);
         return;
     } else if(m_buffer == "false") {
-        push_token(start, token_type::token_literal, m_buffer, token_kind::token_boolean);
+        push_token(start, token_type::token_literal, std::move(m_buffer), token_kind::token_boolean);
         return;
     } else if(m_buffer == "true") {
-        push_token(start, token_type::token_literal, m_buffer, token_kind::token_boolean);
+        push_token(start, token_type::token_literal, std::move(m_buffer), token_kind::token_boolean);
         return;
     }
 
     if(is_keyword(m_buffer)) {
-        push_token(start, token_type::token_keyword, m_buffer);
+        push_token(start, token_type::token_keyword, std::move(m_buffer));
         return;
     } else {
-        push_token(start, token_type::token_identifier, m_buffer);
+        push_token(start, token_type::token_identifier, std::move(m_buffer));
         return;
     }
 
