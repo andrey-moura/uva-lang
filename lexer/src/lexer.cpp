@@ -142,7 +142,7 @@ const char &uva::lang::lexer::read()
 
 void uva::lang::lexer::push_token(token_position start, token_type type, std::string content, token_kind kind)
 {
-    m_tokens.emplace_back(start, m_start, m_buffer, type, kind, m_file_name);
+    m_tokens.emplace_back(start, m_start, content, type, kind, m_file_name);
 }
 
 void uva::lang::lexer::read_next_token()
