@@ -83,7 +83,7 @@ namespace uva
                 return nullptr;
             }
 
-            const std::shared_ptr<uva::lang::object> node_to_object(const uva::lang::parser::ast_node& node);
+            const std::shared_ptr<uva::lang::object> node_to_object(const uva::lang::parser::ast_node& node, std::shared_ptr<uva::lang::structure> cls = nullptr, std::shared_ptr<uva::lang::object> object = nullptr);
         protected:
             /// @brief The global context stack.
             interpreter_context global_context;

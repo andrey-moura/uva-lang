@@ -302,7 +302,7 @@ std::shared_ptr<uva::lang::object> uva::lang::interpreter::execute(uva::lang::pa
         break;
         case uva::lang::parser::ast_node_type::ast_node_vardecl: {
             std::string_view var_name = source_code.decname();
-            current_context.variables[std::string(var_name)] = node_to_object(source_code.childrens()[1]);
+            current_context.variables[std::string(var_name)] = node_to_object(source_code.childrens()[1], object->cls, object);
         }
         break;
         case uva::lang::parser::ast_node_type::ast_node_conditional: {
@@ -465,7 +465,7 @@ void uva::lang::interpreter::init()
     }
 }
 
-const std::shared_ptr<uva::lang::object> uva::lang::interpreter::node_to_object(const uva::lang::parser::ast_node& node)
+const std::shared_ptr<uva::lang::object> uva::lang::interpreter::node_to_object(const uva::lang::parser::ast_node& node, std::shared_ptr<uva::lang::structure> cls, std::shared_ptr<uva::lang::object> object)
 {
     if(node.token().type() == uva::lang::lexer::token_type::token_literal) {
         switch(node.token().kind())
@@ -496,8 +496,7 @@ const std::shared_ptr<uva::lang::object> uva::lang::interpreter::node_to_object(
             break;
         }
     } else if(node.type() == uva::lang::parser::ast_node_type::ast_node_fn_call) {
-        std::shared_ptr<uva::lang::object> obj;
-        return execute(node, obj);
+        return execute(node, object);
     } else if(node.type() == uva::lang::parser::ast_node_type::ast_node_valuedecl) {
         auto it = current_context.variables.find(node.token().content());
 
