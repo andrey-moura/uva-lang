@@ -59,6 +59,54 @@ std::shared_ptr<uva::lang::structure> uva::lang::string_class::create(uva::lang:
             return uva::lang::object::instantiate(interpreter, StringClass, value);
         })},
 
+        {"to_integer!", uva::lang::method("to_integer!", method_storage_type::instance_method, {}, [interpreter, StringClass](std::shared_ptr<uva::lang::object> object, std::vector<std::shared_ptr<uva::lang::object>> params) {
+            std::string& value = object->as<std::string>();
+
+            if(value.empty()) {
+                object->cls = interpreter->NullClass;
+                object->set_native(0);
+
+                return object;
+            }
+
+            if(!isdigit(value[0])) {
+                object->cls = interpreter->NullClass;
+                object->set_native(0);
+
+                return object;
+            }
+
+            size_t pos = 0;
+            int result = std::stoi(value, &pos);
+
+            if(pos != value.size()) {
+                object->cls = interpreter->NullClass;
+                object->set_native(0);
+
+                return object;
+            }
+
+            object->cls = interpreter->IntegerClass;
+            object->set_native(result);
+
+            return object;
+        })},
+
+        {"to_integer", uva::lang::method("to_integer", method_storage_type::instance_method, {}, [interpreter, StringClass](std::shared_ptr<uva::lang::object> object, std::vector<std::shared_ptr<uva::lang::object>> params) {
+            std::string value = object->as<std::string>();
+
+            if(value.empty()) return std::make_shared<uva::lang::object>(interpreter->NullClass);
+
+            if(!isdigit(value[0])) return std::make_shared<uva::lang::object>(interpreter->NullClass);
+
+            size_t pos = 0;
+            int result = std::stoi(value, &pos);
+
+            if(pos != value.size()) return std::make_shared<uva::lang::object>(interpreter->NullClass);
+
+            return uva::lang::object::instantiate(interpreter, interpreter->IntegerClass, result);
+        })},
+
         {"erase!", uva::lang::method("erase!", method_storage_type::instance_method, {"start", "size"}, [interpreter, StringClass](std::shared_ptr<uva::lang::object> object, std::vector<std::shared_ptr<uva::lang::object>> params) {
             std::string& value = object->as<std::string>();
             size_t start = params[0]->as<int32_t>();
