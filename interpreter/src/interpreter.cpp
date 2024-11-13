@@ -215,39 +215,41 @@ std::shared_ptr<uva::lang::object> uva::lang::interpreter::execute(uva::lang::pa
                     object_to_call = object;
                     class_to_call = object->cls->base;
                 } else {
-                    auto it = StdClass->methods.find(function_name);
+                    if(object) {
+                        auto it = object->cls->methods.find(function_name);
 
-                    if(it == StdClass->methods.end()) {
-                        if(object) {
-                            it = object->cls->methods.find(function_name);
+                        if(it == object->cls->methods.end()) {
+                            if(object->cls->base) {
+                                it = object->cls->base->methods.find(function_name);
 
-                            if(it == object->cls->methods.end()) {
-                                if(object->cls->base) {
-                                    it = object->cls->base->methods.find(function_name);
-
-                                    if(it != object->cls->base->methods.end()) {
-                                        if(!object->base_instance) {
-                                            throw std::runtime_error("object has no base instance");
-                                        }
-
-                                        method_to_call = &it->second;
-                                        class_to_call = object->cls->base;
-                                        object_to_call = object->base_instance;
-                                    } else {
-                                        throw std::runtime_error("function '" + function_name + "' not found in class " + object->cls->name);
+                                if(it != object->cls->base->methods.end()) {
+                                    if(!object->base_instance) {
+                                        throw std::runtime_error("object has no base instance");
                                     }
+
+                                    method_to_call = &it->second;
+                                    class_to_call = object->cls->base;
+                                    object_to_call = object->base_instance;
+                                } else {
+                                    throw std::runtime_error("function '" + function_name + "' not found in class " + object->cls->name);
                                 }
                             }
                         } else {
-                            throw std::runtime_error("function '" + function_name + "' not found");
+                            method_to_call = &it->second;
+                            object_to_call = object;
+                            class_to_call = object->cls;
                         }
+                    } 
+                    
+                    if(!method_to_call) {
+                        auto it = StdClass->methods.find(function_name);
 
-                        method_to_call = &it->second;
-                        object_to_call = object;
-                        class_to_call = object->cls;
-                    } else {
-                        method_to_call = &it->second;
-                        class_to_call = StdClass;
+                        if(it == StdClass->methods.end()) {
+                            throw std::runtime_error("function '" + function_name + "' not found");
+                        } else {
+                            method_to_call = &it->second;
+                            class_to_call = StdClass;
+                        }
                     }
                 }
             }
