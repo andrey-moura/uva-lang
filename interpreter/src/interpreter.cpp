@@ -16,6 +16,23 @@ uva::lang::interpreter::interpreter()
 
 void uva::lang::interpreter::load(std::shared_ptr<uva::lang::structure> cls)
 {
+    cls->methods["call"] = uva::lang::method("call", uva::lang::method_storage_type::instance_method, {"fn, params"}, [this, cls](std::shared_ptr<uva::lang::object> object, std::vector<std::shared_ptr<uva::lang::object>> params) {
+        const std::string& method_name = params[0]->as<std::string>();
+
+        auto method_it = cls->methods.find(method_name);
+
+        if(method_it == cls->methods.end()) {
+            throw std::runtime_error("class " + cls->name + " does not have a function called " + method_name);
+        }
+
+        std::vector<std::shared_ptr<uva::lang::object>> method_params = params;
+        if(method_params.size() > 1) {
+            method_params.erase(method_params.begin());
+        }
+
+        return call(cls, object, method_it->second, method_params);
+    });
+
     classes.push_back(cls);
 }
 
