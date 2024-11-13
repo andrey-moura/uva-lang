@@ -262,8 +262,10 @@ std::shared_ptr<uva::lang::object> uva::lang::interpreter::execute(uva::lang::pa
                 for(auto& param : params_node->childrens()) {
                     switch (param.type())
                     {
+                    case uva::lang::parser::ast_node_type::ast_node_arraydecl:
+                    case uva::lang::parser::ast_node_type::ast_node_dictionarydecl:
                     case uva::lang::parser::ast_node_type::ast_node_valuedecl: {
-                        if(param.token().type() == uva::lang::lexer::token_type::token_literal) { 
+                        if(param.type() == uva::lang::parser::ast_node_type::ast_node_arraydecl || uva::lang::parser::ast_node_type::ast_node_dictionarydecl || param.token().type() == uva::lang::lexer::token_type::token_literal) { 
                             params_to_call.push_back(node_to_object(param));
                         }
                         else {
