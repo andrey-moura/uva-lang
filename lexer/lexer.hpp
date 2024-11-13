@@ -49,8 +49,8 @@ namespace uva
             public:
                 std::string m_file_name;
             public:
-                token(token_position start, token_position end, std::string content, token_type type);
-                token(token_position start, token_position end, std::string content, token_type type, token_kind kind);
+                token(token_position start, token_position end, std::string content, token_type type, token_kind kind, std::string file_name);
+                token(token_position start, token_position end, std::string content, token_type type, token_kind kind = token_kind::token_null);
                 token() = default;
                 ~token() = default;
             public:
@@ -113,7 +113,8 @@ namespace uva
                 }
             }
 
-            uva::lang::lexer::token read_next_token();
+            void push_token(token_position start, token_type type, std::string content = "", token_kind kind = token_kind::token_null);
+            void read_next_token();
             void tokenize();
         // iterating
         public:

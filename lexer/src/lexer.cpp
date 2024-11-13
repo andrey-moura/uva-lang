@@ -140,7 +140,12 @@ const char &uva::lang::lexer::read()
     return c;
 }
 
-uva::lang::lexer::token uva::lang::lexer::read_next_token()
+void uva::lang::lexer::push_token(token_position start, token_type type, std::string content, token_kind kind)
+{
+    m_tokens.emplace_back(start, m_start, m_buffer, type, kind, m_file_name);
+}
+
+void uva::lang::lexer::read_next_token()
 {
     m_buffer.clear();
 
@@ -150,7 +155,8 @@ uva::lang::lexer::token uva::lang::lexer::read_next_token()
     token_position start = m_start;
 
     if(m_source.empty()) {
-        return token(m_start, m_start, "", token_type::token_eof);
+        push_token(start, token_type::token_eof);
+        return;
     }
 
     const char& c = m_source.front();
@@ -159,7 +165,8 @@ uva::lang::lexer::token uva::lang::lexer::read_next_token()
 
     if(is_delimiter(c)) {
         read();
-        return uva::lang::lexer::token(start, m_start, m_buffer, token_type::token_delimiter);
+        push_token(start, token_type::token_delimiter, m_buffer);
+        return;
     }
 
     // The comment starts with /, which is the division operator. So we need to check if it is a comment first.
@@ -171,7 +178,8 @@ uva::lang::lexer::token uva::lang::lexer::read_next_token()
             return c != '\n';
         });
 
-        return uva::lang::lexer::token(start, m_start, m_buffer, token_type::token_comment);
+        push_token(start, token_type::token_comment, m_buffer);
+        return;
     }
 
     if(isdigit(c) || (c == '-' && isdigit(m_source[1]))) {
@@ -180,7 +188,8 @@ uva::lang::lexer::token uva::lang::lexer::read_next_token()
             return isdigit(c) || (m_buffer.empty() && c == '-');
         });
 
-        return uva::lang::lexer::token(start, m_start, m_buffer, token_type::token_literal, token_kind::token_integer);
+        push_token(start, token_type::token_literal, m_buffer, token_kind::token_integer);
+        return;
     }
 
     if(is_operator(c)) {
@@ -191,7 +200,8 @@ uva::lang::lexer::token uva::lang::lexer::read_next_token()
             read();
         }
 
-        return uva::lang::lexer::token(start, m_start, m_buffer, token_type::token_operator);
+        push_token(start, token_type::token_operator, m_buffer);
+        return;
     }
 
     if(c == '\"') {
@@ -244,7 +254,8 @@ uva::lang::lexer::token uva::lang::lexer::read_next_token()
 
             if(ch == '\"') {
                 discard();
-                return uva::lang::lexer::token(start, m_start, m_buffer, token_type::token_literal, token_kind::token_string);
+                push_token(start, token_type::token_literal, m_buffer, token_kind::token_string);
+                return;
             }
 
             read();
@@ -258,7 +269,8 @@ uva::lang::lexer::token uva::lang::lexer::read_next_token()
             return !isspace(c);
         });
 
-        return uva::lang::lexer::token(start, m_start, m_buffer, token_type::token_preprocessor);
+        push_token(start, token_type::token_preprocessor, m_buffer);
+        return;
     }
 
     // It must be a identifier or a keyword
@@ -267,22 +279,28 @@ uva::lang::lexer::token uva::lang::lexer::read_next_token()
     });
 
     if(m_buffer.empty()) {
-        return uva::lang::lexer::token(start, m_start, "", token_type::token_undefined);
+        push_token(start, token_type::token_undefined);
+        return;
     }
 
     // Todo: map
     if(m_buffer == "null") {
-        return uva::lang::lexer::token(start, m_start, m_buffer, token_type::token_literal, token_kind::token_null);
+        push_token(start, token_type::token_literal, m_buffer, token_kind::token_null);
+        return;
     } else if(m_buffer == "false") {
-        return uva::lang::lexer::token(start, m_start, m_buffer, token_type::token_literal, token_kind::token_boolean);
+        push_token(start, token_type::token_literal, m_buffer, token_kind::token_boolean);
+        return;
     } else if(m_buffer == "true") {
-        return uva::lang::lexer::token(start, m_start, m_buffer, token_type::token_literal, token_kind::token_boolean);
+        push_token(start, token_type::token_literal, m_buffer, token_kind::token_boolean);
+        return;
     }
 
     if(is_keyword(m_buffer)) {
-        return uva::lang::lexer::token(start, m_start, m_buffer, token_type::token_keyword);
+        push_token(start, token_type::token_keyword, m_buffer);
+        return;
     } else {
-        return uva::lang::lexer::token(start, m_start, m_buffer, token_type::token_identifier);
+        push_token(start, token_type::token_identifier, m_buffer);
+        return;
     }
 
     throw std::runtime_error("lexer: unknown token");
@@ -290,20 +308,9 @@ uva::lang::lexer::token uva::lang::lexer::read_next_token()
 
 void uva::lang::lexer::tokenize()
 {
-    uva::lang::lexer::token token = read_next_token();
-
     do {
-        token.m_file_name = m_file_name;
-
-        if(token.type() == token_type::token_undefined) {
-            token.throw_error_at_current_position("Unexpected token");
-        }
-
-        m_tokens.push_back(token);
-        token = read_next_token();
-    } while(!token.is_eof());
-
-    m_tokens.push_back(token);
+        read_next_token();
+    } while(!m_tokens.back().is_eof());
 }
 
 void uva::lang::lexer::consume_token()
@@ -376,8 +383,8 @@ void uva::lang::lexer::insert(const std::vector<uva::lang::lexer::token> &tokens
     iterator += tokens.size();
 }
 
-uva::lang::lexer::token::token(token_position start, token_position end, std::string content, token_type type)
-    : start(start), end(end), m_content(std::move(content)), m_type(type)
+uva::lang::lexer::token::token(token_position start, token_position end, std::string content, token_type type, token_kind kind, std::string file_name)
+    : start(start), end(end), m_content(std::move(content)), m_type(type), m_kind(kind), m_file_name(std::move(file_name))
 {
 }
 
