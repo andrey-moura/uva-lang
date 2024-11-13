@@ -440,13 +440,13 @@ std::shared_ptr<uva::lang::object> uva::lang::interpreter::call(std::shared_ptr<
         }
     }
 
-    for(size_t i = 0; i < method.params.size(); i++) {
-        current_context.variables[method.params[i]] = params[i];
-    }
-
     std::shared_ptr<uva::lang::object> ret = nullptr;
 
     if(method.block_ast.childrens().size()) {
+        for(size_t i = 0; i < method.params.size(); i++) {
+            current_context.variables[method.params[i]] = params[i];
+        }
+        
         ret = execute(*method.block_ast.block(), object);
     } else if(method.function) {
         ret = method.function(object, params);
