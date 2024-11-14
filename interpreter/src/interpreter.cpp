@@ -496,13 +496,13 @@ const std::shared_ptr<uva::lang::object> uva::lang::interpreter::node_to_object(
             }
             break;
             case lexer::token_kind::token_integer: {
-                std::shared_ptr<uva::lang::object> obj = std::make_shared<uva::lang::object>(IntegerClass);
-                return uva::lang::object::instantiate(this, IntegerClass, std::stoi(node.token().content()));
+                std::shared_ptr<uva::lang::object> obj = uva::lang::object::instantiate(this, IntegerClass, std::stoi(node.token().content()));
+                return obj;
             }
             break;
             case lexer::token_kind::token_string: {
-                std::shared_ptr<uva::lang::object> obj = std::make_shared<uva::lang::object>(StringClass);
-                return uva::lang::object::instantiate(this, StringClass, std::move(std::string(node.token().content())));
+                std::shared_ptr<uva::lang::object> obj = uva::lang::object::instantiate(this, StringClass, std::move(std::string(node.token().content())));
+                return obj;
             }
             break;
             case lexer::token_kind::token_null:
