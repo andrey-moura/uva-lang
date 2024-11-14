@@ -154,7 +154,7 @@ std::shared_ptr<uva::lang::structure> uva::lang::string_class::create(uva::lang:
         
         {"+", uva::lang::method("+", method_storage_type::instance_method, {"other"}, [interpreter, StringClass](std::shared_ptr<uva::lang::object> object, std::vector<std::shared_ptr<uva::lang::object>> params) {
             const std::string& value = object->as<std::string>();
-            const std::string& other = params[0]->as<std::string>();
+            const std::string& other = params[0]->cls->methods["to_string"].call(params[0])->as<std::string>();
 
             return uva::lang::object::instantiate(interpreter, StringClass, value + other);
         })},
