@@ -25,6 +25,14 @@ namespace uva
             std::shared_ptr<object> derived_instance = nullptr;
 
             std::map<std::string, std::shared_ptr<uva::lang::object>> instance_variables;
+            // #ifdef __UVA_DEBUG__
+            // uva::lang::object* debug_object = this;
+
+            // __attribute__((noinline)) __attribute__((used)) std::string debug_string()
+            // {
+            //     return to_var().to_s();
+            // }
+            // #endif
         protected:
             // A pointer to the native object
             void* native_ptr = nullptr;
