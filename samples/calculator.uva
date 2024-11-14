@@ -1,0 +1,93 @@
+class Application
+{
+    function sum(a, b) {
+        return a + b;
+    }
+
+    function subtract(a, b)
+    {
+        return a - b;
+    }
+
+    function multiply(a, b)
+    {
+        return a * b;
+    }
+
+    function divide(a, b)
+    {
+        return a / b;
+    }
+
+    function history()
+    {
+        puts("History:");
+        puts("Not implemented yet.");
+    }
+
+    function mod(a, b)
+    {
+        return a % b;
+    }
+
+    function run() {
+        puts("Available operations:");
+
+        puts("\t+");
+        puts("\t-");
+        puts("\t*");
+        puts("\t/");
+        puts("\t%");
+        puts("\th (history");
+        puts("\te (exit)");
+        puts("");
+        
+        print("Enter an operation: ");
+        
+        var op = gets();
+        
+        var operator_map = {
+            "+":       "sum",
+            "-":       "subtract",
+            "*":       "multiply", 
+            "/":       "divide",
+            "%":       "mod",
+            "h":       "history",
+            "e":       "exit"
+        };
+        
+        var op = operator_map[op];
+        
+        if (op.present?) {
+            if(op == "exit") {
+                return 0;
+            } else {
+                if(op == "history") {
+                    history();
+                    return 0;
+                }
+            }
+
+            print("Enter the first number: ");
+            var a = gets();
+        
+            print("Enter the second number: ");
+            var b = gets();
+        
+            b.to_integer!;
+            a.to_integer!;
+        
+            if(a.present? && b.present?) {
+                var c = call(op, a, b);
+        
+                puts("The result is: ${c}");
+            } else {
+                puts("Please, type valid numbers.");
+            }
+        } else {
+            puts("Invalid operation.");
+        }
+
+        return 0;
+    }
+}
