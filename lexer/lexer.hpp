@@ -116,6 +116,9 @@ namespace uva
             void push_token(token_position start, token_type type, std::string content = "", token_kind kind = token_kind::token_null);
             void read_next_token();
             void tokenize();
+
+            public:
+                void extract_and_push_string(token_position start);
         // iterating
         public:
             /// @brief Increment the iterator

@@ -145,6 +145,34 @@ void uva::lang::lexer::push_token(token_position start, token_type type, std::st
     m_tokens.emplace_back(start, m_start, std::move(content), type, kind, m_file_name);
 }
 
+char unescape(const char& c)
+{
+    switch(c) {
+        case '\\':
+        case '"':
+        case '\'':
+            return c;
+        case 'n':
+            return '\n';
+        case 't':
+            return '\t';
+        case 'r':
+            return '\r';
+        case 'b':
+            return '\b';
+        case 'a':
+            return '\b';
+        case 'f':
+            return '\f';
+        case 'v':
+            return '\v';
+        default:
+            break;
+    }
+
+    throw std::runtime_error("lexer: cannot unescape '" + std::string(1, c) + "'");
+}
+
 void uva::lang::lexer::read_next_token()
 {
     m_buffer.clear();
@@ -207,61 +235,8 @@ void uva::lang::lexer::read_next_token()
     if(c == '\"') {
         discard();
 
-        while(m_source.size()) {
-            char ch = m_source.front();
-
-            if(ch == '\\') {
-                m_source.remove_prefix(1); // Remove the backslash
-                ch = m_source.front();     // Save the escaped character
-                m_source.remove_prefix(1); // Remove the escaped character
-
-                m_start.offset += 2;        // The backslash and the escaped character
-                m_start.column += 2;        // The backslash and the escaped character
-
-                switch(ch) {
-                    case '\\':
-                    case '"':
-                    case '\'':
-                        m_buffer.push_back(ch);
-                        break;
-                    case 'n':
-                        m_buffer.push_back('\n');
-                        break;
-                    case 't':
-                        m_buffer.push_back('\t');
-                        break;
-                    case 'r':
-                        m_buffer.push_back('\r');
-                        break;
-                    case 'b':
-                        m_buffer.push_back('\b');
-                        break;
-                    case 'a':
-                        m_buffer.push_back('\b');
-                        break;
-                    case 'f':
-                        m_buffer.push_back('\f');
-                        break;
-                    case 'v':
-                        m_buffer.push_back('\v');
-                        break;
-                    default:
-                        throw std::runtime_error("lexer: cannot escape '" + std::string(1, ch) + "'");
-                        break;
-                }
-                continue;
-            }
-
-            if(ch == '\"') {
-                discard();
-                push_token(start, token_type::token_literal, std::move(m_buffer), token_kind::token_string);
-                return;
-            }
-
-            read();
-        }
-
-        throw std::runtime_error("lexer: unexpected end of file");
+        extract_and_push_string(start);
+        return;
     }
 
     if(is_preprocessor(m_source)) {
@@ -427,4 +402,71 @@ void uva::lang::lexer::token::merge(const token &other)
 {
     m_content += other.m_content;
     end = other.end;
+}
+
+void uva::lang::lexer::extract_and_push_string(token_position start)
+{
+    while(m_source.size()) {
+        char ch = m_source.front();
+
+        switch(ch)
+        {
+            case '\\':
+                m_source.remove_prefix(1); // Remove the backslash
+                ch = m_source.front();     // Save the escaped character
+                m_source.remove_prefix(1); // Remove the escaped character
+
+                m_start.offset += 2;        // The backslash and the escaped character
+                m_start.column += 2;        // The backslash and the escaped character
+
+                m_buffer.push_back(unescape(ch));
+            break;
+            case '\"':
+                discard();
+                push_token(start, token_type::token_literal, std::move(m_buffer), token_kind::token_string);
+                return;
+            break;
+            case '$':
+                if(m_source.size() > 1 && m_source[1] == '{') {
+                    discard(); // Remove the dollar sign
+                    discard(); // Remove the opening curly brace open
+
+                    // Push the string before the variable or expression
+                    push_token(start, token_type::token_literal, std::move(m_buffer), token_kind::token_string);
+
+                    // We call the operator + to concatenate the string with the variable or expression 
+                    push_token(start, token_type::token_operator, "+", token_kind::token_string);
+
+                    // Read the variable or expression
+                    while(m_source.size() && m_source.front() != '}') {
+                        read_next_token();
+                    }
+
+                    if(m_source.size()) {
+                        discard(); // Remove the closing curly brace
+                    }
+                    
+                    // Check if the string is finished
+                    if(m_source.size() && m_source.front() == '\"') {
+                        discard(); // Remove the closing quote
+                        return;
+                    }
+
+                    // We call the operator + to concatenate the string with the variable or expression 
+                    push_token(m_start, token_type::token_operator, "+", token_kind::token_string);
+
+                    // Read the continuation of the string after the variable or expression
+                    extract_and_push_string(m_start);
+                    return;
+                }
+
+                read();
+            break;
+            default:
+                read();
+                break;
+        }
+    }
+
+    throw std::runtime_error("lexer: unexpected end of file");
 }
