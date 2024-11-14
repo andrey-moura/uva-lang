@@ -162,7 +162,7 @@ uva::lang::parser::ast_node uva::lang::parser::extract_value(uva::lang::lexer& l
     {
     case uva::lang::lexer::token_type::token_literal:
         // Eaisiest case, just return the value
-        return uva::lang::parser::ast_node(lexer.next_token(), uva::lang::parser::ast_node_type::ast_node_valuedecl);
+        return parse_literal(lexer);
         break;
     case uva::lang::lexer::token_type::token_identifier:
         // Can be a function call or a member access
