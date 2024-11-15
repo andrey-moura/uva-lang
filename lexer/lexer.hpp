@@ -51,14 +51,16 @@ namespace uva
             public:
                 token(token_position start, token_position end, std::string content, token_type type, token_kind kind, std::string file_name);
                 token(token_position start, token_position end, std::string content, token_type type, token_kind kind = token_kind::token_null);
+                token(token&& other);
+                token(const token&) = default;
                 token() = default;
                 ~token() = default;
             public:
             public:
                 bool is_eof() const { return m_type == token_type::token_eof; }
             public:
-                void throw_error_at_current_position(std::string what) const;
-                void throw_unexpected_eof_if_is_eol() const;
+                std::string error_message_at_current_position(std::string_view what) const;
+                std::string unexpected_eof_message() const;
                 std::string_view human_start_position() const;
 
                 void merge(const token& other);
@@ -72,6 +74,8 @@ namespace uva
             public:
                 token_position start;
                 token_position end;
+            public:
+                uva::lang::lexer::token& operator=(const uva::lang::lexer::token& other) = default;
             };
         protected:
             std::string m_file_name;
@@ -125,7 +129,7 @@ namespace uva
             void consume_token();
             /// @brief Return the next token and increment the iterator.
             /// @return The next token.
-            const uva::lang::lexer::token& next_token();
+            uva::lang::lexer::token& next_token();
             /// @brief Return the next token without incrementing the iterator.
             const uva::lang::lexer::token& see_next();
             /// @brief Decrement the iterator and return the next token.

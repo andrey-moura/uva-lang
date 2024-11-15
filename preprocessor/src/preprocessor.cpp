@@ -77,7 +77,7 @@ void uva::lang::preprocessor::process(const std::filesystem::path &__file_name, 
                 if(auto it = preprocessor_directives.find(token.content()); it != preprocessor_directives.end()) {
                     (this->*it->second)(__file_name, __lexer);
                 } else {
-                    token.throw_error_at_current_position("unknown preprocessor directive");
+                    throw std::runtime_error(token.error_message_at_current_position("unknown preprocessor directive"));
                 }
             }
                 break;
@@ -97,7 +97,7 @@ void uva::lang::preprocessor::process_include(const std::filesystem::path &__fil
     uva::lang::lexer::token file_name_token = std::move(__lexer.see_next());
 
     if(file_name_token.type() != lexer::token_type::token_literal || file_name_token.kind() != lexer::token_kind::token_string) {
-        file_name_token.throw_error_at_current_position("Expected string literal after include directive");
+        throw std::runtime_error(file_name_token.error_message_at_current_position("Expected string literal after include directive"));
     }
 
     const std::string& file_path_string = file_name_token.content();
@@ -127,7 +127,7 @@ void uva::lang::preprocessor::process_vm(const std::filesystem::path &__file_nam
     uva::lang::lexer::token file_name_token = std::move(__lexer.see_next());
 
     if(file_name_token.kind() != uva::lang::lexer::token_kind::token_string) {
-        file_name_token.throw_error_at_current_position("Expected string after boot");
+        throw std::runtime_error(file_name_token.error_message_at_current_position("Expected string after boot"));
     }
 
     __lexer.erase_tokens(2); // Remove the directive and the file name token

@@ -146,6 +146,10 @@ namespace uva
                 const ast_node* block() const {
                     return child_from_type(ast_node_type::ast_node_context);
                 }
+
+                const ast_node* context() const {
+                    return child_from_type(ast_node_type::ast_node_context);
+                }
             };
         protected:
             std::filesystem::path current_path;
@@ -159,10 +163,6 @@ namespace uva
 
         // Commons extract functions used by parsers
         protected:
-            /// @brief Extract an identifier. It can contain '.', '->' or '::'. Example in 'variable->attribute.fn()' the identifier is 'variable->attribute'.
-            /// @param lexer The lexer.
-            /// @return An identifier node.
-            uva::lang::lexer::token extract_identifier(uva::lang::lexer& lexer);
             /// @brief Extract a function call parameters. You must consume the ')' token.
             /// @param lexer The lexer.
             /// @return A function call parameters node.
@@ -171,41 +171,18 @@ namespace uva
             /// @param lexer The lexer.
             /// @return A function call node.
             uva::lang::parser::ast_node extract_fn_call(uva::lang::lexer& lexer);
-            /// @brief Extract a value declaration.
-            /// @param lexer The lexer.
-            /// @return A value declaration node.
-            uva::lang::parser::ast_node extract_value(uva::lang::lexer& lexer);
-        // Parsers members
-        protected:
-            using parser_function = uva::lang::parser::ast_node(uva::lang::parser::*)(uva::lang::lexer&);
-            /// @brief The parsers functions. The size is constant to allow the compiler to optimize the code.
-            static parser_function s_parsers[uva::lang::lexer::token_type::token_type_max];
+
+            uva::lang::parser::ast_node parse_identifier_or_literal(uva::lang::lexer& lexer, bool chain = true);
         // Parsers functions
         protected:
-            /// @brief Simply call parse again.
-            /// @param lexer The lexer.
-            /// @return The next valid node.
-            uva::lang::parser::ast_node parse_comment(uva::lang::lexer& lexer);
             /// @brief Parse a keyword.
             /// @param lexer The lexer.
             /// @return A keyword node.
             uva::lang::parser::ast_node parse_keyword(uva::lang::lexer& lexer);
-            /// @brief Parse an identifier.
-            /// @param lexer The lexer.
-            /// @return A function call, an member access or a binary operation.
-            uva::lang::parser::ast_node parse_identifier(uva::lang::lexer& lexer);
-            /// @brief Parse a literal.
-            /// @param lexer The lexer.
-            /// @return A literal node.
-            uva::lang::parser::ast_node parse_literal(uva::lang::lexer& lexer);
             /// @brief Parse a delimiter.
             /// @param lexer The lexer.
             /// @return A delimiter node.
             uva::lang::parser::ast_node parse_delimiter(uva::lang::lexer& lexer);
-            /// @brief Parse an operator.
-            /// @param lexer The lexer.
-            /// @return An operator node.
-            uva::lang::parser::ast_node parse_operator(uva::lang::lexer& lexer);
             /// @brief Parse a context.
             /// @param lexer The lexer.
             /// @return A context node.
@@ -214,6 +191,13 @@ namespace uva
             /// @param lexer The lexer.
             /// @return An exception
             uva::lang::parser::ast_node parse_preprocessor(uva::lang::lexer& lexer);
+        protected:
+            uva::lang::parser::ast_node parse_keyword_class(uva::lang::lexer& lexer);
+            uva::lang::parser::ast_node parse_keyword_var(uva::lang::lexer& lexer);
+            uva::lang::parser::ast_node parse_keyword_function(uva::lang::lexer& lexer);
+            uva::lang::parser::ast_node parse_keyword_return(uva::lang::lexer& lexer);
+            uva::lang::parser::ast_node parse_keyword_if(uva::lang::lexer& lexer);
+            uva::lang::parser::ast_node parse_keyword_foreach(uva::lang::lexer& lexer);
         };
     }
 }; // namespace uva

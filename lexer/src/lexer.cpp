@@ -298,7 +298,7 @@ void uva::lang::lexer::consume_token()
     iterator++;
 }
 
-const uva::lang::lexer::token &uva::lang::lexer::next_token()
+uva::lang::lexer::token &uva::lang::lexer::next_token()
 {
     uva::lang::lexer::token& token = m_tokens[iterator];
     consume_token();
@@ -369,19 +369,23 @@ uva::lang::lexer::token::token(token_position start, token_position end, std::st
 
 }
 
-void uva::lang::lexer::token::throw_error_at_current_position(std::string what) const
+uva::lang::lexer::token::token(token &&other)
+    : start(other.start), end(other.end), m_content(std::move(other.m_content)), m_type(other.m_type), m_kind(other.m_kind), m_file_name(std::move(other.m_file_name))
 {
-    what += " at ";
-    what += human_start_position();
-    throw std::runtime_error(what);
 }
 
-void uva::lang::lexer::token::throw_unexpected_eof_if_is_eol() const
+std::string uva::lang::lexer::token::error_message_at_current_position(std::string_view what) const
 {
-    if(is_eof()) {
-        std::string message = "Unexpected end of file";
-        throw_error_at_current_position(std::move(message));
-    }
+    std::string output(what);
+    output += " at ";
+    output += human_start_position();
+    
+    return output;
+}
+
+std::string uva::lang::lexer::token::unexpected_eof_message() const
+{
+    return error_message_at_current_position("unexpected end of file");
 }
 
 std::string_view uva::lang::lexer::token::human_start_position() const

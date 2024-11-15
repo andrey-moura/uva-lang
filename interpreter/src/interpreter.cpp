@@ -45,7 +45,22 @@ std::shared_ptr<uva::lang::object> uva::lang::interpreter::execute(uva::lang::pa
 
             auto cls = std::make_shared<uva::lang::structure>(std::string(class_name));
 
-            for(auto& class_child : source_code.childrens()) {
+            auto baseclass_node = source_code.child_from_type(uva::lang::parser::ast_node_type::ast_node_classdecl_base);
+
+            if (baseclass_node)
+            {
+                std::string_view base_class_name = baseclass_node->decname();
+
+                auto base_class = find_class(base_class_name);
+
+                if(!base_class) {
+                    throw std::runtime_error("base class " + std::string(base_class_name) + " not found");
+                }
+
+                cls->base = base_class;
+            }
+
+            for(auto& class_child : source_code.context()->childrens()) {
                 switch (class_child.type())
                 {
                 case uva::lang::parser::ast_node_type::ast_node_fn_decl: {
@@ -64,18 +79,6 @@ std::shared_ptr<uva::lang::object> uva::lang::interpreter::execute(uva::lang::pa
                 case uva::lang::parser::ast_node_type::ast_node_vardecl: {
                     std::string_view var_name = class_child.decname();
                     cls->instance_variables[std::string(var_name)] = NullClass;
-                }
-                break;
-                case uva::lang::parser::ast_node_type::ast_node_classdecl_base: {
-                    std::string_view base_class_name = class_child.decname();
-
-                    auto base_class = find_class(base_class_name);
-
-                    if(!base_class) {
-                        throw std::runtime_error("base class " + std::string(base_class_name) + " not found");
-                    }
-
-                    cls->base = base_class;
                 }
                 break;
                 default:
@@ -189,7 +192,7 @@ std::shared_ptr<uva::lang::object> uva::lang::interpreter::execute(uva::lang::pa
                     object_to_call = execute(*object_node, object);
 
                     if(!object_to_call) {
-                        object_node->token().throw_error_at_current_position("undefined operator '.' for null");
+                        throw std::runtime_error(object_node->token().error_message_at_current_position("undefined operator '.' for null"));
                     }
 
                     auto it = object_to_call->cls->methods.find(std::string(function_name));
@@ -201,16 +204,33 @@ std::shared_ptr<uva::lang::object> uva::lang::interpreter::execute(uva::lang::pa
                     method_to_call = &it->second;
                     class_to_call = object_to_call->cls;
                 } else if(object_node->type() == uva::lang::parser::ast_node_type::ast_node_valuedecl) {
-                    object_to_call = node_to_object(*object_node);
-
-                    auto it = object_to_call->cls->methods.find(std::string(function_name));
-
-                    if(it == object_to_call->cls->methods.end()) {
-                        throw std::runtime_error("class " + object_to_call->cls->name + " does not have a method called " + std::string(function_name));
+                    for(auto& cls : classes) {
+                        if(cls->name == object_node->token().content()) {
+                            class_to_call = cls;
+                            break;
+                        }
                     }
 
-                    method_to_call = &it->second;
-                    class_to_call = object_to_call->cls;
+                    if(class_to_call) {
+                        auto it = class_to_call->methods.find(std::string(function_name));
+
+                        if(it == class_to_call->methods.end()) {
+                            throw std::runtime_error("class " + class_to_call->name + " does not have a method called " + std::string(function_name));
+                        }
+
+                        method_to_call = &it->second;
+                    } else {
+                        object_to_call = node_to_object(*object_node);
+
+                        auto it = object_to_call->cls->methods.find(std::string(function_name));
+
+                        if(it == object_to_call->cls->methods.end()) {
+                            throw std::runtime_error("class " + object_to_call->cls->name + " does not have a method called " + std::string(function_name));
+                        }
+
+                        method_to_call = &it->second;
+                        class_to_call = object_to_call->cls;
+                    }
                 }
             } else {
                 if(is_super) {
@@ -388,7 +408,7 @@ std::shared_ptr<uva::lang::object> uva::lang::interpreter::execute(uva::lang::pa
         }
         break;
     default:
-        source_code.token().throw_error_at_current_position("interpreter: Unexpected token");
+        throw std::runtime_error(source_code.token().error_message_at_current_position("interpreter: Unexpected token"));
         break;
     }
 
