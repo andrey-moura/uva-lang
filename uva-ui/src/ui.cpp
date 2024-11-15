@@ -121,7 +121,7 @@ public:
                 // The theme is now owned by the application
                 uvalang_ui_theme* theme_native = theme_object->move_native_ptr<uvalang_ui_theme>();
 
-                uva::lang::ui::app* app = &object->base_instance->as<uva::lang::ui::app>();
+                uva::lang::ui::app* app = &object->as<uva::lang::ui::app>();
 
                 app->set_theme(theme_native);
 
@@ -137,7 +137,7 @@ public:
                 // The style is now owned by the application
                 uvalang_ui_style* style_native = style_object->move_native_ptr<uvalang_ui_style>();
 
-                uva::lang::ui::app* app = &object->base_instance->as<uva::lang::ui::app>();
+                uva::lang::ui::app* app = &object->as<uva::lang::ui::app>();
 
                 app->set_style(style_native);
 

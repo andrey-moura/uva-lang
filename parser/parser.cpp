@@ -291,6 +291,33 @@ uva::lang::parser::ast_node uva::lang::parser::parse_identifier_or_literal(uva::
             }
         }
         break;
+        case uva::lang::lexer::token_type::token_keyword:
+            if(token.content() == "new") {
+                lexer.consume_token(); // Consume the 'new' token
+
+                uva::lang::lexer::token& class_name_token = lexer.next_token();
+
+                ast_node object_node(ast_node_type::ast_node_fn_object);
+                object_node.add_child(std::move(ast_node(std::move(class_name_token), ast_node_type::ast_node_declname)));
+                ast_node fn_node(ast_node_type::ast_node_fn_call);
+                fn_node.add_child(std::move(ast_node(std::move(token), ast_node_type::ast_node_declname)));
+
+                const uva::lang::lexer::token& parenthesis_token = lexer.next_token();
+
+                if(parenthesis_token.content() != "(") {
+                    throw std::runtime_error(parenthesis_token.error_message_at_current_position("Expected '('"));
+                }
+
+                ast_node params = extract_fn_call_params(lexer);
+
+                fn_node.add_child(std::move(params));
+                fn_node.add_child(std::move(object_node));
+
+                return fn_node;
+            } else {
+                throw std::runtime_error(token.error_message_at_current_position("Unexpected keyword"));
+            }
+            break;
         default:
             throw std::runtime_error(token.error_message_at_current_position("Expected identifier or literal"));
             break;
@@ -327,7 +354,15 @@ uva::lang::parser::ast_node uva::lang::parser::parse_identifier_or_literal(uva::
         return fn_node;
     }
 
-    ast_node identifier_or_literal_node(std::move(identifier_or_literal), ast_node_type::ast_node_valuedecl);
+    ast_node_type node_type;
+
+    if(identifier_or_literal.type() == uva::lang::lexer::token_type::token_literal) {
+        node_type = ast_node_type::ast_node_valuedecl;
+    } else {
+        node_type = ast_node_type::ast_node_declname;
+    }
+
+    ast_node identifier_or_literal_node(std::move(identifier_or_literal), node_type);
 
     // And after this we can have:
     // Operator ('.', '+', etc)
@@ -456,8 +491,10 @@ uva::lang::parser::ast_node uva::lang::parser::parse_keyword_class(uva::lang::le
             throw std::runtime_error(baseclass_token.error_message_at_current_position("Expected identifier as base class name"));
         }
 
-        ast_node base_class_node = ast_node(ast_node_type::ast_node_classdecl_base);
-        base_class_node.add_child(ast_node(std::move(lexer.next_token()), ast_node_type::ast_node_declname));
+        ast_node base_class_name_node = parse_identifier_or_literal(lexer);
+
+        ast_node base_class_node(ast_node_type::ast_node_classdecl_base);
+        base_class_node.add_child(std::move(base_class_name_node));
 
         class_node.add_child(base_class_node);
 

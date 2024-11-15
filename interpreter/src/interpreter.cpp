@@ -49,7 +49,18 @@ std::shared_ptr<uva::lang::object> uva::lang::interpreter::execute(uva::lang::pa
 
             if (baseclass_node)
             {
-                std::string_view base_class_name = baseclass_node->decname();
+                std::string base_class_name;
+                auto decname_node = baseclass_node->child_from_type(uva::lang::parser::ast_node_type::ast_node_declname);
+
+                if(decname_node->childrens().size() == 0) {
+                    base_class_name = baseclass_node->decname();
+                } else {
+                    auto object_node = decname_node->child_from_type(uva::lang::parser::ast_node_type::ast_node_fn_object);
+
+                    const uva::lang::parser::ast_node& object_node_child = object_node->childrens().front();
+
+                    base_class_name = object_node_child.token().content() + "." + decname_node->token().content();
+                }
 
                 auto base_class = find_class(base_class_name);
 
@@ -220,7 +231,7 @@ std::shared_ptr<uva::lang::object> uva::lang::interpreter::execute(uva::lang::pa
 
                         method_to_call = &it->second;
                     } else {
-                        object_to_call = node_to_object(*object_node);
+                        object_to_call = node_to_object(*object_node, object->cls, object);
 
                         auto it = object_to_call->cls->methods.find(std::string(function_name));
 
@@ -553,11 +564,21 @@ const std::shared_ptr<uva::lang::object> uva::lang::interpreter::node_to_object(
     } else if(node.type() == uva::lang::parser::ast_node_type::ast_node_fn_call) {
         return execute(node, object);
     } else if(node.type() == uva::lang::parser::ast_node_type::ast_node_valuedecl) {
+        if(object) {
+            auto it = object->instance_variables.find(node.token().content());
+
+            if(it != object->instance_variables.end()) {
+                return it->second;
+            }
+        }
+
         auto it = current_context.variables.find(node.token().content());
 
         if(it != current_context.variables.end()) {
             return it->second;
         }
+
+        throw std::runtime_error("'" + std::string(node.token().content()) + "' is undefined");
     } else if(node.type() == uva::lang::parser::ast_node_type::ast_node_arraydecl) {
         std::vector<std::shared_ptr<uva::lang::object>> array;
 
