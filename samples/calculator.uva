@@ -31,61 +31,63 @@ class Application
     }
 
     function run() {
-        puts("Available operations:");
+        while(true) {
+            puts("Available operations:");
 
-        puts("\t+");
-        puts("\t-");
-        puts("\t*");
-        puts("\t/");
-        puts("\t%");
-        puts("\th (history");
-        puts("\te (exit)");
-        puts("");
-        
-        print("Enter an operation: ");
-        
-        var op = gets();
-        
-        var operator_map = {
-            "+":       "sum",
-            "-":       "subtract",
-            "*":       "multiply", 
-            "/":       "divide",
-            "%":       "mod",
-            "h":       "history",
-            "e":       "exit"
-        };
-        
-        var op = operator_map[op];
-        
-        if (op.present?) {
-            if(op == "exit") {
-                return 0;
-            } else {
-                if(op == "history") {
-                    history();
-                    return 0;
+            puts("\t+");
+            puts("\t-");
+            puts("\t*");
+            puts("\t/");
+            puts("\t%");
+            puts("\th (history");
+            puts("\te (exit)");
+            puts("");
+            
+            print("Enter an operation: ");
+            
+            var op = gets();
+            
+            var operator_map = {
+                "+":       "sum",
+                "-":       "subtract",
+                "*":       "multiply", 
+                "/":       "divide",
+                "%":       "mod",
+                "h":       "history",
+                "e":       "exit"
+            };
+            
+            var op = operator_map[op];
+            
+            if (op.present?) {
+                if(op == "exit") {
+                    break;
+                } else {
+                    if(op == "history") {
+                        history();
+                        return 0;
+                    }
                 }
-            }
 
-            print("Enter the first number: ");
-            var a = gets();
-        
-            print("Enter the second number: ");
-            var b = gets();
-        
-            b.to_integer!;
-            a.to_integer!;
-        
-            if(a.present? && b.present?) {
-                var c = call(op, a, b);
-        
-                puts("The result is: ${c}");
+                print("Enter the first number: ");
+                var a = gets();
+            
+                print("Enter the second number: ");
+                var b = gets();
+            
+                b.to_integer!;
+                a.to_integer!;
+            
+                if(a.present? && b.present?) {
+                    var c = call(op, a, b);
+            
+                    puts("The result is: ${c}");
+                } else {
+                    puts("Please, type valid numbers.");
+                }
             } else {
-                puts("Please, type valid numbers.");
+                puts("Invalid operation.");
             }
-        } else {
-            puts("Invalid operation.");
         }
 
         return 0;
