@@ -46,6 +46,8 @@ namespace uva
                 ast_node_declname,
 
                 ast_node_conditional,
+                ast_node_while,
+                ast_node_break,
                 ast_node_else,
                 ast_node_condition
             };
@@ -198,6 +200,8 @@ namespace uva
             uva::lang::parser::ast_node parse_keyword_return(uva::lang::lexer& lexer);
             uva::lang::parser::ast_node parse_keyword_if(uva::lang::lexer& lexer);
             uva::lang::parser::ast_node parse_keyword_foreach(uva::lang::lexer& lexer);
+            uva::lang::parser::ast_node parse_keyword_while(uva::lang::lexer& lexer);
+            uva::lang::parser::ast_node parse_keyword_break(uva::lang::lexer& lexer);
         };
     }
 }; // namespace uva

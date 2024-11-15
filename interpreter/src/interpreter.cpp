@@ -362,6 +362,24 @@ std::shared_ptr<uva::lang::object> uva::lang::interpreter::execute(uva::lang::pa
             return ret;
         }
         break;
+        case uva::lang::parser::ast_node_type::ast_node_while: {
+            std::shared_ptr<uva::lang::object> ret = nullptr;
+
+            while(execute(*source_code.condition(), object)->is_present()) {
+                ret = execute(*source_code.context(), object);
+
+                if(current_context.has_returned) {
+                    return current_context.return_value;
+                }
+            }
+
+            return ret;
+        }
+        break;
+        case uva::lang::parser::ast_node_type::ast_node_break: {
+            current_context.has_returned = true;
+            return nullptr;
+        }
         case uva::lang::parser::ast_node_type::ast_node_context:
             return execute_all(source_code, object);
         break;

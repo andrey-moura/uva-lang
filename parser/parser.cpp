@@ -418,7 +418,9 @@ uva::lang::parser::ast_node uva::lang::parser::parse_keyword(uva::lang::lexer &l
         { "function", &uva::lang::parser::parse_keyword_function },
         { "return",   &uva::lang::parser::parse_keyword_return   },
         { "if",       &uva::lang::parser::parse_keyword_if       },
-        { "foreach",  &uva::lang::parser::parse_keyword_foreach  }
+        { "foreach",  &uva::lang::parser::parse_keyword_foreach  },
+        { "while",    &uva::lang::parser::parse_keyword_while    },
+        { "break",    &uva::lang::parser::parse_keyword_break    },
     };
 
     auto keyword_parser = keyword_parsers.find(token.content());
@@ -695,4 +697,45 @@ uva::lang::parser::ast_node uva::lang::parser::parse_keyword_foreach(uva::lang::
     foreach_node.add_child(std::move(context_node));
 
     return foreach_node;
+}
+
+uva::lang::parser::ast_node uva::lang::parser::parse_keyword_while(uva::lang::lexer &lexer)
+{
+    ast_node while_node(ast_node_type::ast_node_while);
+    while_node.add_child(ast_node(std::move(lexer.next_token()), ast_node_type::ast_node_decltype));
+
+    const uva::lang::lexer::token& parenthesis_token = lexer.next_token();
+
+    if(parenthesis_token.content() != "(") {
+        throw std::runtime_error(parenthesis_token.error_message_at_current_position("Expected '(' after 'while'"));
+    }
+
+    ast_node condition_node(ast_node_type::ast_node_condition);
+    condition_node.add_child(std::move(parse_identifier_or_literal(lexer)));
+
+    while_node.add_child(std::move(condition_node));
+
+    const uva::lang::lexer::token& close_parenthesis_token = lexer.next_token();
+
+    if(close_parenthesis_token.content() != ")") {
+        throw std::runtime_error(close_parenthesis_token.error_message_at_current_position("Expected ')' after 'while' condition"));
+    }
+
+    ast_node while_context = parse_node(lexer);
+
+    if(while_context.type() != ast_node_type::ast_node_context) {
+        throw std::runtime_error(while_context.token().error_message_at_current_position("Expected context after 'while'"));
+    }
+
+    while_node.add_child(std::move(while_context));
+
+    return while_node;
+}
+
+uva::lang::parser::ast_node uva::lang::parser::parse_keyword_break(uva::lang::lexer &lexer)
+{
+    ast_node break_node(ast_node_type::ast_node_break);
+    break_node.add_child(ast_node(std::move(lexer.next_token()), ast_node_type::ast_node_decltype));
+
+    return break_node;
 }
