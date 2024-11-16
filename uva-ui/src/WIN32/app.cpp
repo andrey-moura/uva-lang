@@ -1,4 +1,4 @@
-// Include gtk
+#include <windows.h>
 #include <uva-ui/app.hpp>
 
 uva::lang::ui::app* uvaapp = nullptr;
