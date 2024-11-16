@@ -1,7 +1,8 @@
+#include <uva.hpp>
+
 #include <preprocessor/preprocessor.hpp>
 
 #include <uva/file.hpp>
-#include "preprocessor.hpp"
 
 // TODO: move to uva::file
 
@@ -36,7 +37,9 @@ std::vector<std::string> list_files_with_wildcard(const std::filesystem::path& b
     for (const auto& entry : std::filesystem::recursive_directory_iterator(base_path)) {
         if (std::filesystem::is_regular_file(entry.path())) {
             std::string filename = entry.path().string();
-
+#ifdef __UVA_WIN__
+            std::replace(filename.begin(), filename.end(), '\\', '/');
+#endif
             // Verifica se o arquivo corresponde ao padrão
             if (std::regex_match(filename, regex_pattern)) {
                 files.push_back(filename);
