@@ -231,7 +231,13 @@ std::shared_ptr<uva::lang::object> uva::lang::interpreter::execute(uva::lang::pa
 
                         method_to_call = &it->second;
                     } else {
-                        object_to_call = node_to_object(*object_node, object->cls, object);
+                        std::shared_ptr<uva::lang::structure> object_class = nullptr;
+
+                        if(object) {
+                            object_class = object->cls;
+                        }
+
+                        object_to_call = node_to_object(*object_node, object_class, object);
 
                         auto it = object_to_call->cls->methods.find(std::string(function_name));
 
@@ -317,17 +323,21 @@ std::shared_ptr<uva::lang::object> uva::lang::interpreter::execute(uva::lang::pa
                             params_to_call.push_back(node_to_object(param));
                         }
                         else {
-                            // an identifier
-                            auto it = current_context.variables.find(param.token().content());
-
-                            if(it != current_context.variables.end()) {
-                                params_to_call.push_back(it->second);
-                            } else {
-                                throw std::runtime_error("'" + std::string(param.token().content()) + "' is undefined");
-                            }
+                            throw std::runtime_error("interpreter: Unexpected token in function call parameters");
                         }
                     }
                         break;
+                    case uva::lang::parser::ast_node_type::ast_node_declname: {
+                        // an identifier
+                        auto it = current_context.variables.find(param.token().content());
+
+                        if(it != current_context.variables.end()) {
+                            params_to_call.push_back(it->second);
+                        } else {
+                            throw std::runtime_error("'" + std::string(param.token().content()) + "' is undefined");
+                        }
+                    }
+                    break;
                     case uva::lang::parser::ast_node_type::ast_node_fn_call:
                         params_to_call.push_back(execute(param, object));
                     break;
@@ -563,7 +573,7 @@ const std::shared_ptr<uva::lang::object> uva::lang::interpreter::node_to_object(
         }
     } else if(node.type() == uva::lang::parser::ast_node_type::ast_node_fn_call) {
         return execute(node, object);
-    } else if(node.type() == uva::lang::parser::ast_node_type::ast_node_valuedecl) {
+    } else if(node.type() == uva::lang::parser::ast_node_type::ast_node_declname || node.type() == uva::lang::parser::ast_node_type::ast_node_valuedecl) {
         if(object) {
             auto it = object->instance_variables.find(node.token().content());
 
