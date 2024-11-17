@@ -5,10 +5,12 @@ set(CMAKE_CXX_STANDARD 20)
 
 project(uva-languanizer)
 
-# sudo apt install libclang-dev
-find_package(Clang)
+if(FALSE)
+    # sudo apt install libclang-dev
+    find_package(Clang)
+endif()
 
-if(FALSE AND DEFINED CLANG_INCLUDE_DIRS)
+if(DEFINED CLANG_INCLUDE_DIRS)
     include_directories(${CLANG_INCLUDE_DIRS})
     add_definitions(${CLANG_DEFINITIONS})
     add_definitions("-lclang")
