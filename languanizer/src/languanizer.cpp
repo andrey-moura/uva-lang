@@ -5,7 +5,6 @@
 #include <uva/string.hpp>
 #include <uva/var.hpp>
 #include <console.hpp>
-#include <str_stream/str_fstream.hpp>
 #include <clang-c/Index.h>  // This is libclang.
 
 using namespace uva;
@@ -16,7 +15,6 @@ std::string to_string(CXString str)
     clang_disposeString(str);
     return s;
 }
-
 
 std::ostream& operator<<(std::ostream& stream, const CXString& str)
 {
@@ -30,20 +28,15 @@ enum class method_storage_type {
     class_method,
 };
 
-enum class return_type {
-    return_void,
-    return_bool,
-    return_other,
-};
-
 struct argument
 {
     std::string name;
     std::string type;
     std::string type_name;
     std::string default_value;
-    var::var_type var_type;
     bool pointer = false;
+    bool is_any = false;
+    bool to_string = false;
 };
 
 class method
@@ -52,7 +45,7 @@ public:
     std::string name;
     std::vector<argument> args;
     method_storage_type type;
-    return_type ret;
+    std::string ret_type_name;
 
     bool operator==(const method& other) const {
         return name == other.name;
@@ -123,6 +116,11 @@ CXChildVisitResult method_iterator(CXCursor c, CXCursor paarent, CXClientData cl
         arg.name = to_string(clang_getCursorSpelling(c));
         arg.type_name = to_string(clang_getTypeSpelling(type));
 
+        arg.is_any = arg.name.starts_with("any_");
+        if(arg.is_any) {
+            arg.name.erase(0, 4);
+        }
+
         if(arg.type_name.starts_with("const")) {
             arg.type_name.erase(0, 5);
         }
@@ -148,62 +146,9 @@ CXChildVisitResult method_iterator(CXCursor c, CXCursor paarent, CXClientData cl
             arg.type_name.erase(0, 1);
         }
 
-        // Verifica se o tipo canônico é um tipo primitivo
-        switch (canonical_type.kind) {
-            case CXType_Void:
-                arg.var_type = var::var_type::null_type;
-            break;
-            case CXType_Bool:
-                arg.var_type = var::var_type::integer;
-            break;
-            case CXType_Char_U:
-                arg.var_type = var::var_type::integer;
-            break;
-            case CXType_UChar:
-                arg.var_type = var::var_type::integer;
-            break;
-            case CXType_Char_S:
-                arg.var_type = var::var_type::integer;
-            break;
-            case CXType_SChar:
-                arg.var_type = var::var_type::integer;
-            break;
-            case CXType_UShort:
-                arg.var_type = var::var_type::integer;
-            break;
-            case CXType_UInt:
-                arg.var_type = var::var_type::integer;
-            break;
-            case CXType_ULong:
-                arg.var_type = var::var_type::integer;
-            break;
-            case CXType_ULongLong:
-                arg.var_type = var::var_type::integer;
-            break;
-            case CXType_Short:
-                arg.var_type = var::var_type::integer;
-            break;
-            case CXType_Int:
-                arg.var_type = var::var_type::integer;
-            break;
-            case CXType_Long:
-                arg.var_type = var::var_type::integer;
-            break;
-            case CXType_LongLong:
-                arg.var_type = var::var_type::integer;
-            break;
-            case CXType_Float:
-                arg.var_type = var::var_type::real;
-            break;
-            case CXType_Double:
-                arg.var_type = var::var_type::real;
-            break;
-            case CXType_LongDouble:
-                arg.var_type = var::var_type::real;
-            break;
-            default:
-                arg.var_type = var::var_type::undefined;
-            break;
+        if(arg.type_name.starts_with("any_to_string")) {
+            arg.to_string = true;
+            arg.type_name = "std::string";
         }
 
         clang_visitChildren(c, &parameter_iterator, &arg);
@@ -227,8 +172,6 @@ method extract_method(CXCursor class_c) {
         return {};
     }
     
-    std::cout << "\n";
-
     CX_StorageClass storage_class = clang_Cursor_getStorageClass(class_c);
 
     CXType return_type = clang_getCursorResultType(class_c);
@@ -236,17 +179,7 @@ method extract_method(CXCursor class_c) {
     method m;
     m.name = name;
     m.type = storage_class == CX_StorageClass::CX_SC_None ? method_storage_type::instance_method : method_storage_type::class_method;
-    switch(return_type.kind) {
-        case CXTypeKind::CXType_Void:
-            m.ret = return_type::return_void;
-            break;
-        case CXTypeKind::CXType_Bool:
-            m.ret = return_type::return_bool;
-            break;
-        default:
-            m.ret = return_type::return_other;
-            break;
-    }
+    m.ret_type_name = to_string(clang_getTypeSpelling(return_type));
 
     clang_visitChildren(class_c, &method_iterator, &m);
 
@@ -257,12 +190,11 @@ _class* nmspace;
 
 int main(int argc, char** argv) {
     if(argc < 2) {
-        //uva::console::log_error("stop: missing argument");
-      //  return 1;
+        uva::console::log_error("stop: missing argument");
+        return 1;
     }
 
-    //std::filesystem::path input = argv[1];
-    std::filesystem::path input = "/home/andrey/Downloads/wxWidgets-3.2.5/include/wx/msgdlg.h";
+    std::filesystem::path input = argv[1];
 
     if(!std::filesystem::exists(input)) {
         uva::console::log_error("input file '{}' does not exists", input.string());
@@ -270,6 +202,7 @@ int main(int argc, char** argv) {
     }
 
     std::map<std::string, std::string> definitions;
+    std::vector<std::string> includes;
 
     for(size_t i = 2; i < argc; ++i) {
         std::string_view arg = argv[i];
@@ -317,6 +250,14 @@ int main(int argc, char** argv) {
     #ifndef NDEBUG
             else if(arg == "debug") {
                 debug = true;
+            } else if(arg == "I") {
+                if(i + 1 >= argc) {
+                    console::log_error("expected argument after '-I'");
+                    return 1;
+                }
+
+                includes.push_back(argv[i+1]);
+                i++;
             }
     #endif
             else {
@@ -328,25 +269,30 @@ int main(int argc, char** argv) {
 
     CXIndex index = clang_createIndex(0, 0);
 
-    std::vector<const char*> args = {
-        "-I/home/andrey/Downloads/wxWidgets-3.2.5/include",
-        "-DwxUSE_MSGDLG=1",
-        "-std=c++11",
+    std::vector<std::string> args = {
+        
     };
 
     for(const auto& [name, value] : definitions) {
         args.push_back(std::format("-D{}={}", name, value).c_str());
     }
 
-    classes.push_back({"wx"});
+    for(const auto& include : includes) {
+        args.push_back("-I" + include);
+    }
 
-    nmspace = &classes.back();
-    
+    std::vector<const char*> cargs;
+    for(const auto& arg : args) {
+        cargs.push_back(arg.c_str());
+    }
+
+    cargs.push_back("-std=c++11");
+
     CXTranslationUnit unit = clang_parseTranslationUnit(
         index,
         input.string().c_str(),
-        args.data(),
-        args.size(),
+        cargs.data(),
+        cargs.size(),
         nullptr, 0,
         CXTranslationUnit_None
     );
@@ -368,7 +314,17 @@ int main(int argc, char** argv) {
         }
 
         if (clang_Location_isFromMainFile (clang_getCursorLocation(c)) == 0) {
-            return CXChildVisit_Continue;
+            //return CXChildVisit_Continue;
+        }
+
+        if(c.kind == CXCursorKind::CXCursor_PreprocessingDirective) {
+            CXString str = clang_getCursorSpelling(c);
+            std::string name = to_string(str);
+            clang_disposeString(str);
+
+            if(name.starts_with("#include")) {
+                return CXChildVisit_Continue;
+            }
         }
 
         if(c.kind == CXCursorKind::CXCursor_ClassDecl) {
@@ -402,15 +358,15 @@ int main(int argc, char** argv) {
             
             return CXChildVisit_Continue;
         } else if(c.kind == CXCursorKind::CXCursor_FunctionDecl) {
-            std::string name = to_string(clang_getCursorSpelling(c));
-            if(debug) {
-                std::cout << "Found function '" << name << "'\n";
-            }
+            // std::string name = to_string(clang_getCursorSpelling(c));
+            // if(debug) {
+            //     std::cout << "Found function '" << name << "'\n";
+            // }
 
-            method m = extract_method(c);
-            if(m.name.size()) {
-                classes.front().methods.push_back(m);
-            }
+            // method m = extract_method(c);
+            // if(m.name.size()) {
+            //     classes.front().methods.push_back(m);
+            // }
         }
 
         return CXChildVisit_Continue;
@@ -419,7 +375,12 @@ int main(int argc, char** argv) {
     clang_disposeTranslationUnit(unit);
     clang_disposeIndex(index);
 
-    std::ofstream ofile(std::filesystem::absolute("output.hpp"));
+    std::filesystem::path output_file_name = input.parent_path();
+    output_file_name /= "src";
+    output_file_name /= input.stem();
+    output_file_name.replace_extension(".cpp");
+
+    std::ofstream ofile(output_file_name);
 
     time_t t;
     struct tm *tmp;
@@ -436,8 +397,27 @@ int main(int argc, char** argv) {
     ofile << "//Generated at: " << outstr << "." << std::endl;
     ofile << std::endl;
 
+    ofile << "#include <interpreter/interpreter.hpp>" << std::endl;
+    ofile << "#include <lang/object.hpp>" << std::endl;
+    ofile << "#include <lang/method.hpp>" << std::endl;
+    ofile << "#include <lang/class.hpp>" << std::endl;
+
+    ofile << "#include <lang/" << input.filename().string() << ">" << std::endl;
+    ofile << std::endl;
+
     for(auto& cls : classes) {
-        ofile << "std::shared_ptr<Class> " << cls.name << "Class = Class::create(\"" << cls.name << "\"";
+        ofile << "std::shared_ptr<uva::lang::structure> create_" << cls.name << "(uva::lang::interpreter* interpreter)" << std::endl;
+        ofile << "{" << std::endl;
+
+        std::string class_name_without_class = cls.name;
+
+        size_t class_pos = class_name_without_class.find("_class");
+        
+        if(class_pos != std::string::npos) {
+            class_name_without_class.erase(class_pos, 6);
+        }
+
+        ofile << "\treturn std::make_shared<uva::lang::structure>(uva::lang::structure(\"" << class_name_without_class << "\"";
 
         ofile << ", {" << std::endl << std::endl;;
 
@@ -461,17 +441,19 @@ int main(int argc, char** argv) {
 
             std::string prettier_name = uva::string::to_snake_case(method.name);
 
-            if(method.ret == return_type::return_bool && prettier_name.starts_with("is_")) {
+            if(method.ret_type_name == "void" && prettier_name.starts_with("is_")) {
                 prettier_name.erase(0, 3);
                 prettier_name.push_back('?');
             }
 
-            ofile << "\tMethod(\"" << prettier_name << "\", ";
+            ofile << "\t\tuva::lang::method(\"" << prettier_name << "\", ";
+
+            ofile << "uva::lang::method_storage_type::";
 
             if(method.type == method_storage_type::class_method) {
-                ofile << "method_storage_type::class_method, ";
+                ofile << "class_method, ";
             } else {
-                ofile << "method_storage_type::instance_method, ";
+                ofile << "instance_method, ";
             }
             
             ofile << "{ ";
@@ -484,45 +466,23 @@ int main(int argc, char** argv) {
                 ofile << "\"" << method.args[i].name << "\"";
             }
 
-            ofile << " }, [](Object* object, const var& params) {" << std::endl;
+            ofile << " }, [interpreter](std::shared_ptr<uva::lang::object> object, std::vector<std::shared_ptr<uva::lang::object>> params) {" << std::endl;
 
             for(size_t argument_i = 0; argument_i < method.args.size(); ++argument_i) {
                 const auto& argument = method.args[argument_i];
 
-                ofile << "\t\t" << argument.type_name;
-                if(argument.pointer) {
-                    ofile << "*";
-                }
+                if(argument.to_string) {
+                    ofile << "\t\t\t" << argument.type_name;
 
-                ofile << " " << argument.name;
-
-                if(argument.pointer) {
-                    ofile << " = nullptr;";
-                } else if(argument.default_value.size()) {
-                    ofile << " = " << argument.default_value << ";";
-                } else {
                     std::string argument_type_name_snake_case = uva::string::to_snake_case(argument.type_name);
-                    if(argument.var_type == var::var_type::undefined) {
-                        ofile << " = " << argument_type_name_snake_case << "_from_var(params[" << '"' << argument.name << '"' << "]);";
-                    } else {
-                        switch(argument.var_type) {
-                            case var::var_type::integer:
-                                ofile << " = params[" << '"' << argument.name << '"' << "].as<var::integer>();";
-                                break;
-                            case var::var_type::real:
-                                ofile << " = params[" << '"' << argument.name << '"' << "].as<var::real>();";
-                                break;
-                            case var::var_type::string:
-                                ofile << " = params[" << '"' << argument.name << '"' << "].as<var::string>();";
-                                break;
-                            default:
-                                ofile << ";";
-                                break;
-                        }
-                    }
-                }
 
-                ofile << std::endl;
+                    ofile << " " << argument.name << " = " << "params[" << argument_i << "]";
+
+                    ofile << "->to_var().to_s();" << std::endl;
+                }
+                else {
+                    ofile << "\t\t\tconst " << argument.type_name << "& " << argument.name << " = " << "params[" << argument_i << "]->as<" << argument.type_name << ">();" << std::endl;
+                }
             }
 
             if(method.args.size()) {
@@ -530,19 +490,37 @@ int main(int argc, char** argv) {
             }
 
             if(method.type == method_storage_type::instance_method) {
-                ofile << "\t\t" << cls.name << "* native_object = (" << cls.name << "*)(object);" << std::endl;
+                ofile << "\t\t\t" << cls.name << "& native_object = object->as<" << cls.name << ">();" << std::endl;
             }
 
-            //if(method.ret == return_type::return_void) {
-                ofile << "\t\t";
-            //} else {
-                //ofile << "\t\treturn ";
-            //}
+            bool has_been_moved = false;
+
+            if(method.ret_type_name == "void") {
+                ofile << "\t\t\t";
+            }
+            else {
+                if(method.ret_type_name.ends_with("_instance")) {
+                    std::string ret_class = method.ret_type_name;
+                    ret_class.erase(ret_class.size() - 9, 9);
+                    
+                    //if(ret_class == "object") {
+                        ofile << "\t\t\treturn uva::lang::object::instantiate(interpreter, interpreter->";
+
+                        ret_class[0] = std::toupper(ret_class[0]);
+                        ofile << ret_class << "Class";
+                        ofile << ", std::move(";
+                        has_been_moved = true;
+                    //} else {
+                    //}
+                } else {
+                    ofile << "\t\t\treturn ";
+                }
+            }
 
             if(method.type == method_storage_type::class_method) {
                 ofile << cls.name << "::" << method.name << "(";
             } else {
-                ofile << "native_object->" << method.name << "(";
+                ofile << "native_object." << method.name << "(";
             }
 
             for(size_t argument_i = 0; argument_i < method.args.size(); ++argument_i) {
@@ -555,13 +533,19 @@ int main(int argc, char** argv) {
                 ofile << argument.name;
             }
 
-            ofile << ");" << std::endl;
+            ofile << ")";
 
-            //if(method.ret == return_type::return_void) {
-                ofile << "\t\treturn nullptr;" << std::endl;
-            //}
+            if(method.ret_type_name == "void") {
+                ofile << ";" << std::endl << "\t\t\treturn nullptr;" << std::endl;
+            } else {
+                if(has_been_moved) {
+                    ofile << "));" << std::endl;
+                } else {
+                    ofile << ";" << std::endl;
+                }
+            }
 
-            ofile << "\t})";
+            ofile << "\t\t})";
 
             if(is_overloaded) {
                 ofile << std::endl << "\t,*/";
@@ -570,9 +554,12 @@ int main(int argc, char** argv) {
                     ofile << "," << std::endl;
                 }
             }
+
+            ofile << std::endl;
         }
 
-        ofile << std::endl << std::endl << "});" << std::endl << std::endl;
+        ofile << std::endl << "\t}));";
+        ofile << std::endl << "}" << std::endl;
     }
 
     return 0;
