@@ -8,7 +8,7 @@ project(uva-languanizer)
 # sudo apt install libclang-dev
 find_package(Clang)
 
-if(DEFINED CLANG_INCLUDE_DIRS)
+if(FALSE AND DEFINED CLANG_INCLUDE_DIRS)
     include_directories(${CLANG_INCLUDE_DIRS})
     add_definitions(${CLANG_DEFINITIONS})
     add_definitions("-lclang")
