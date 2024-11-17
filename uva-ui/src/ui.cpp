@@ -252,19 +252,4 @@ public:
     }
 };
 
-#ifdef __UVA_DEBUG__
-    #define try if(true)
-    #define catch(x) else if(false)
-    std::exception e;
-#endif
-
-int main(int argc, char** argv) {
-    try {
-        uvalang_ui_app app;
-        return app.run(argc, argv);
-    } catch(const std::exception& e) {
-        uva::console::log_error(e.what());
-    }
-
-    return 0;
-}
+UVA_IMPLEMENT_APP(uvalang_ui_app);

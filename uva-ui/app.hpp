@@ -8,7 +8,7 @@
 #include <uva-ui/theme.hpp>
 #include <uva-ui/style.hpp>
 
-#define UVA_IMPLEMENT_APP(x) uva::lang::ui::app * uvaapp = new x();
+#include <uva-ui/implmement_app.hpp>
 
 namespace uva
 {
