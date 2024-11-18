@@ -4,9 +4,16 @@ class ApplicationStyle extends UI.Style
         super();
     }
     
-    function h1() {
+    function calculator_btn() {
         return { 
             "font-size": 24
+        };
+    }
+
+    function calculator_op_btn() {
+        return {
+            "font-size": 24,
+            "cursor": "pointer"
         };
     }
 }

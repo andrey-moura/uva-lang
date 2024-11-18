@@ -5,6 +5,7 @@
 
 #include <uva/var.hpp>
 #include <uva/file.hpp>
+#include <uva/xml.hpp>
 #include <console.hpp>
 
 #include <uva-ui/app.hpp>
@@ -65,9 +66,18 @@ public:
 protected:
     std::shared_ptr<uva::lang::object> object;
 public:
-    virtual var render() override
+    virtual uva::xml render() override
     {
-        return call_and_convert_to_dictionary(object, "render");
+        auto it = object->cls->methods.find("render");
+        std::shared_ptr<uva::lang::object> result = interpreter.call(object->cls, object, it->second, {});
+
+        std::string path = result->as<std::string>();
+
+        std::string source = uva::file::read_all_text<char>(path);
+
+        uva::xml xml = uva::xml::decode(source);
+
+        return xml;
     }
 };
 
