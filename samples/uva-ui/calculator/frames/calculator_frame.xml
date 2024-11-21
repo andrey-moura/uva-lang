@@ -1,22 +1,51 @@
-<horizontal-layout>
-    <calculator_btn
-        text="1"
+<vertical-layout>
+    <horizontal-layout
         flex=1>
-    </calculator_btn>
-    
-    <calculator_btn
-        text="2"
+
+        <calculator_btn
+            text="4"
+            flex=1>
+        </calculator_btn>
+        
+        <calculator_btn
+            text="5"
+            flex=1>
+        </calculator_btn>
+        
+        <calculator_btn
+            text="6"
+            flex=1>
+        </calculator_btn>
+        
+        <calculator_op_btn
+            text="-"
+            flex=1>
+        </calculator_op_btn>
+        
+    </horizontal-layout>
+
+    <horizontal-layout
         flex=1>
-    </calculator_btn>
-    
-    <calculator_btn
-        text="3"
-        flex=1>
-    </calculator_btn>
-    
-    <calculator_op_btn
-        text="+"
-        flex=1>
-    </calculator_op_btn>
-    
-</horizontal-layout>
+
+        <calculator_btn
+            text="1"
+            flex=1>
+        </calculator_btn>
+        
+        <calculator_btn
+            text="2"
+            flex=1>
+        </calculator_btn>
+        
+        <calculator_btn
+            text="3"
+            flex=1>
+        </calculator_btn>
+        
+        <calculator_op_btn
+            text="+"
+            flex=1>
+        </calculator_op_btn>
+        
+    </horizontal-layout>
+</vertical-layout>

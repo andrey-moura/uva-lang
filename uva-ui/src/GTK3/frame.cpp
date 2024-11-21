@@ -186,7 +186,7 @@ struct view_element {
                 }
             }
 
-            child.width = child_best_width;
+            child.width  = child_best_width;
             child.height = child_best_height;
 
             if(vertical_direction) {
@@ -238,7 +238,7 @@ void draw_element(GtkWidget *widget, cairo_t *cr, view_element& element, var::di
         cairo_show_text(cr, element.text.c_str());
     } else {
         for(auto& child : element.childrens) {
-            draw_element(widget, cr, child, theme);
+            draw_element(widget, cr, child, uvaapp->theme()->request(child.tag).as<var::dictionary>());
         }
     }
 }
