@@ -31,6 +31,7 @@ include("lexer/CMakeLists.txt")
 include("lang/CMakeLists.txt")
 include("uva-ui/CMakeLists.txt")
 include("preprocessor/CMakeLists.txt")
+include("uvao/CMakeLists.txt")
 include("languanizer/CMakeLists.txt")
 
 add_executable(uva
