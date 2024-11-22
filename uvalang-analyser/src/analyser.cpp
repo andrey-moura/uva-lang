@@ -28,11 +28,19 @@ int main(int argc, char** argv) {
         //vm_instance = std::make_shared<uva::lang::vm>();
 
         std::filesystem::path file_path;
+        std::filesystem::path temp_file_path;
 
         if(argc > 1) {
             file_path = std::filesystem::absolute(argv[1]);
         } else {
             file_path = std::filesystem::absolute("application.uva");
+        }
+
+        if(argc > 2) {
+            temp_file_path = std::filesystem::absolute(argv[2]);
+        }
+        else {
+            temp_file_path = file_path;
         }
 
         if(!std::filesystem::exists(file_path)) {
@@ -43,7 +51,7 @@ int main(int argc, char** argv) {
             throw std::runtime_error("input file is not a regular file");
         }
 
-        std::string source = uva::file::read_all_text<char>(file_path);
+        std::string source = uva::file::read_all_text<char>(temp_file_path);
 
         uva::lang::lexer l(file_path.string(), source);
 
