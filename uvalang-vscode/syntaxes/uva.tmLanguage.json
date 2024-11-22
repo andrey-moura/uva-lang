@@ -1,0 +1,84 @@
+{
+	"$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+	"name": "uva",
+	"patterns": [
+		{
+			"include": "#comments"
+		},
+		{
+			"include": "#literals"
+		},
+		{
+			"include": "#function-calls"
+		},
+		{
+			"include": "#keywords"
+		},
+		{
+			"include": "#strings"
+		}
+	],
+	"repository": {
+		"keywords": {
+			"patterns": [
+				{
+					"name": "keyword.control.uva",
+					"match": "\\b(if|while|break|for|foreach|in|return)\\b"
+				},
+				{
+					"name": "storage.type.class.uva",
+					"match": "\\b(class|extends)\\b"
+				},
+				{
+					"name": "storage.type.function.uva",
+					"match": "\\b(function)\\b"
+				}
+			]
+		},
+		"literals": {
+			"patterns": [
+				{
+					"name": "constant.numeric.uva",
+					"match": "\\b\\d+(\\.\\d+)?\\b"
+				},
+				{
+					"name": "constant.language.boolean.uva",
+					"match": "\\b(var|true|false|null)\\b"
+				}
+			]
+		},
+		"function-calls": {
+			"patterns": [
+				{
+					"name": "entity.name.function.call.uva",
+					"match": "\\b([a-zA-Z][a-zA-Z0-9_]*[!?]?)\\s*(?=([\\?\\!]))|([a-zA-Z][a-zA-Z0-9_]*[!?]?)\\s*(?=(\\())\\b"
+				}
+			]
+		},
+		"comments": {
+			"patterns": [
+				{
+					"name": "comment.line.double-slash.uva",
+					"match": "//.*"
+				},
+				{
+					"name": "comment.block.uva",
+					"begin": "/\\*",
+					"end": "\\*/"
+				}
+			]
+		},
+		"strings": {
+			"name": "string.quoted.double.uva",
+			"begin": "\"",
+			"end": "\"",
+			"patterns": [
+				{
+					"name": "constant.character.escape.uva",
+					"match": "\\\\."
+				}
+			]
+		}
+	},
+	"scopeName": "source.uva"
+}
