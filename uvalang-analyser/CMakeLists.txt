@@ -12,3 +12,5 @@ add_executable(uvalang-analyser
 )
 
 target_link_libraries(uvalang-analyser uva-extension uva-preprocessor uva-interpreter uva-lang uva-core uva-console uva-file uva-string ${wxWidgets_LIBRARIES})
+
+install(TARGETS uvalang-analyser DESTINATION bin)
