@@ -16,142 +16,173 @@ using namespace uva;
 std::shared_ptr<uva::lang::object> application;
 std::vector<uva::lang::extension*> extensions;
 
-#ifdef __UVA_DEBUG__
-    #define try if(true)
-    #define catch(e) if(false)
-
-    std::exception e;
-#endif
-
 int main(int argc, char** argv) {
-    try {
-        auto start = std::chrono::high_resolution_clock::now();
+    std::vector<std::string_view> args;
+    args.reserve(argc);
 
-        std::filesystem::path uva_executable_path = argv[0];
-        //vm_instance = std::make_shared<uva::lang::vm>();
+    bool is_server = false;
 
-        std::filesystem::path file_path;
-        std::filesystem::path temp_file_path;
+    for(int i = 1; i < argc; i++) {
+        std::string_view arg = argv[i];
 
-        if(argc > 1) {
-            file_path = std::filesystem::absolute(argv[1]);
+        if(arg.starts_with("--")) {
+            if(arg == "--server") {
+                is_server = true;
+            }
         } else {
-            file_path = std::filesystem::absolute("application.uva");
+            args.push_back(arg);
         }
+    }
 
-        if(argc > 2) {
-            temp_file_path = std::filesystem::absolute(argv[2]);
+    if(is_server) {
+        if(args.size() > 0) {
+            std::cerr << "uvalang-analyser --server takes no arguments" << std::endl;
+            return 1;
         }
-        else {
-            temp_file_path = file_path;
+    } else {
+        if(args.size() != 1 && args.size() != 2) {
+            std::cerr << "uvalang-analyser <input-file> [temp-file]" << std::endl;
+            return 1;
         }
+    }
 
-        if(!std::filesystem::exists(file_path)) {
-            throw std::runtime_error("input file does not exist");
+    std::string arg0;
+    std::string arg1;
+
+    if(!is_server) {
+        arg0 = args[0];
+
+        if(args.size() > 1) {
+            arg1 = args[1];
+        } else {
+            arg1 = arg0;
         }
+    }
 
-        if(!std::filesystem::is_regular_file(file_path)) {
-            throw std::runtime_error("input file is not a regular file");
-        }
+    try {
+        bool run = true;
 
-        std::string source = uva::file::read_all_text<char>(temp_file_path);
+        while(run) {
+            std::filesystem::path uva_executable_path = argv[0];
 
-        uva::lang::lexer l(file_path.string(), source);
+            if(is_server) {
+                std::getline(std::cin, arg0);
+                std::getline(std::cin, arg1);
+            } else {
+                run = false;
+            }
 
-        // Note we are writing directly to the cout instead of saving and encoding the output
+            std::filesystem::path file_path = std::filesystem::absolute(arg0);
+            std::filesystem::path temp_file_path = std::filesystem::absolute(arg1);
 
-        std::cout << "{\n";
-        std::cout << "\t\"tokens\": [";
+            auto start = std::chrono::high_resolution_clock::now();
 
-        // for(const auto& token : l.tokens()) {
-        //     switch(token.type()) {
-        //         case uva::lang::lexer::token_type::token_keyword:
-        //         case uva::lang::lexer::token_type::token_literal:
-        //             std::cout << "\t";
-        //             std::cout << "{ \"type\": \"keyword\", \"content\": \"";
-        //             std::cout << token.content();
-        //             std::cout << "\" }" << std::endl;
-        //         break;
-        //     }
-        // }
+            if(!std::filesystem::exists(file_path)) {
+                throw std::runtime_error("input file '" + file_path.string() + "' does not exist");
+            }
 
-        std::cout << "],\n";
+            if(!std::filesystem::is_regular_file(file_path)) {
+                throw std::runtime_error("input file is not a regular file");
+            }
 
-        std::cout << "\t\"declarations\": [";
+            std::string source = uva::file::read_all_text<char>(temp_file_path);
 
-        uva::lang::parser p;
-        uva::lang::parser::ast_node root_node = p.parse_all(l);
+            uva::lang::lexer l(file_path.string(), source);
 
-        size_t node_i = 0;
+            // Note we are writing directly to the cout instead of saving and encoding the output
 
-        for(const auto& node : root_node.childrens()) {
-            
-            if(node.type() == uva::lang::parser::ast_node_type::ast_node_classdecl) {
-                if(node_i) {
-                    std::cout << ",";
-                }
+            std::cout << "{\n";
+            std::cout << "\t\"tokens\": [";
 
-                node_i++;
+            // for(const auto& token : l.tokens()) {
+            //     switch(token.type()) {
+            //         case uva::lang::lexer::token_type::token_keyword:
+            //         case uva::lang::lexer::token_type::token_literal:
+            //             std::cout << "\t";
+            //             std::cout << "{ \"type\": \"keyword\", \"content\": \"";
+            //             std::cout << token.content();
+            //             std::cout << "\" }" << std::endl;
+            //         break;
+            //     }
+            // }
 
-                std::cout << "\n";
+            std::cout << "],\n";
 
-                const uva::lang::parser::ast_node* decname_node = node.child_from_type(uva::lang::parser::ast_node_type::ast_node_declname);
-                const uva::lang::lexer::token& decname_token = decname_node->token();
+            std::cout << "\t\"declarations\": [";
 
-                std::cout << "\t\t{\n\t\t\t\"type\": \"class\",\n\t\t\t\"name\": \"";
-                std::cout << decname_token.content();
-                std::cout << "\",\n\t\t\t\"location\": {\n\t\t\t\t\"file\": \"";
-                std::cout << decname_token.m_file_name;
-                std::cout << "\",\n";
-                std::cout << "\t\t\t\t\"line\": ";
-                std::cout << decname_token.start.line;
-                std::cout << ",\n\t\t\t\t\"column\": ";
-                std::cout << decname_token.start.column;
-                std::cout << ",\n\t\t\t\t\"offset\": ";
-                std::cout << decname_token.start.offset;
-                std::cout << "\n\t\t\t}";
-                std::cout << ",\n\t\t\t\"references\": [";
+            uva::lang::parser p;
+            uva::lang::parser::ast_node root_node = p.parse_all(l);
 
-                size_t token_i = 0;
+            size_t node_i = 0;
 
-                for(const auto& token : l.tokens()) {
-                    if(token.type() == uva::lang::lexer::token_type::token_identifier) {
-                        if(token.content() == decname_token.content()) {
-                            if(token_i) {
-                                std::cout << ",";
+            for(const auto& node : root_node.childrens()) {
+                
+                if(node.type() == uva::lang::parser::ast_node_type::ast_node_classdecl) {
+                    if(node_i) {
+                        std::cout << ",";
+                    }
+
+                    node_i++;
+
+                    std::cout << "\n";
+
+                    const uva::lang::parser::ast_node* decname_node = node.child_from_type(uva::lang::parser::ast_node_type::ast_node_declname);
+                    const uva::lang::lexer::token& decname_token = decname_node->token();
+
+                    std::cout << "\t\t{\n\t\t\t\"type\": \"class\",\n\t\t\t\"name\": \"";
+                    std::cout << decname_token.content();
+                    std::cout << "\",\n\t\t\t\"location\": {\n\t\t\t\t\"file\": \"";
+                    std::cout << decname_token.m_file_name;
+                    std::cout << "\",\n";
+                    std::cout << "\t\t\t\t\"line\": ";
+                    std::cout << decname_token.start.line;
+                    std::cout << ",\n\t\t\t\t\"column\": ";
+                    std::cout << decname_token.start.column;
+                    std::cout << ",\n\t\t\t\t\"offset\": ";
+                    std::cout << decname_token.start.offset;
+                    std::cout << "\n\t\t\t}";
+                    std::cout << ",\n\t\t\t\"references\": [";
+
+                    size_t token_i = 0;
+
+                    for(const auto& token : l.tokens()) {
+                        if(token.type() == uva::lang::lexer::token_type::token_identifier) {
+                            if(token.content() == decname_token.content()) {
+                                if(token_i) {
+                                    std::cout << ",";
+                                }
+
+                                token_i++;
+
+                                std::cout << "\n\t\t\t\t{\n\t\t\t\t\t\"file\": \"";
+                                std::cout << token.m_file_name;
+                                std::cout << "\",\n\t\t\t\t\t\"line\": ";
+                                std::cout << token.start.line;
+                                std::cout << ",\n\t\t\t\t\t\"column\": ";
+                                std::cout << token.start.column;
+                                std::cout << ",\n\t\t\t\t\t\"offset\": ";
+                                std::cout << token.start.offset;
+                                std::cout << "\n\t\t\t\t}";
                             }
-
-                            token_i++;
-
-                            std::cout << "\n\t\t\t\t{\n\t\t\t\t\t\"file\": \"";
-                            std::cout << token.m_file_name;
-                            std::cout << "\",\n\t\t\t\t\t\"line\": ";
-                            std::cout << token.start.line;
-                            std::cout << ",\n\t\t\t\t\t\"column\": ";
-                            std::cout << token.start.column;
-                            std::cout << ",\n\t\t\t\t\t\"offset\": ";
-                            std::cout << token.start.offset;
-                            std::cout << "\n\t\t\t\t}";
                         }
                     }
+
+                    std::cout << "\n\t\t\t]";
+                    std::cout << "\n\t\t}";
                 }
-
-                std::cout << "\n\t\t\t]";
-                std::cout << "\n\t\t}";
             }
+
+            std::cout << "\n\t],\n";
+
+            auto end = std::chrono::high_resolution_clock::now();
+
+            std::cout << "\t\"elapsed\": \"" << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << "ms\"\n";
+
+            std::cout << "}";
         }
-
-        std::cout << "\n\t],\n";
-
-        auto end = std::chrono::high_resolution_clock::now();
-
-        std::cout << "\t\"elapsed\": \"" << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << "ms\"\n";
-
-        std::cout << "}";
-
     } catch (const std::exception& e) {
         uva::console::log_error(e.what());
-        return false;
+        return 0;
     }
 
     return 0;
