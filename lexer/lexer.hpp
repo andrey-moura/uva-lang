@@ -14,7 +14,8 @@ namespace uva
         class lexer
         {
         public:
-            lexer(const std::string& __file_name, const std::string_view& __source);
+            lexer() = default;
+            lexer(std::string __file_name, std::string_view __source);
             ~lexer() = default;
         public:
             enum token_type {
@@ -119,8 +120,11 @@ namespace uva
 
             void push_token(token_position start, token_type type, std::string content = "", token_kind kind = token_kind::token_null);
             void read_next_token();
-            void tokenize();
-
+            public:
+                /// @brief Tokenize the source code. Equivalent to the constructor.
+                /// @param __file_name The name of the file.
+                /// @param __source The source code.
+                void tokenize(std::string __file_name, std::string_view __source);
             public:
                 void extract_and_push_string(token_position start);
         // iterating
