@@ -79,56 +79,62 @@ int main(int argc, char** argv) {
         uva::lang::parser p;
         uva::lang::parser::ast_node root_node = p.parse_all(l);
 
-        bool should_comma = false;
+        size_t node_i = 0;
 
         for(const auto& node : root_node.childrens()) {
-            switch(node.type())
-            {
-                case uva::lang::parser::ast_node_type::ast_node_classdecl: {
-                    if(should_comma) {
-                        std::cout << ",";
-                    }
+            
+            if(node.type() == uva::lang::parser::ast_node_type::ast_node_classdecl) {
+                if(node_i) {
+                    std::cout << ",";
+                }
 
-                    should_comma = true;
+                node_i++;
 
-                    std::cout << "\n";
+                std::cout << "\n";
 
-                    const uva::lang::parser::ast_node* decname_node = node.child_from_type(uva::lang::parser::ast_node_type::ast_node_declname);
-                    const uva::lang::lexer::token& decname_token = decname_node->token();
+                const uva::lang::parser::ast_node* decname_node = node.child_from_type(uva::lang::parser::ast_node_type::ast_node_declname);
+                const uva::lang::lexer::token& decname_token = decname_node->token();
 
-                    std::cout << "\t\t{\n\t\t\t\"type\": \"class\",\n\t\t\t\"name\": \"";
-                    std::cout << decname_token.content();
-                    std::cout << "\",\n\t\t\t\"location\": {\n\t\t\t\t\"file\": \"";
-                    std::cout << decname_token.m_file_name;
-                    std::cout << "\",\n";
-                    std::cout << "\t\t\t\t\"line\": ";
-                    std::cout << decname_token.start.line;
-                    std::cout << ",\n\t\t\t\t\"column\": ";
-                    std::cout << decname_token.start.column;
-                    std::cout << ",\n\t\t\t\t\"offset\": ";
-                    std::cout << decname_token.start.offset;
-                    std::cout << "\n\t\t\t}";
-                    std::cout << ",\n\t\t\t\"references\": [";
-                    for(const auto& token : l.tokens()) {
-                        switch(token.type()) {
-                            case uva::lang::lexer::token_type::token_identifier:
-                                if(token.content() == decname_token.content()) {
-                                    std::cout << "\n\t\t\t\t{\n\t\t\t\t\t\"file\": \"";
-                                    std::cout << token.m_file_name;
-                                    std::cout << "\",\n\t\t\t\t\t\"line\": ";
-                                    std::cout << token.start.line;
-                                    std::cout << ",\n\t\t\t\t\t\"column\": ";
-                                    std::cout << token.start.column;
-                                    std::cout << ",\n\t\t\t\t\t\"offset\": ";
-                                    std::cout << token.start.offset;
-                                    std::cout << "\n\t\t\t\t}";
-                                }
+                std::cout << "\t\t{\n\t\t\t\"type\": \"class\",\n\t\t\t\"name\": \"";
+                std::cout << decname_token.content();
+                std::cout << "\",\n\t\t\t\"location\": {\n\t\t\t\t\"file\": \"";
+                std::cout << decname_token.m_file_name;
+                std::cout << "\",\n";
+                std::cout << "\t\t\t\t\"line\": ";
+                std::cout << decname_token.start.line;
+                std::cout << ",\n\t\t\t\t\"column\": ";
+                std::cout << decname_token.start.column;
+                std::cout << ",\n\t\t\t\t\"offset\": ";
+                std::cout << decname_token.start.offset;
+                std::cout << "\n\t\t\t}";
+                std::cout << ",\n\t\t\t\"references\": [";
+
+                size_t token_i = 0;
+
+                for(const auto& token : l.tokens()) {
+                    if(token.type() == uva::lang::lexer::token_type::token_identifier) {
+                        if(token.content() == decname_token.content()) {
+                            if(token_i) {
+                                std::cout << ",";
+                            }
+
+                            token_i++;
+
+                            std::cout << "\n\t\t\t\t{\n\t\t\t\t\t\"file\": \"";
+                            std::cout << token.m_file_name;
+                            std::cout << "\",\n\t\t\t\t\t\"line\": ";
+                            std::cout << token.start.line;
+                            std::cout << ",\n\t\t\t\t\t\"column\": ";
+                            std::cout << token.start.column;
+                            std::cout << ",\n\t\t\t\t\t\"offset\": ";
+                            std::cout << token.start.offset;
+                            std::cout << "\n\t\t\t\t}";
                         }
                     }
-                    std::cout << "\n\t\t\t]";
-                    std::cout << "\n\t\t}";
-                    }
-                break;
+                }
+
+                std::cout << "\n\t\t\t]";
+                std::cout << "\n\t\t}";
             }
         }
 
