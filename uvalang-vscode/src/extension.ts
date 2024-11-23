@@ -172,7 +172,8 @@ class MyDefinitionProvider implements vscode.DefinitionProvider {
 
         const word = document.getText(wordRange);
 
-		this.analyserServer.analyse(document).then((analyserResult) => {
+		return this.analyserServer.analyse(document).then((analyserResult) => {
+			//console.log(`analyserResult: ${JSON.stringify(analyserResult)}`);
 
 			for(const declaration of analyserResult.declarations) {
 				if(declaration.name === word) {
@@ -186,8 +187,6 @@ class MyDefinitionProvider implements vscode.DefinitionProvider {
 			}
 
 		});
-
-        return null;
     }
 }
 
