@@ -3,7 +3,7 @@
   "displayName": "uvalang",
   "description": "This extensions provides syntax highlight, definitions navigation and build and run features for applications written in uva language.",
   "publisher": "andrey-moura",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "icon": "resources/uvalang-vscode.png",
   "engines": {
     "vscode": "^1.95.0"
