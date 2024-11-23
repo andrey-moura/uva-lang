@@ -135,11 +135,13 @@ export function activate(context: vscode.ExtensionContext) {
 			}
 
 			const now = new Date().getTime();
-
-			console.log(`${command} success in ${now - start}ms`);
-			//console.log(`stdout: ${stdout}`);
+			const elapsed = now - start;
 
 			const result = JSON.parse(stdout);
+			
+			//console.log(`stdout: ${stdout}`);
+			
+			console.log(`${command} success in ${elapsed}ms (reported ${result.elapsed})`);
 
 			for(const declaration of result.declarations) {
 				const location = new Location(declaration.location.file, declaration.location.line, declaration.location.column, declaration.location.offset);
