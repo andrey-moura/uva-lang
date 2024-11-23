@@ -255,6 +255,7 @@ void uva::lang::lexer::read_next_token()
     });
 
     if(m_buffer.empty()) {
+        read();
         push_token(start, token_type::token_undefined);
         return;
     }
