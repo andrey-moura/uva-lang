@@ -1,4 +1,5 @@
 #include <filesystem>
+#include <chrono>
 
 #include <parser/parser.hpp>
 #include <lexer/lexer.hpp>
@@ -24,6 +25,8 @@ std::vector<uva::lang::extension*> extensions;
 
 int main(int argc, char** argv) {
     try {
+        auto start = std::chrono::high_resolution_clock::now();
+
         std::filesystem::path uva_executable_path = argv[0];
         //vm_instance = std::make_shared<uva::lang::vm>();
 
@@ -138,7 +141,11 @@ int main(int argc, char** argv) {
             }
         }
 
-        std::cout << "\n\t]" << std::endl;
+        std::cout << "\n\t],\n";
+
+        auto end = std::chrono::high_resolution_clock::now();
+
+        std::cout << "\t\"elapsed\": \"" << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << "ms\"\n";
 
         std::cout << "}";
 
