@@ -37,3 +37,6 @@
 [submodule "include/console"]
 	path = include/console
 	url = https://github.com/andrey-moura/console.git
+[submodule "include/diagnostics"]
+	path = include/diagnostics
+	url = https://github.com/andrey-moura/diagnostics.git

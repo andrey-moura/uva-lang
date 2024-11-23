@@ -12,6 +12,7 @@ uva_library(core)
 uva_library(json)
 uva_library(file)
 uva_library(console)
+uva_library(diagnostics)
 
 include_directories(${CMAKE_CURRENT_LIST_DIR})
 include_directories(include/fmt/include)
