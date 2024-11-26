@@ -93,7 +93,7 @@ int main(int argc, char** argv) {
         try {
             l.tokenize(file_path.string(), source);
         } catch (const std::exception& e) {
-            
+            (void)e;
         }
 
         // Note we are writing directly to the cout instead of saving and encoding the output
@@ -123,7 +123,7 @@ int main(int argc, char** argv) {
         try {
             root_node = p.parse_all(l);
         } catch (const std::exception& e) {
-            
+            (void)e;
         }
 
         size_t node_i = 0;
