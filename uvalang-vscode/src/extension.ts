@@ -83,7 +83,7 @@ class AnalyserServer {
 
 		const content = document.getText();
 
-		const tmpFileName = path.join(os.tmpdir(), document.fileName.substring(document.fileName.lastIndexOf('/') + 1));
+		const tmpFileName = path.join(os.tmpdir(), document.fileName.substring(document.fileName.lastIndexOf(path.sep) + 1));
 
 		fs.writeFileSync(tmpFileName, content);
 
