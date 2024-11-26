@@ -55,8 +55,8 @@ class AnalyserServer {
 
 		this.executable = cp.spawn('uvalang-analyser', ["--server"]);
 
-		if(!this.executable) {
-			this.throwErrorAtServer('unable to start');
+		if(!this.executable || !this.executable.pid) {
+			return false;
 		}
 
 		const end = Date.now();
@@ -64,8 +64,10 @@ class AnalyserServer {
 		console.log('uvalang-analyser server started in ' + (end - start) + 'ms');
 
 		this.executable.on('close', (code) => {
-			this.throwErrorAtServer(`exited with code ${code}`);
+			this.throwErrorAtServer(`Exited with code ${code}`);
 		});
+
+		return true;
 	}
 
 	analyse(document: vscode.TextDocument) : Promise<AnalyserResult> {
@@ -235,13 +237,34 @@ function updateDecorations(analyserServer: AnalyserServer) {
 export function activate(context: vscode.ExtensionContext) {
 
 	var analyserServer = new AnalyserServer();
-	analyserServer.launch();
 
-	analyserServer.onError = (error) => {
+	var onError = (error: Error) => {
+
 		vscode.window.showErrorMessage(`${error.message}. The server will be restarted.`);
+
+		setTimeout(() => {
 		analyserServer = new AnalyserServer();
+			analyserServer.onError = onError;
 		analyserServer.launch();
+		}, 3000);
 	};
+
+	if(!analyserServer.launch()) {
+		const message = "Unable to start analyser server. Make sure uvalang-analyser is installed and is in your PATH. If you have just installed it, you may need to restart Visual Studio Code or your computer.";
+		
+		vscode.window.showErrorMessage(message, 'Retry').then((value) => {
+			if(value === 'Retry') {
+				activate(context);
+			} else {
+				return;
+			}
+		});
+
+		return;
+	}
+
+	// Note: Error is only handled if the server could be started
+	analyserServer.onError = onError;
 
 	const updateCurrentDocumentDecorations = () => {
 		if(analyserServer) {
