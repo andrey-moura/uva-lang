@@ -1,0 +1,31 @@
+name: Ubuntu 22.04
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+      with:
+        submodules: recursive
+
+    - name: Set up CMake
+      uses: lukka/get-cmake@latest
+
+    - name: Install dependencies
+      run: sudo apt-get install -y build-essential
+
+    - name: Configure CMake
+      run: cmake -B build .
+
+    - name: Build project
+      run: cmake --build build --config Release --parallel
