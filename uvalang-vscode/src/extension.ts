@@ -101,9 +101,12 @@ class AnalyserServer {
 				const end = Date.now();
 				const elapsed = end - now;
 
-				//console.log(`stdout: ${data}`);
-
-				const result = JSON.parse(data.toString());
+				try {
+					var result = JSON.parse(data.toString());
+				} catch(e) {
+					console.log(`error parsing JSON: ${e}`);
+					return;
+				}
 			
 				console.log(`${command} success in ${elapsed}ms (reported ${result.elapsed})`);
 
