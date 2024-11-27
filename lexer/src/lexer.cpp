@@ -87,10 +87,9 @@ bool is_preprocessor(std::string_view str) {
     return std::binary_search(preprocessor.begin(), preprocessor.end(), str);
 }
 
-uva::lang::lexer::lexer(const std::string &__file_name, const std::string_view &__source)
-  : m_file_name(__file_name), m_source(__source)
+uva::lang::lexer::lexer(std::string __file_name, std::string_view __source)
 {
-    tokenize();
+    tokenize(std::move(__file_name), __source);
 }
 
 void uva::lang::lexer::update_start_position(const char &token)
@@ -256,6 +255,7 @@ void uva::lang::lexer::read_next_token()
     });
 
     if(m_buffer.empty()) {
+        read();
         push_token(start, token_type::token_undefined);
         return;
     }
@@ -283,8 +283,11 @@ void uva::lang::lexer::read_next_token()
     throw std::runtime_error("lexer: unknown token");
 }
 
-void uva::lang::lexer::tokenize()
+void uva::lang::lexer::tokenize(std::string __file_name, std::string_view __source)
 {
+    m_file_name = std::move(__file_name);
+    m_source    = __source;
+
     do {
         read_next_token();
     } while(!m_tokens.back().is_eof());
