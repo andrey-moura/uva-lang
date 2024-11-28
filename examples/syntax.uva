@@ -1,5 +1,3 @@
-// The uva has a flexible syntax that allows for a variety of different ways to write code.
-
 // For declaring a class, the following syntaxes are valid
 
 class MyClass {
