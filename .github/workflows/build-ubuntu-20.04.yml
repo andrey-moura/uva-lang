@@ -29,20 +29,13 @@ jobs:
         submodules: recursive
         path: 'uva-lang'
         
-    - name: Show what we have
-      run: ls
-
-    - name: Enter repository
-      run: cd uva-lang
-
-    - name: Show what we have
-      run: ls
-
     - name: Set up CMake
       uses: lukka/get-cmake@latest
 
     - name: Configure CMake
       run: cmake -B build .
-
+      working-directory: uva-lang
+      
     - name: Build project
       run: cmake --build build --config Release --parallel
+      working-directory: uva-lang
