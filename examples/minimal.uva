@@ -1,8 +1,1 @@
-class Application
-{
-    function run()
-    {
-        puts("Hello from minimal!");
-        return 0;
-    }
-}
+puts("Hello from minimal!");

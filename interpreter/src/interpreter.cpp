@@ -40,6 +40,20 @@ std::shared_ptr<uva::lang::object> uva::lang::interpreter::execute(uva::lang::pa
 {
     switch (source_code.type())
     {
+        case uva::lang::parser::ast_node_type::ast_node_fn_decl: {
+            
+            std::string_view method_name = source_code.decname();
+
+            std::vector<std::string> params;
+            params.reserve(source_code.childrens().size());
+
+            for(auto& param : source_code.child_from_type(uva::lang::parser::ast_node_type::ast_node_fn_params)->childrens()) {
+                params.push_back(param.token().content());
+            }
+
+            current_context.functions[std::string(method_name)] = uva::lang::method(std::string(method_name), method_storage_type::instance_method, params, source_code);
+        }
+        break;
         case uva::lang::parser::ast_node_type::ast_node_classdecl: {
             std::string_view class_name = source_code.decname();
 
@@ -114,13 +128,17 @@ std::shared_ptr<uva::lang::object> uva::lang::interpreter::execute(uva::lang::pa
 
             std::shared_ptr<uva::lang::structure> class_to_call = nullptr;
 
+            if(auto it = current_context.functions.find(source_code.decname()); it != current_context.functions.end()) {
+                method_to_call = &it->second;
+            }
+
             uva::lang::parser::ast_node* object_node = source_code.child_from_type(uva::lang::parser::ast_node_type::ast_node_fn_object);
 
             const std::string& function_name(source_code.decname());
             bool is_super = function_name == "super";
             bool is_assignment = function_name == "=";
 
-            if(object_node) {
+            if(!method_to_call && object_node) {
                 // function call from a class/object/function return value
 
                 object_node = object_node->childrens().data();
@@ -285,7 +303,9 @@ std::shared_ptr<uva::lang::object> uva::lang::interpreter::execute(uva::lang::pa
                                     class_to_call = object->cls->base;
                                     object_to_call = object->base_instance;
                                 } else {
-                                    throw std::runtime_error("function '" + function_name + "' not found in class " + object->cls->name);
+                                    // ?????
+                                    // Why was it throwing exceptions?
+                                    //throw std::runtime_error("function '" + function_name + "' not found in class " + object->cls->name);
                                 }
                             }
                         } else {
@@ -360,7 +380,11 @@ std::shared_ptr<uva::lang::object> uva::lang::interpreter::execute(uva::lang::pa
         break;
         case uva::lang::parser::ast_node_type::ast_node_vardecl: {
             std::string_view var_name = source_code.decname();
-            current_context.variables[std::string(var_name)] = node_to_object(source_code.childrens()[1], object->cls, object);
+            std::shared_ptr<uva::lang::structure> cls = nullptr;
+            if(object) {
+                cls = object->cls;
+            }
+            current_context.variables[std::string(var_name)] = node_to_object(source_code.childrens()[1], cls, object);
         }
         break;
         case uva::lang::parser::ast_node_type::ast_node_conditional: {

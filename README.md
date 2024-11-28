@@ -10,14 +10,15 @@ Uva is an interpreted object-oriented multi-purpose programming language
 
 Environment | Build
 --- | --- |
+Ubuntu 22.04 | [![Ubuntu 22.04](https://github.com/andrey-moura/uva-lang/actions/workflows/build-ubuntu-22.04.yml/badge.svg)](https://github.com/andrey-moura/uva-lang/actions/workflows/build-ubuntu-22.04.yml)
 Ubuntu 20.04 | [![Ubuntu 20.04](https://github.com/andrey-moura/uva-lang/actions/workflows/build-ubuntu-20.04.yml/badge.svg)](https://github.com/andrey-moura/uva-lang/actions/workflows/build-ubuntu-20.04.yml)
 Windows Server 2022 | [![Windows Server 2022](https://github.com/andrey-moura/uva-lang/actions/workflows/build-windows-2022.yml/badge.svg)](https://github.com/andrey-moura/uva-lang/actions/workflows/build-windows-2022.yml)
-
 # Building
 
 On Linux or Windows Developer Command Prompt
 
 ```sh
+    git clone https://github.com/andrey-moura/uva --recursive
     git clone https://github.com/andrey-moura/uva-lang --recursive
     cd uva-lang
     cmake -B build .
@@ -33,7 +34,7 @@ After building, run as sudo on Linux or with an Administrator Command Prompt on 
 
 # Examples
 
-If you want to run a sample, try:
+If you want to run examples, try:
 
 ```sh
     uva examples/minimal.uva
@@ -42,13 +43,7 @@ If you want to run a sample, try:
 This file has the content:
 
 ```typescript
-    class Application
-    {
-        function run()
-        {
-            puts("Hello from minimal!");
-        }
-    }
+    puts("Hello from minimal!");
 ```
 
 The result is:

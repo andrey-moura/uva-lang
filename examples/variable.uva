@@ -1,10 +1,2 @@
-class Application
-{
-    function run()
-    {
-        var message = "Hello from a variable!";
-        puts(message);
-
-        return 0;
-    }
-}
+var message = "Hello from a variable!";
+puts(message);

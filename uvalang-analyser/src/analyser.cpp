@@ -93,7 +93,7 @@ int main(int argc, char** argv) {
         try {
             l.tokenize(file_path.string(), source);
         } catch (const std::exception& e) {
-            
+            (void)e;
         }
 
         // Note we are writing directly to the cout instead of saving and encoding the output
@@ -123,7 +123,7 @@ int main(int argc, char** argv) {
         try {
             root_node = p.parse_all(l);
         } catch (const std::exception& e) {
-            
+            (void)e;
         }
 
         size_t node_i = 0;
@@ -145,7 +145,16 @@ int main(int argc, char** argv) {
                 std::cout << "\t\t{\n\t\t\t\"type\": \"class\",\n\t\t\t\"name\": \"";
                 std::cout << decname_token.content();
                 std::cout << "\",\n\t\t\t\"location\": {\n\t\t\t\t\"file\": \"";
+#ifdef __UVA_WIN__
+                for(const auto& c : decname_token.m_file_name) {
+                    std::cout << c;
+                    if(c == '\\') {
+                        std::cout << "\\";
+                    }
+                }
+#else
                 std::cout << decname_token.m_file_name;
+#endif
                 std::cout << "\",\n";
                 std::cout << "\t\t\t\t\"line\": ";
                 std::cout << decname_token.start.line;
@@ -168,7 +177,16 @@ int main(int argc, char** argv) {
                             token_i++;
 
                             std::cout << "\n\t\t\t\t{\n\t\t\t\t\t\"file\": \"";
+#ifdef __UVA_WIN__
+                            for(const auto& c : token.m_file_name) {
+                                std::cout << c;
+                                if(c == '\\') {
+                                    std::cout << "\\";
+                                }
+                            }
+#else
                             std::cout << token.m_file_name;
+#endif
                             std::cout << "\",\n\t\t\t\t\t\"line\": ";
                             std::cout << token.start.line;
                             std::cout << ",\n\t\t\t\t\t\"column\": ";

@@ -3,15 +3,9 @@ cmake_minimum_required(VERSION 3.10)
 
 set(CMAKE_CXX_STANDARD 20)
 
-project(uva)
+project(uva-lang)
 
-include(include/uva/CMakeLists.txt)
-
-uva_library(string)
-uva_library(core)
-uva_library(json)
-uva_library(file)
-uva_library(console)
+include("../uva/CMakeLists.txt")
 
 include_directories(${CMAKE_CURRENT_LIST_DIR})
 include_directories(include/fmt/include)
