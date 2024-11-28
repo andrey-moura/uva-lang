@@ -19,6 +19,7 @@ namespace uva
             std::shared_ptr<uva::lang::structure> cls;
             std::shared_ptr<uva::lang::object> self;
             std::map<std::string, std::shared_ptr<uva::lang::object>> variables;
+            std::map<std::string, uva::lang::method> functions;
 
             bool has_returned = false;
             std::shared_ptr<uva::lang::object> return_value;
