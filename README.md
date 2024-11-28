@@ -33,7 +33,7 @@ After building, run as sudo on Linux or with an Administrator Command Prompt on 
 
 # Examples
 
-If you want to run a sample, try:
+If you want to run examples, try:
 
 ```sh
     uva examples/minimal.uva
@@ -42,13 +42,7 @@ If you want to run a sample, try:
 This file has the content:
 
 ```typescript
-    class Application
-    {
-        function run()
-        {
-            puts("Hello from minimal!");
-        }
-    }
+    puts("Hello from minimal!");
 ```
 
 The result is:
