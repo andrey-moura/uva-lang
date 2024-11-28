@@ -380,7 +380,11 @@ std::shared_ptr<uva::lang::object> uva::lang::interpreter::execute(uva::lang::pa
         break;
         case uva::lang::parser::ast_node_type::ast_node_vardecl: {
             std::string_view var_name = source_code.decname();
-            current_context.variables[std::string(var_name)] = node_to_object(source_code.childrens()[1], object->cls, object);
+            std::shared_ptr<uva::lang::structure> cls = nullptr;
+            if(object) {
+                cls = object->cls;
+            }
+            current_context.variables[std::string(var_name)] = node_to_object(source_code.childrens()[1], cls, object);
         }
         break;
         case uva::lang::parser::ast_node_type::ast_node_conditional: {
