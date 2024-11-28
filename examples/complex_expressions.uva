@@ -1,25 +1,19 @@
-class Application
-{
-    function run()
-    {
-        if(false || true) {
-            print("Hello ");
-        }
+if(false || true) {
+    print("Hello ");
+}
 
-        if(false.present? || true.present?) {
-            print("From ");
-        }
+if(false.present? || true.present?) {
+    print("From ");
+}
 
-        if(true && true.present?) {
-            print("a ");
-        }
+if(true && true.present?) {
+    print("a ");
+}
 
-        if(true && true.present? && true) {
-            print("Complex ");
-        }
+if(true && true.present? && true) {
+    print("Complex ");
+}
 
-        if(true && true.present? && true && true) {
-            puts("Expression!");
-        }
-    }
+if(true && true.present? && true && true) {
+    puts("Expression!");
 }

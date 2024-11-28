@@ -1,14 +1,7 @@
-class Application
-{
-    function run() {
-        if(false) {
-            puts("This should not be printed");
-        } 
-        
-        if(true) {
-            puts("Hellow from an if!")
-        }
+if(false) {
+    puts("This should not be printed");
+} 
 
-        return 0;
-    }
+if(true) {
+    puts("Hellow from an if!")
 }

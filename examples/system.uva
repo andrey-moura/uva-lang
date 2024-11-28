@@ -1,7 +1,1 @@
-class Application
-{
-    function run() {
-        var ret = system("echo Hello from system!");
-        return ret;
-    }
-}
+system("echo Hello from system!");

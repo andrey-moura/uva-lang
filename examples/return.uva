@@ -1,7 +1,3 @@
-class Application
-{
-    function run() {
-        return 7;
-        puts("This should not be printed.");
-    }
-}
+puts("Hello from return!");
+return 7;
+puts("This should not be printed.");

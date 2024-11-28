@@ -1,18 +1,21 @@
 // You can declare a base class in a separate file and #include it in your main file
-class ApplicationBase
+class Base
 {
-    function say_hello()
-    {
+    function new() {
+
+    }
+
+    function say_hello() {
         puts("Hello from base class!");
     }
 }
 
 // You can use 'extends', ':' and '<' to declare a base class
-class Application extends ApplicationBase
-{
-    function run()
-    {
-        say_hello();
-        return 0;
+class Derived extends Base {
+    function new() {
+        super();
     }
 }
+
+var derived = new Derived();
+derived.say_hello();

@@ -1,9 +1,2 @@
-class Application
-{
-    function run()
-    {
-        print("Hello from ");
-        puts("output!");
-        return 0;
-    }
-}
+print("Hello from ");
+puts("output!");
