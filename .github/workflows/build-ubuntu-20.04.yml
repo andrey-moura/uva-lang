@@ -16,7 +16,7 @@ jobs:
     - name: Checkout uva
       uses: actions/checkout@v3
       with:
-        name: andrey-moura/uva
+        repository: andrey-moura/uva
         submodules: recursive
     
     - name: Checkout repository
