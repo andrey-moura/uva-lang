@@ -1,13 +1,5 @@
-class Application
-{
-    function run()
-    {
-        var dictionary = {
-            "message": "Hello from a map!"
-        };
+var dictionary = {
+    "message": "Hello from a map!"
+};
 
-        puts(dictionary["message"]);
-
-        return 0;
-    }
-}
+puts(dictionary["message"]);

@@ -1,13 +1,6 @@
-class Application
+function say_hello()
 {
-    function run()
-    {
-        say_hello();
-        return 0;
-    }
-
-    function say_hello()
-    {
-        puts("Hello from a function!");
-    }
+    puts("Hello from a function!");
 }
+
+say_hello();

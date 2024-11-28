@@ -63,23 +63,7 @@ int main(int argc, char** argv) {
 
         uva::lang::interpreter interpreter;
         std::shared_ptr<uva::lang::object> tmp;
-        interpreter.execute_all(root_node, tmp);
-
-        auto application_class = interpreter.find_class("Application");
-
-        if(!application_class) {
-            throw std::runtime_error("Application class not found");
-        }
-
-        auto run_it = application_class->methods.find("run");
-
-        if(run_it == application_class->methods.end()) {
-            throw std::runtime_error("run function not defined in class Application. Define it so uva know where to start the application");
-        }
-        
-        application = uva::lang::object::instantiate(&interpreter, application_class, nullptr);
-
-        std::shared_ptr<uva::lang::object> ret = interpreter.call(application_class, application, run_it->second, {});
+        std::shared_ptr<uva::lang::object> ret = interpreter.execute_all(root_node, tmp);
 
         if(!ret) {
             return 0;

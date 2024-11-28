@@ -1,17 +1,9 @@
-class Application
-{
-    function run()
-    {
-        var array = ["Hello", "from", "a", "foreach!"];
-        
-        // You can use 'in', ':' or 'of'
-        foreach(var element in array) {
-            print(element);
-            print(" ");
-        }
+var array = ["Hello", "from", "a", "foreach!"];
 
-        puts("");
-        
-        return 0;
-    }
+// You can use 'in', ':' or 'of'
+foreach(var element in array) {
+    print(element);
+    print(" ");
 }
+
+puts("");
