@@ -27,12 +27,12 @@ add_library(uva-extension
 include("interpreter/CMakeLists.txt")
 include("lexer/CMakeLists.txt")
 include("lang/CMakeLists.txt")
-include("uva-ui/CMakeLists.txt")
 include("preprocessor/CMakeLists.txt")
-include("uvao/CMakeLists.txt")
-include("languanizer/CMakeLists.txt")
-include("uvalang-analyser/CMakeLists.txt")
-include("uvalang-debugger/CMakeLists.txt")
+#include("uva-ui/CMakeLists.txt")
+# include("uvao/CMakeLists.txt")
+# include("languanizer/CMakeLists.txt")
+# include("uvalang-analyser/CMakeLists.txt")
+# include("uvalang-debugger/CMakeLists.txt")
 
 add_executable(uva
     uva/src/uva.cpp
