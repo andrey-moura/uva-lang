@@ -7,6 +7,10 @@ project(uva-lang)
 
 include("../uva/CMakeLists.txt")
 
+uva_library(core)
+uva_library(file)
+uva_library(console)
+
 include_directories(${CMAKE_CURRENT_LIST_DIR})
 include_directories(include/fmt/include)
 
