@@ -205,7 +205,7 @@ public:
         interpreter.load(ui_theme_class);
         interpreter.load(ui_style_class);
 
-        std::filesystem::path file_path = std::filesystem::absolute("application.uva");
+        std::filesystem::path file_path = std::filesystem::absolute(argv[1]);
 
         if(!std::filesystem::exists(file_path)) {
             throw std::runtime_error("input file does not exist");

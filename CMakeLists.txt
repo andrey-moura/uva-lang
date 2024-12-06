@@ -30,6 +30,8 @@ include("languanizer/CMakeLists.txt")
 include("xml/CMakeLists.txt")
 include("uvalang-analyser/CMakeLists.txt")
 include("uvalang-debugger/CMakeLists.txt")
+include("experiments/uva-renderer/CMakeLists.txt")
+include("experiments/uva-drawing/CMakeLists.txt")
 
 add_executable(uva
     uva/src/uva.cpp
