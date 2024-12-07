@@ -10,6 +10,10 @@ include("../uva/CMakeLists.txt")
 uva_library(core)
 uva_library(file)
 uva_library(console)
+uva_library(binary)
+uva_library(uva-tests)
+uva_library(xml)
+uva_library(uva-renderer)
 
 include_directories(${CMAKE_CURRENT_LIST_DIR})
 include_directories(include/fmt/include)
@@ -32,11 +36,8 @@ include("preprocessor/CMakeLists.txt")
 # include("uva-ui/CMakeLists.txt")
 # include("uvao/CMakeLists.txt")
 # include("languanizer/CMakeLists.txt")
-include("xml/CMakeLists.txt")
 # include("uvalang-analyser/CMakeLists.txt")
 # include("uvalang-debugger/CMakeLists.txt")
-include("experiments/uva-renderer/CMakeLists.txt")
-include("experiments/uva-drawing/CMakeLists.txt")
 
 add_executable(uva
     uva/src/uva.cpp
