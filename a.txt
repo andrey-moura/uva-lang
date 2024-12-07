@@ -1,7 +1,0 @@
-[ 14%] Built target uva-binary
-[ 28%] Built target uva-core
-[ 42%] Built target uva-xml
-[ 57%] Built target uva-console
-[ 71%] Built target uva-tests-main
-[ 85%] Built target uva-widgets
-[100%] Built target layout_spec
