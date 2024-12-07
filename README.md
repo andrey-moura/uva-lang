@@ -18,8 +18,8 @@ Windows Server 2022 | [![Windows Server 2022](https://github.com/andrey-moura/uv
 On Linux or Windows Developer Command Prompt
 
 ```sh
-    git clone https://github.com/andrey-moura/uva --recursive
-    git clone https://github.com/andrey-moura/uva-lang --recursive
+    git clone https://github.com/andrey-moura/uva
+    git clone https://github.com/andrey-moura/uva-lang
     cd uva-lang
     cmake -B build .
     cmake --build build --config Release --parallel
