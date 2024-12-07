@@ -3,6 +3,7 @@
 #include <iostream>
 
 #include <interpreter/interpreter.hpp>
+#include <extension/extension.hpp>
 
 std::shared_ptr<uva::lang::structure> uva::lang::std_class::create(uva::lang::interpreter* interpreter)
 {
@@ -35,6 +36,12 @@ std::shared_ptr<uva::lang::structure> uva::lang::std_class::create(uva::lang::in
             int code = ((std::system(command->as<std::string>().c_str())) & 0xff00) >> 8;
 
             return uva::lang::object::instantiate(interpreter, interpreter->IntegerClass, code);
+        })},
+
+        { "import", uva::lang::method("import", method_storage_type::class_method, {"module"}, [interpreter](std::shared_ptr<uva::lang::object> object, std::vector<std::shared_ptr<uva::lang::object>> params) {
+            std::string module = params[0]->as<std::string>();
+            extension::import(interpreter, module);
+            return nullptr;
         })},
     };
     

@@ -12,9 +12,14 @@ namespace uva {
             extension(const std::string& name);
         public:
             static void init_all();
-            const std::string& get_name() const { return m_name; }
+            static void import(uva::lang::interpreter* interpreter, std::string_view module);
+        public:
+            const std::string& name() const { return m_name; }
+        public:
+            /// @brief Load the extension in the interpreter. Good for loading your custom classes. Called BEFORE the source code is executed.
+            virtual void load(uva::lang::interpreter* interpreter) = 0;
+            /// @brief The init method of the extension. Good for when you need to call code defined in uva. Called AFTER the interpreter is initialized and the source code is executed.
             virtual void init() = 0;
-            virtual void load_in_interpreter(uva::lang::interpreter* interpreter) = 0;
         private:
             std::string m_name;
         };

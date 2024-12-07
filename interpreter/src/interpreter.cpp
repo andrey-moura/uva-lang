@@ -561,7 +561,7 @@ void uva::lang::interpreter::init()
     this->load(NullClass    = uva::lang::null_class::create(this));
 
     for(auto& extension : extensions) {
-        extension->load_in_interpreter(this);
+        extension->load(this);
     }
 }
 

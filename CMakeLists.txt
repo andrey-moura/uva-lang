@@ -5,6 +5,8 @@ set(CMAKE_CXX_STANDARD 20)
 
 project(uva-lang)
 
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
 include("../uva/CMakeLists.txt")
 
 uva_library(core)
@@ -33,7 +35,7 @@ include("lexer/CMakeLists.txt")
 include("lang/CMakeLists.txt")
 include("preprocessor/CMakeLists.txt")
 # TODO: Move to specific repositories
-# include("uva-ui/CMakeLists.txt")
+include("uva-ui/CMakeLists.txt")
 # include("uvao/CMakeLists.txt")
 # include("languanizer/CMakeLists.txt")
 # include("uvalang-analyser/CMakeLists.txt")
@@ -42,6 +44,10 @@ include("preprocessor/CMakeLists.txt")
 add_executable(uva
     uva/src/uva.cpp
 )
+
+if(UNIX)
+    target_link_libraries(uva-extension ${CMAKE_DL_LIBS})
+endif()
 
 target_link_libraries(uva uva-extension uva-preprocessor uva-interpreter uva-lang uva-core uva-console uva-file)
 
