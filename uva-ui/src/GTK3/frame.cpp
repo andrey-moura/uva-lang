@@ -1,5 +1,7 @@
 #include <frame.hpp>
 
+#include <uva/xml.hpp>
+
 #include <uva-ui/app.hpp>
 
 #include <gtk/gtk.h>
@@ -15,38 +17,44 @@ struct window_data {
 
 struct view_element {
     // Class list of the elment. It is sorted
-    view_element(var::dictionary_type layout)
+    view_element(uva::xml layout)
     {
-        if(layout["class"]) {
-            std::vector<std::string> stdclasses;
-            var::array_type classes = layout["class"].as<var::array>();
+        tag = layout.tag;
 
-            for(auto& cls : classes) {
-                stdclasses.push_back(cls.as<var::string>());
-            }
-
-            set_classes(stdclasses);
+        if(tag == "vertical-layout") {
+            vertical_direction = true;
+        } else {
+            vertical_direction = false;
         }
 
-        if(layout["childrens"]) {
-            var::array_type childrens = layout["childrens"].as<var::array>();
-
-            for(auto& child : childrens) {
-                if(child.is_a<var::dictionary>()) {
-                    view_element child_element(child.as<var::dictionary>());
-                    this->childrens.push_back(child_element);
-                }
-            }
+        for(auto& child : layout.childrens) {
+            view_element child_element(child);
+            this->childrens.push_back(child_element);
         }
 
-        if(layout["text"]) {
-            text = layout["text"].as<var::string>();
+        auto text_it = layout.attributes.find("text");
+
+        if(text_it != layout.attributes.end()) {
+            text = text_it->second;
+        }
+
+        auto flex_spacer_it = layout.attributes.find("flex");
+
+        if(flex_spacer_it != layout.attributes.end()) {
+            flex_spacer = true;
         }
     }
 
+    std::string tag;
     std::vector<std::string> classes;
     std::vector<view_element> childrens;
     std::string text;
+    bool vertical_direction = true;
+    bool flex_spacer = false;
+    enum cursor_type {
+        cursor_default,
+        cursor_pointer,
+    } cursor = cursor_default;
 
     int x = 0;
     int y = 0;
@@ -82,7 +90,7 @@ struct view_element {
     }
 
     int best_height() {
-        if(has_class("flex-spacer")) {
+        if(flex_spacer) {
             return -1;
         } else if(text.size()) {
             auto [w, h] = calc_text_extent(text);
@@ -107,7 +115,7 @@ struct view_element {
     }
 
     int best_width() {
-        if(has_class("flex-spacer")) {
+        if(flex_spacer) {
             return -1;
         } else if(text.size()) {
             auto [w, h] = calc_text_extent(text);
@@ -144,7 +152,7 @@ struct view_element {
             int child_best_width = child.best_width();
             int child_best_height = child.best_height();
 
-            if(has_class("flex-vertical")) {
+            if(vertical_direction) {
                 if(child_best_height == -1) {
                     total_spacers++;
                 } else {
@@ -167,32 +175,32 @@ struct view_element {
             int child_best_height = child.best_height();
 
             if(child_best_height == -1) {
-                if(has_class("flex-vertical")) {
+                if(vertical_direction) {
                     child_best_height = available_height / total_spacers;
                 }
             }
 
             if(child_best_width == -1) {
-                if(has_class("flex-horizontal")) {
+                if(!vertical_direction) {
                     child_best_width = available_width / total_spacers;
                 }
             }
 
-            child.width = child_best_width;
+            child.width  = child_best_width;
             child.height = child_best_height;
 
-            if(has_class("flex-horizontal")) {
-                child.height = height;
-            } else {
+            if(vertical_direction) {
                 child.width = width;
+            } else {
+                child.height = height;
             }
 
             child.calculate_layout(child_x, child_y);
 
-            if(has_class("flex-horizontal")) {
-                child_x += child_best_width;
-            } else {
+            if(vertical_direction) {
                 child_y += child_best_height;
+            } else {
+                child_x += child_best_width;
             }
         }
     }
@@ -201,10 +209,12 @@ struct view_element {
 void draw_element(GtkWidget *widget, cairo_t *cr, view_element& element, var::dictionary_type theme)
 {
     if(element.text.size()) {
-        var style_var = uvaapp->style()->request(element.classes.back());
+        var style_var = uvaapp->style()->request(element.tag);
 
         if(style_var.is_a<var::dictionary>()) {
-            var font_size = style_var.as<var::dictionary>()["font-size"];
+            var::dictionary_type style = style_var.as<var::dictionary>();
+
+            var font_size = style["font-size"];
 
             if(font_size.is_a<var::integer>()) {
                 int size = font_size.as<var::integer>();
@@ -216,7 +226,7 @@ void draw_element(GtkWidget *widget, cairo_t *cr, view_element& element, var::di
         cairo_text_extents_t extents;
         cairo_text_extents(cr, element.text.c_str(), &extents);
 
-        std::string background_color = theme["text"].as<var::string>();
+        std::string background_color = theme["foreground"].as<var::string>();
         gdk_rgba_parse(&color, background_color.c_str());
 
         cairo_set_source_rgb(cr, color.red, color.green, color.blue);
@@ -228,7 +238,7 @@ void draw_element(GtkWidget *widget, cairo_t *cr, view_element& element, var::di
         cairo_show_text(cr, element.text.c_str());
     } else {
         for(auto& child : element.childrens) {
-            draw_element(widget, cr, child, theme);
+            draw_element(widget, cr, child, uvaapp->theme()->request(child.tag).as<var::dictionary>());
         }
     }
 }
@@ -262,15 +272,9 @@ static gboolean draw_callback(GtkWidget *widget, cairo_t *cr, gpointer data)
 
     uva::lang::ui::frame* frame = reinterpret_cast<uva::lang::ui::frame*>(data);
 
-    auto view = frame->render();
+    uva::xml view = frame->render();
 
-    if(!view.is_a<var::dictionary>()) {
-        return FALSE;
-    }
-
-    var::dictionary_type layout = view.as<var::dictionary>();
-
-    view_element element(layout);
+    view_element element(view);
     element.width = width;
     element.height = height;
     
@@ -278,8 +282,64 @@ static gboolean draw_callback(GtkWidget *widget, cairo_t *cr, gpointer data)
     
     // Draw elements
     for(auto& child : element.childrens) {
-        draw_element(widget, cr, child, theme);
+        draw_element(widget, cr, child, uvaapp->theme()->request(child.tag).as<var::dictionary>());
     }
+
+    return FALSE;
+}
+
+static gboolean motion_notify_event(GtkWidget *widget, GdkEventMotion *event, gpointer data)
+{
+    uva::lang::ui::frame* frame = reinterpret_cast<uva::lang::ui::frame*>(data);
+
+    uva::xml view = frame->render();
+
+    auto width = gtk_widget_get_allocated_width(widget);
+    auto height = gtk_widget_get_allocated_height(widget);
+
+    view_element element(view);
+    element.width = width;
+    element.height = height;
+    
+    element.calculate_layout();
+
+    // Find the element that the mouse is over
+    for(auto& child : element.childrens) {
+        if(event->x >= child.x && event->x <= child.x + child.width && event->y >= child.y && event->y <= child.y + child.height) {
+            var style_var = uvaapp->style()->request(child.tag);
+
+            if(style_var.is_a<var::dictionary>()) {
+                var::dictionary_type style = style_var.as<var::dictionary>();
+
+                const std::map<std::string, view_element::cursor_type> cursor_map = {
+                    { "pointer", view_element::cursor_pointer },
+                };
+
+                auto cursor_it = style.find("cursor");
+
+                if(cursor_it != style.end()) {
+                    auto cursor_type_it = cursor_map.find(cursor_it->second.as<var::string>());
+
+                    if(cursor_type_it != cursor_map.end()) {
+                        child.cursor = cursor_type_it->second;
+                    }
+                }
+            }
+
+            if(child.cursor == view_element::cursor_pointer) {
+                GdkDisplay *display = gtk_widget_get_display(widget);
+                GdkCursor *hand_cursor = gdk_cursor_new_from_name(display, "pointer");
+
+                gdk_window_set_cursor(gtk_widget_get_window(widget), hand_cursor);
+                g_object_unref(hand_cursor);
+            } else {
+                gdk_window_set_cursor(gtk_widget_get_window(widget), nullptr);
+            }
+
+            break;
+        }
+    }
+
     return FALSE;
 }
 
@@ -299,6 +359,9 @@ uva::lang::ui::frame::frame(std::string_view __title)
     gtk_container_add(GTK_CONTAINER(window), drawing_area);
 
     g_signal_connect (drawing_area, "draw", G_CALLBACK (draw_callback), this);
+    g_signal_connect (drawing_area, "motion_notify_event", G_CALLBACK (motion_notify_event), this);
+
+    gtk_widget_add_events(drawing_area, GDK_POINTER_MOTION_MASK);
 }
 
 uva::lang::ui::frame::~frame()
