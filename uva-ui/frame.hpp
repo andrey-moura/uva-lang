@@ -7,7 +7,7 @@
 #include <string_view>
 
 #include <uva/var.hpp>
-#include <uva/xml.hpp>
+// #include <uva/xml.hpp>
 
 #include <uva-ui/os_specific_data_member.hpp>
 
@@ -25,8 +25,8 @@ namespace uva
             public:
                 void show(bool maximized = false);
                 void hide();
-            public:
-                virtual uva::xml render() = 0;
+            // public:
+            //     virtual uva::xml render() = 0;
             };
         };
     }
