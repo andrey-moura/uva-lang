@@ -7,7 +7,7 @@
 
 #include <lang/lang.hpp>
 
-extern std::vector<uva::lang::extension*> extensions;
+//extern std::vector<uva::lang::extension*> extensions;
 
 uva::lang::interpreter::interpreter()
 {
@@ -560,10 +560,6 @@ void uva::lang::interpreter::init()
     this->load(ArrayClass   = uva::lang::array_class::create(this));
     this->load(DictionaryClass = uva::lang::dictionary_class::create(this));
     this->load(NullClass    = uva::lang::null_class::create(this));
-
-    for(auto& extension : extensions) {
-        extension->load(this);
-    }
 }
 
 const std::shared_ptr<uva::lang::object> uva::lang::interpreter::node_to_object(const uva::lang::parser::ast_node& node, std::shared_ptr<uva::lang::structure> cls, std::shared_ptr<uva::lang::object> object)
@@ -641,4 +637,17 @@ const std::shared_ptr<uva::lang::object> uva::lang::interpreter::node_to_object(
     throw std::runtime_error("interpreter: unknown node type");
 
     return nullptr;
+}
+
+void uva::lang::interpreter::load_extension(std::shared_ptr<uva::lang::extension> extension)
+{
+    extension->load(this);
+    extensions.push_back(extension);
+}
+
+void uva::lang::interpreter::start_extensions()
+{
+    for(auto& extension : extensions) {
+        extension->start(this);
+    }
 }

@@ -4,11 +4,13 @@
 
 #include <uva.hpp>
 
+#include <interpreter/interpreter.hpp>
+
 #ifdef __linux__
 #   include <dlfcn.h>
 #endif
 
-//extern std::vector<uva::lang::extension*> extensions;
+//std::vector<uva::lang::extension*> extensions;
 
 uva::lang::extension::extension(const std::string &name)
     : m_name(name)
@@ -43,29 +45,22 @@ void uva::lang::extension::import(uva::lang::interpreter* interpreter, std::stri
     }
 
 #ifdef __linux__
-    void* handle = dlopen(file_path.c_str(), RTLD_LAZY | RTLD_DEEPBIND);
+    void* handle = dlopen(file_path.c_str(), RTLD_LAZY | RTLD_GLOBAL);
 
     if(!handle) {
         throw std::runtime_error(dlerror());
     }
 
-    uva::lang::extension* (*create_extension)() = (uva::lang::extension*(*)())dlsym(handle, "create_extension");
+    std::shared_ptr<uva::lang::extension> (*create_extension)() = (std::shared_ptr<uva::lang::extension>(*)())dlsym(handle, "create_extension");
 
     if(!create_extension) {
         throw std::runtime_error(dlerror());
     }
 
-    uva::lang::extension* extension = create_extension();
+    std::shared_ptr<uva::lang::extension> extension = create_extension();
 
-    extension->load(interpreter);
+    interpreter->load_extension(extension);
 #else
     throw std::runtime_error("unsupported platform");
 #endif
-}
-
-void uva::lang::extension::init_all()
-{
-//     for(auto& extension : extensions) {
-//         extension->init();
-//     }
 }

@@ -13,6 +13,7 @@ namespace uva
 {
     namespace lang
     {
+        class extension;
         // The context of the interpreter execution. It is relative to a block.
         struct interpreter_context
         {
@@ -85,6 +86,10 @@ namespace uva
             }
 
             const std::shared_ptr<uva::lang::object> node_to_object(const uva::lang::parser::ast_node& node, std::shared_ptr<uva::lang::structure> cls = nullptr, std::shared_ptr<uva::lang::object> object = nullptr);
+
+            void load_extension(std::shared_ptr<uva::lang::extension> extension);
+
+            void start_extensions();
         protected:
             /// @brief The global context stack.
             interpreter_context global_context;
@@ -94,6 +99,8 @@ namespace uva
 
             /// @brief The call stack.
             std::vector<interpreter_context> stack;
+
+            std::vector<std::shared_ptr<uva::lang::extension>> extensions;
 
             void push_context() {
                 stack.push_back(std::move(current_context));

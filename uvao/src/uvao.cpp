@@ -13,7 +13,7 @@
 using namespace uva;
 
 std::shared_ptr<uva::lang::object> application;
-std::vector<uva::lang::extension*> extensions;
+//std::vector<uva::lang::extension*> extensions;
 
 #ifdef __UVA_DEBUG__
     #define try if(true)

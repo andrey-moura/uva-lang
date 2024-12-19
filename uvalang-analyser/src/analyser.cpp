@@ -14,7 +14,7 @@
 using namespace uva;
 
 std::shared_ptr<uva::lang::object> application;
-std::vector<uva::lang::extension*> extensions;
+//std::vector<uva::lang::extension*> extensions;
 
 int main(int argc, char** argv) {
     std::vector<std::string_view> args;

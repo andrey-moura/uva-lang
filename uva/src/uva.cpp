@@ -13,7 +13,6 @@
 using namespace uva;
 
 std::shared_ptr<uva::lang::object> application;
-std::vector<uva::lang::extension*> extensions;
 
 #ifdef __UVA_DEBUG__
     #define try if(true)
@@ -64,6 +63,8 @@ int main(int argc, char** argv) {
         uva::lang::interpreter interpreter;
         std::shared_ptr<uva::lang::object> tmp;
         std::shared_ptr<uva::lang::object> ret = interpreter.execute_all(root_node, tmp);
+
+        interpreter.start_extensions();
 
         if(!ret) {
             return 0;

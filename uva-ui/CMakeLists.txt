@@ -28,26 +28,31 @@ else()
 endif()
 
 if (NOT UVA_UI_BACKEND STREQUAL "NONE")
-    add_executable(uva-ui
+    # Add uvaui as shared library
+
+    add_library(uvaui-shared SHARED
+        ${CMAKE_CURRENT_LIST_DIR}/src/ui.cpp
+        ${CMAKE_CURRENT_LIST_DIR}/src/app_class.cpp
+        ${CMAKE_CURRENT_LIST_DIR}/src/frame_class.cpp
         ${CMAKE_CURRENT_LIST_DIR}/src/${UVA_UI_BACKEND}/app.cpp
         ${CMAKE_CURRENT_LIST_DIR}/src/${UVA_UI_BACKEND}/frame.cpp
-        
-        ${CMAKE_CURRENT_LIST_DIR}/src/theme.cpp
-        ${CMAKE_CURRENT_LIST_DIR}/src/ui.cpp
-        ${CMAKE_CURRENT_LIST_DIR}/src/style.cpp
+
     )
 
+    include_directories(${CMAKE_CURRENT_LIST_DIR}/include)
+
     if(WIN32)
-        set_target_properties(uva-ui PROPERTIES WIN32_EXECUTABLE true)
+        set_target_properties(uvaui-shared PROPERTIES WIN32_EXECUTABLE true)
     elseif(LINUX)
-        target_link_libraries(uva-ui ${GTK3_LIBRARIES})
+        target_link_libraries(uvaui-shared ${GTK3_LIBRARIES})
     else()
         message(FATAL_ERROR "Unsupported platform")
     endif()
 
-    target_link_libraries(uva-ui uva-xml uva-preprocessor uva-interpreter uva-lang uva-core uva-console uva-file uva-string)
+    #target_link_libraries(uvaui-shared  uva-preprocessor uva-interpreter uva-lang uva-core uva-console uva-file )
+    target_link_libraries(uvaui-shared uva-lang uva-extension uva-console uva-lexer uva-interpreter)
 
-    install(TARGETS uva-ui DESTINATION bin)
+    install(TARGETS uvaui-shared DESTINATION bin)
 
     add_definitions(-D"__UVA_UI_BACKEND_${UVA_UI_BACKEND}__")
 endif()
