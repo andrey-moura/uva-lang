@@ -34,8 +34,10 @@ void uva::lang::object::initialize(uva::lang::interpreter *interpreter)
     instance_variables["this"] = shared_from_this();
 
     if(cls->base) {
-        base_instance = uva::lang::object::instantiate(interpreter, cls->base, nullptr);
-        //base_instance->initialize(interpreter);
+        //base_instance = uva::lang::object::instantiate(interpreter, cls->base, nullptr);
+        base_instance = std::make_shared<uva::lang::object>(cls->base);
+        base_instance->derived_instance = shared_from_this();
+        base_instance->initialize(interpreter);
     }
 
     auto new_it = cls->methods.find("new");
