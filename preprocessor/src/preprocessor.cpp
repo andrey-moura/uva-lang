@@ -1,6 +1,8 @@
-#include <uva.hpp>
+#include <filesystem>
 
 #include <preprocessor/preprocessor.hpp>
+
+#include <uva.hpp>
 
 #include <uva/file.hpp>
 
@@ -83,14 +85,13 @@ void uva::lang::preprocessor::process(const std::filesystem::path &__file_name, 
                     throw std::runtime_error(token.error_message_at_current_position("unknown preprocessor directive"));
                 }
             }
-                break;
-            default:
-                __lexer.reset();
-                return;
+            break;
         }
 
         token = __lexer.next_token();
     }
+
+    __lexer.reset();
 }
 
 void uva::lang::preprocessor::process_include(const std::filesystem::path &__file_name, uva::lang::lexer &__lexer)
@@ -105,7 +106,9 @@ void uva::lang::preprocessor::process_include(const std::filesystem::path &__fil
 
     const std::string& file_path_string = file_name_token.content();
 
-    auto files = list_files_with_wildcard(std::filesystem::current_path(), file_path_string);
+    std::filesystem::path file_path = __lexer.path();
+
+    auto files = list_files_with_wildcard(file_path.parent_path(), file_path_string);
 
     __lexer.erase_tokens(2); // Remove the directive and the file name token
 

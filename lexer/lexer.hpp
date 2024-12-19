@@ -6,6 +6,7 @@
 #include <utility>
 #include <string>
 #include <stdexcept>
+#include <filesystem>
 
 namespace uva
 {
@@ -88,6 +89,8 @@ namespace uva
 
             // iterating
             size_t iterator = 0;
+        public:
+            std::filesystem::path path() const { return m_file_name; }
         protected:
             /// @brief Update a position (line, column, offset).
             /// @param position The position to update.
