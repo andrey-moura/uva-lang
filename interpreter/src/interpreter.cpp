@@ -83,6 +83,7 @@ std::shared_ptr<uva::lang::object> uva::lang::interpreter::execute(uva::lang::pa
                 }
 
                 cls->base = base_class;
+                base_class->deriveds.push_back(cls);
             }
 
             for(auto& class_child : source_code.context()->childrens()) {

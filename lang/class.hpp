@@ -23,6 +23,7 @@ namespace uva {
             std::string name;
             std::map<std::string, uva::lang::method> methods;
             std::shared_ptr<uva::lang::structure> base;
+            std::vector<std::shared_ptr<uva::lang::structure>> deriveds;
             std::map<std::string, std::shared_ptr<uva::lang::structure>> instance_variables;
             std::map<std::string, std::shared_ptr<uva::lang::object>> class_variables;
             std::string source_content;
