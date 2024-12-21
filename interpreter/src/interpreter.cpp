@@ -639,7 +639,7 @@ const std::shared_ptr<uva::lang::object> uva::lang::interpreter::node_to_object(
     return nullptr;
 }
 
-void uva::lang::interpreter::load_extension(std::shared_ptr<uva::lang::extension> extension)
+void uva::lang::interpreter::load_extension(uva::lang::extension* extension)
 {
     extension->load(this);
     extensions.push_back(extension);

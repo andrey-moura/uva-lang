@@ -51,13 +51,13 @@ void uva::lang::extension::import(uva::lang::interpreter* interpreter, std::stri
         throw std::runtime_error(dlerror());
     }
 
-    std::shared_ptr<uva::lang::extension> (*create_extension)() = (std::shared_ptr<uva::lang::extension>(*)())dlsym(handle, "create_extension");
+    uva::lang::extension* (*create_extension)() = (uva::lang::extension*(*)())dlsym(handle, "create_extension");
 
     if(!create_extension) {
         throw std::runtime_error(dlerror());
     }
 
-    std::shared_ptr<uva::lang::extension> extension = create_extension();
+    uva::lang::extension* extension = create_extension();
 
     interpreter->load_extension(extension);
 #else

@@ -51,9 +51,9 @@ public:
 };
 
 extern "C" {
-    std::shared_ptr<uva::lang::extension> create_extension()
+    uva::lang::extension* create_extension()
     {
-        return std::make_shared<uvaui_extension>();
+        return new uvaui_extension();
     }
 }
 
