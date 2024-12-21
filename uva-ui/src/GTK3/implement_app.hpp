@@ -1,1 +1,0 @@
-#define UVA_IMPLEMENT_APP(x) int main(int argc, char** argv) { uva::lang::ui::app * uvaapp = new x(); return uvaapp->run(argc, argv); }
