@@ -7,10 +7,10 @@
 Uva is an interpreted object-oriented multi-purpose programming language
 
 ## Table of Contents
-* [Examples](Examples)
-* [Availability](Availability)
-* [Building](Building)
-* [Install](Install)
+* [Examples](#Examples)
+* [Availability](#Availability)
+* [Building](#Building)
+* [Install](#Install)
 
 ## Examples
 
