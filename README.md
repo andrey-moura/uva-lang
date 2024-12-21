@@ -6,33 +6,13 @@
 
 Uva is an interpreted object-oriented multi-purpose programming language
 
-# Availability
+## Table of Contents
+* [Examples](Examples)
+* [Availability](Availability)
+* [Building](Building)
+* [Install](Install)
 
-Environment | Build
---- | --- |
-Ubuntu 22.04 | [![Ubuntu 22.04](https://github.com/andrey-moura/uva-lang/actions/workflows/build-ubuntu-22.04.yml/badge.svg?cache-control=no-cache)](https://github.com/andrey-moura/uva-lang/actions/workflows/build-ubuntu-22.04.yml)
-Ubuntu 20.04 | [![Ubuntu 20.04](https://github.com/andrey-moura/uva-lang/actions/workflows/build-ubuntu-20.04.yml/badge.svg?cache-control=no-cache)](https://github.com/andrey-moura/uva-lang/actions/workflows/build-ubuntu-20.04.yml)
-Windows Server 2022 | [![Windows Server 2022](https://github.com/andrey-moura/uva-lang/actions/workflows/build-windows-2022.yml/badge.svg?cache-control=no-cache)](https://github.com/andrey-moura/uva-lang/actions/workflows/build-windows-2022.yml)
-# Building
-
-On Linux or Windows Developer Command Prompt
-
-```sh
-    git clone https://github.com/andrey-moura/uva
-    git clone https://github.com/andrey-moura/uva-lang
-    cd uva-lang
-    cmake -B build .
-    cmake --build build --config Release --parallel
-```
-
-# Install
-After building, run as sudo on Linux or with an Administrator Command Prompt on Windows
-
-```sh
-    cmake --install build
-```
-
-# Examples
+## Examples
 
 If you want to run examples, try:
 
@@ -50,4 +30,30 @@ The result is:
 
 ```
     Hello from minimal!
+```
+
+## Availability
+
+Environment | Build
+--- | --- |
+Ubuntu 22.04 | [![Ubuntu 22.04](https://github.com/andrey-moura/uva-lang/actions/workflows/build-ubuntu-22.04.yml/badge.svg?cache-control=no-cache)](https://github.com/andrey-moura/uva-lang/actions/workflows/build-ubuntu-22.04.yml)
+Ubuntu 20.04 | [![Ubuntu 20.04](https://github.com/andrey-moura/uva-lang/actions/workflows/build-ubuntu-20.04.yml/badge.svg?cache-control=no-cache)](https://github.com/andrey-moura/uva-lang/actions/workflows/build-ubuntu-20.04.yml)
+Windows Server 2022 | [![Windows Server 2022](https://github.com/andrey-moura/uva-lang/actions/workflows/build-windows-2022.yml/badge.svg?cache-control=no-cache)](https://github.com/andrey-moura/uva-lang/actions/workflows/build-windows-2022.yml)
+## Building
+
+On Linux or Windows Developer Command Prompt
+
+```sh
+    git clone https://github.com/andrey-moura/uva
+    git clone https://github.com/andrey-moura/uva-lang
+    cd uva-lang
+    cmake -B build .
+    cmake --build build --config Release --parallel
+```
+
+## Install
+After building, run as sudo on Linux or with an Administrator Command Prompt on Windows
+
+```sh
+    cmake --install build
 ```
