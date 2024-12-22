@@ -48,14 +48,8 @@ int main(int argc, char** argv) {
 
         uva::lang::lexer l(file_path.string(), source);
 
-        uva::lang::preprocessor preprocessor(uva_executable_path);
+        uva::lang::preprocessor preprocessor;
         preprocessor.process(file_path.string(), l);
-
-        if(preprocessor.has_specified_vm()) {
-            if(preprocessor.specified_vm() != uva_executable_path.stem()) {
-                return preprocessor.launch_vm(argc, argv);
-            }
-        }
 
         uva::lang::parser p;
         uva::lang::parser::ast_node root_node = p.parse_all(l);
