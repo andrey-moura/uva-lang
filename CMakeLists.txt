@@ -7,7 +7,10 @@ project(uva-lang)
 
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-include("../uva/CMakeLists.txt")
+# Get the parent directory
+get_filename_component(UVALANG_PARENT_DIRECTORY ${CMAKE_CURRENT_LIST_DIR} DIRECTORY)
+
+include("${UVALANG_PARENT_DIRECTORY}/uva/CMakeLists.txt")
 
 uva_library(core)
 uva_library(file)
@@ -21,22 +24,22 @@ include_directories(${CMAKE_CURRENT_LIST_DIR})
 include_directories(include/fmt/include)
 
 add_library(uva-parser
-    parser/parser.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/parser/parser.cpp
 )
 
 target_link_libraries(uva-parser uva-lexer)
 
 add_library(uva-extension
-    extension/src/extension.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/extension/src/extension.cpp
 )
 
-include("interpreter/CMakeLists.txt")
-include("lexer/CMakeLists.txt")
-include("lang/CMakeLists.txt")
-include("preprocessor/CMakeLists.txt")
+include("${CMAKE_CURRENT_LIST_DIR}/interpreter/CMakeLists.txt")
+include("${CMAKE_CURRENT_LIST_DIR}/lexer/CMakeLists.txt")
+include("${CMAKE_CURRENT_LIST_DIR}/lang/CMakeLists.txt")
+include("${CMAKE_CURRENT_LIST_DIR}/preprocessor/CMakeLists.txt")
 
 add_executable(uva
-    uva/src/uva.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/uva/src/uva.cpp
 )
 
 if(UNIX)
