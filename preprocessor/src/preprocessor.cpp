@@ -54,11 +54,9 @@ std::vector<std::string> list_files_with_wildcard(const std::filesystem::path& b
 
 std::map<std::string, void(uva::lang::preprocessor::*)(const std::filesystem::path&, uva::lang::lexer&), std::less<>> preprocessor_directives = {
     { "#include", &uva::lang::preprocessor::process_include },
-    { "#vm",      &uva::lang::preprocessor::process_vm      },
 };
 
-uva::lang::preprocessor::preprocessor(std::filesystem::path __executable_path)
-    : m_executable_path(__executable_path)
+uva::lang::preprocessor::preprocessor()
 {
 }
 
@@ -124,38 +122,4 @@ void uva::lang::preprocessor::process_include(const std::filesystem::path &__fil
 
         __lexer.insert(l.tokens());
     }
-}
-
-void uva::lang::preprocessor::process_vm(const std::filesystem::path &__file_name, uva::lang::lexer &__lexer)
-{
-    // Moves becase it will be removed
-    uva::lang::lexer::token directive       = std::move(__lexer.current_token());
-    uva::lang::lexer::token file_name_token = std::move(__lexer.see_next());
-
-    if(file_name_token.kind() != uva::lang::lexer::token_kind::token_string) {
-        throw std::runtime_error(file_name_token.error_message_at_current_position("Expected string after boot"));
-    }
-
-    __lexer.erase_tokens(2); // Remove the directive and the file name token
-
-    m_vm = file_name_token.content();
-}
-
-int uva::lang::preprocessor::launch_vm(int argc, char **argv)
-{
-    std::filesystem::path boot_path = m_executable_path;
-    boot_path.replace_filename(m_vm);
-
-    if(!std::filesystem::exists(boot_path)) {
-        throw std::runtime_error("Specified VM does not exist. Expected to find it at" + boot_path.string());
-    }
-
-    std::string boot_command = boot_path.string();
-
-    for(int i = 1; i < argc; i++) {
-        boot_command += " ";
-        boot_command += argv[i];
-    }
-
-    return system(boot_command.c_str());
 }
