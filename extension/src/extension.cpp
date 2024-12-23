@@ -29,7 +29,7 @@ void uva::lang::extension::import(uva::lang::interpreter* interpreter, std::stri
 #endif
 
 #if defined(__linux__)
-    library_name = "lib" + library_name;
+    library_name = "libuvalang-" + library_name;
 #endif
 
     file_path /= library_name;
