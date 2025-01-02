@@ -45,3 +45,13 @@ endif()
 target_link_libraries(uva uva-extension uva-preprocessor uva-interpreter uva-lang uva-core uva-console uva-file)
 
 install(TARGETS uva DESTINATION bin)
+
+set(EXTENSIONS_FOLDER "${UVALANG_PARENT_DIRECTORY}/uvalang-extensions")
+
+file(GLOB EXTENSIONS "${EXTENSIONS_FOLDER}/*")
+
+foreach(EXTENSION ${EXTENSIONS})
+    if(IS_DIRECTORY ${EXTENSION})
+        include("${EXTENSION}/CMakeLists.txt")
+    endif()
+endforeach()
