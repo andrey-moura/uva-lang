@@ -20,7 +20,7 @@ std::shared_ptr<uva::lang::structure> uva::lang::array_class::create(uva::lang::
     };
 
     ArrayClass->methods = {
-        {"to_string", uva::lang::method("to_string", method_storage_type::instance_method, {}, [interpreter](std::shared_ptr<uva::lang::object> object, std::vector<std::shared_ptr<uva::lang::object>> params) {
+        {"to_string", uva::lang::method("to_string", method_storage_type::instance_method, [interpreter](std::shared_ptr<uva::lang::object> object, std::vector<std::shared_ptr<uva::lang::object>> params) {
             std::string result = "[";
 
             std::vector<std::shared_ptr<uva::lang::object>>& items = object->as<std::vector<std::shared_ptr<uva::lang::object>>>();
@@ -55,7 +55,7 @@ std::shared_ptr<uva::lang::structure> uva::lang::array_class::create(uva::lang::
             return uva::lang::object::instantiate(interpreter, interpreter->StringClass, std::move(result));
         })},
 
-        {"front", uva::lang::method("front", method_storage_type::instance_method, {}, [interpreter](std::shared_ptr<uva::lang::object> object, std::vector<std::shared_ptr<uva::lang::object>> params) {
+        {"front", uva::lang::method("front", method_storage_type::instance_method, [interpreter](std::shared_ptr<uva::lang::object> object, std::vector<std::shared_ptr<uva::lang::object>> params) {
             std::vector<std::shared_ptr<uva::lang::object>>& items = object->as<std::vector<std::shared_ptr<uva::lang::object>>>();
 
             if(items.empty()) {
@@ -65,13 +65,13 @@ std::shared_ptr<uva::lang::structure> uva::lang::array_class::create(uva::lang::
             return items.front();
         })},
 
-        {"size", uva::lang::method("size", method_storage_type::instance_method, {}, [interpreter](std::shared_ptr<uva::lang::object> object, std::vector<std::shared_ptr<uva::lang::object>> params) {
+        {"size", uva::lang::method("size", method_storage_type::instance_method, [interpreter](std::shared_ptr<uva::lang::object> object, std::vector<std::shared_ptr<uva::lang::object>> params) {
             std::vector<std::shared_ptr<uva::lang::object>>& items = object->as<std::vector<std::shared_ptr<uva::lang::object>>>();
 
             return uva::lang::object::instantiate(interpreter, interpreter->IntegerClass, items.size());
         })},
 
-        {"pop_front!", uva::lang::method("pop_front!", method_storage_type::instance_method, {}, [interpreter](std::shared_ptr<uva::lang::object> object, std::vector<std::shared_ptr<uva::lang::object>> params) {
+        {"pop_front!", uva::lang::method("pop_front!", method_storage_type::instance_method, [interpreter](std::shared_ptr<uva::lang::object> object, std::vector<std::shared_ptr<uva::lang::object>> params) {
             std::vector<std::shared_ptr<uva::lang::object>>& items = object->as<std::vector<std::shared_ptr<uva::lang::object>>>();
 
             if(items.size()) {

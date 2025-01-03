@@ -89,6 +89,10 @@ namespace uva
                 }
             // Getters
             public:
+                uva::lang::lexer::token& token() {
+                    return m_token;
+                }
+
                 const uva::lang::lexer::token& token() const {
                     return m_token;
                 }

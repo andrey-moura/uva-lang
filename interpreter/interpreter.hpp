@@ -73,7 +73,13 @@ namespace uva
             /// @brief The global dictionary class.
             std::shared_ptr<uva::lang::structure> DictionaryClass;
 
-            std::shared_ptr<uva::lang::object> call(std::shared_ptr<uva::lang::structure> cls, std::shared_ptr<uva::lang::object> object, const uva::lang::method& method, std::vector<std::shared_ptr<uva::lang::object>> params);
+            std::shared_ptr<uva::lang::object> call(
+                std::shared_ptr<uva::lang::structure> cls,
+                std::shared_ptr<uva::lang::object>    object,
+                const uva::lang::method&              method,
+                std::vector<std::shared_ptr<uva::lang::object>> positional_params,
+                std::map<std::string, std::shared_ptr<uva::lang::object>> named_params = {}
+            );
 
             std::shared_ptr<uva::lang::structure> find_class(const std::string_view& name) {
                 for(auto& cls : classes) {

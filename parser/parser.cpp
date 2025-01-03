@@ -106,14 +106,35 @@ uva::lang::parser::ast_node uva::lang::parser::extract_fn_call_params(uva::lang:
     while(token.content() != ")") {
         ast_node param_node = parse_identifier_or_literal(lexer);
         params_node.add_child(std::move(param_node));
-
+after_extracted_param:
         token = lexer.see_next();
 
-        if(token.type() == lexer::token_type::token_delimiter && token.content() == ",") {
-            token = lexer.next_token();
-        } else if(token.content() != ")") {
-            throw std::runtime_error(token.error_message_at_current_position("Expected ',' or ')'"));
+        if(token.type() == lexer::token_type::token_delimiter)
+        {
+            if(token.content() == ",") {
+                token = lexer.next_token();
+                continue;
+            } else if(token.content() == ")") {
+                break;
+            } else if(token.content() == ":") {
+                lexer.consume_token();
+
+                ast_node named_param(ast_node_type::ast_node_valuedecl);
+                ast_node key_node(std::move(params_node.childrens().back()));
+                key_node.set_type(ast_node_type::ast_node_declname);
+                named_param.add_child(std::move(key_node));
+                params_node.childrens().pop_back();
+
+                ast_node value_node = parse_identifier_or_literal(lexer);
+                named_param.add_child(std::move(value_node));
+
+                params_node.add_child(std::move(named_param));
+
+                goto after_extracted_param;
+            }
         }
+
+        throw std::runtime_error(token.error_message_at_current_position("Expected ',' or ')'"));
     }
 
     // The ')' token was seen, so we need to consume it
@@ -598,6 +619,9 @@ uva::lang::parser::ast_node uva::lang::parser::parse_keyword_function(uva::lang:
             case lexer::token_type::token_delimiter:
                 if(comma.content() == ",") {
                     lexer.consume_token(); // Consume the ',' token
+                } else if(comma.content() == ":") {
+                    params_node.childrens().back().token().merge(comma);
+                    lexer.consume_token(); // Consume the ':' token
                 }
             break;
         }

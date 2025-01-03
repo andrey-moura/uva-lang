@@ -10,7 +10,7 @@ std::shared_ptr<uva::lang::structure> uva::lang::integer_class::create(interpret
     };
 
     IntegerClass->methods = {
-        {"present?", uva::lang::method("present?", method_storage_type::instance_method, {}, [interpreter](std::shared_ptr<uva::lang::object> object, std::vector<std::shared_ptr<uva::lang::object>> params) {
+        {"present?", uva::lang::method("present?", method_storage_type::instance_method, [interpreter](std::shared_ptr<uva::lang::object> object, std::vector<std::shared_ptr<uva::lang::object>> params) {
             int i = object->as<int>();
             
             if(i == 0) {
@@ -19,7 +19,7 @@ std::shared_ptr<uva::lang::structure> uva::lang::integer_class::create(interpret
 
             return std::make_shared<uva::lang::object>(interpreter->TrueClass);
         })},
-        {"to_string", uva::lang::method("to_string", method_storage_type::instance_method, {}, [interpreter](std::shared_ptr<uva::lang::object> object, std::vector<std::shared_ptr<uva::lang::object>> params) {
+        {"to_string", uva::lang::method("to_string", method_storage_type::instance_method, [interpreter](std::shared_ptr<uva::lang::object> object, std::vector<std::shared_ptr<uva::lang::object>> params) {
             int value = object->as<int>();
 
             return uva::lang::object::instantiate(interpreter, interpreter->StringClass, std::move(std::to_string(value)));

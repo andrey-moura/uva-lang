@@ -16,7 +16,7 @@ uva::lang::interpreter::interpreter()
 
 void uva::lang::interpreter::load(std::shared_ptr<uva::lang::structure> cls)
 {
-    cls->methods["call"] = uva::lang::method("call", uva::lang::method_storage_type::instance_method, {"fn, params"}, [this, cls](std::shared_ptr<uva::lang::object> object, std::vector<std::shared_ptr<uva::lang::object>> params) {
+    cls->methods["call"] = uva::lang::method("call", uva::lang::method_storage_type::instance_method, {"fn", "params"}, [this, cls](std::shared_ptr<uva::lang::object> object, std::vector<std::shared_ptr<uva::lang::object>> params) {
         const std::string& method_name = params[0]->as<std::string>();
 
         auto method_it = cls->methods.find(method_name);
@@ -329,19 +329,27 @@ std::shared_ptr<uva::lang::object> uva::lang::interpreter::execute(uva::lang::pa
                 }
             }
 
-            std::vector<std::shared_ptr<uva::lang::object>> params_to_call;
+            std::vector<std::shared_ptr<uva::lang::object>> positional_params;
+            std::map<std::string, std::shared_ptr<uva::lang::object>> named_params;
 
             uva::lang::parser::ast_node* params_node = source_code.child_from_type(uva::lang::parser::ast_node_type::ast_node_fn_params);
 
             if(params_node) {
                 for(auto& param : params_node->childrens()) {
-                    switch (param.type())
+                    uva::lang::parser::ast_node* value_node = &param;
+                    if(param.childrens().size()) {
+                        // Named parameter
+                        value_node = param.child_from_type(uva::lang::parser::ast_node_type::ast_node_valuedecl);
+                    }
+                    std::shared_ptr<uva::lang::object> value = nullptr;
+                    
+                    switch (value_node->type())
                     {
                     case uva::lang::parser::ast_node_type::ast_node_arraydecl:
                     case uva::lang::parser::ast_node_type::ast_node_dictionarydecl:
                     case uva::lang::parser::ast_node_type::ast_node_valuedecl: {
-                        if(param.type() == uva::lang::parser::ast_node_type::ast_node_arraydecl || uva::lang::parser::ast_node_type::ast_node_dictionarydecl || param.token().type() == uva::lang::lexer::token_type::token_literal) { 
-                            params_to_call.push_back(node_to_object(param));
+                        if(value_node->type() == uva::lang::parser::ast_node_type::ast_node_arraydecl || uva::lang::parser::ast_node_type::ast_node_dictionarydecl || param.token().type() == uva::lang::lexer::token_type::token_literal) { 
+                            value = node_to_object(*value_node);
                         }
                         else {
                             throw std::runtime_error("interpreter: Unexpected token in function call parameters");
@@ -350,26 +358,34 @@ std::shared_ptr<uva::lang::object> uva::lang::interpreter::execute(uva::lang::pa
                         break;
                     case uva::lang::parser::ast_node_type::ast_node_declname: {
                         // an identifier
-                        auto it = current_context.variables.find(param.token().content());
+                        auto it = current_context.variables.find(value_node->token().content());
 
                         if(it != current_context.variables.end()) {
-                            params_to_call.push_back(it->second);
+                            value = it->second;
                         } else {
-                            throw std::runtime_error("'" + std::string(param.token().content()) + "' is undefined");
+                            throw std::runtime_error("'" + std::string(value_node->token().content()) + "' is undefined");
                         }
                     }
                     break;
                     case uva::lang::parser::ast_node_type::ast_node_fn_call:
-                        params_to_call.push_back(execute(param, object));
+                        value = execute(*value_node, object);
                     break;
                     default:
                         throw std::runtime_error("interpreter: Unexpected token in function call parameters");
                     break;
                     }
+
+                    uva::lang::parser::ast_node* name = param.child_from_type(uva::lang::parser::ast_node_type::ast_node_declname);
+
+                    if(name) {
+                        named_params[name->token().content()] = value;
+                    } else {
+                        positional_params.push_back(value);
+                    }
                 }
             }
 
-            std::shared_ptr<uva::lang::object> ret = call(class_to_call, object_to_call, *method_to_call, params_to_call);
+            std::shared_ptr<uva::lang::object> ret = call(class_to_call, object_to_call, *method_to_call, positional_params, named_params);
 
             if(is_super) {
                 object_to_call->base_instance = ret;
@@ -509,7 +525,7 @@ std::shared_ptr<uva::lang::object> uva::lang::interpreter::execute_all(uva::lang
     return execute_all(source_code.childrens().begin(), source_code.childrens().end(), object);
 }
 
-std::shared_ptr<uva::lang::object> uva::lang::interpreter::call(std::shared_ptr<uva::lang::structure> cls, std::shared_ptr<uva::lang::object> object, const uva::lang::method &method, std::vector<std::shared_ptr<uva::lang::object>> params)
+std::shared_ptr<uva::lang::object> uva::lang::interpreter::call(std::shared_ptr<uva::lang::structure> cls, std::shared_ptr<uva::lang::object> object, const uva::lang::method &method, std::vector<std::shared_ptr<uva::lang::object>> positional_params, std::map<std::string, std::shared_ptr<uva::lang::object>> named_params)
 {
     push_context();
 
@@ -526,14 +542,22 @@ std::shared_ptr<uva::lang::object> uva::lang::interpreter::call(std::shared_ptr<
 
     std::shared_ptr<uva::lang::object> ret = nullptr;
 
+    if(method.positional_params.size() != positional_params.size()) {
+        throw std::runtime_error("function " + method.name + " expects " + std::to_string(method.positional_params.size()) + " parameters, but " + std::to_string(positional_params.size()) + " were given");
+    }
+
     if(method.block_ast.childrens().size()) {
-        for(size_t i = 0; i < method.params.size(); i++) {
-            current_context.variables[method.params[i]] = params[i];
+        for(size_t i = 0; i < method.positional_params.size(); i++) {
+            current_context.variables[method.positional_params[i].name] = positional_params[i];
+        }
+
+        for(auto& [name, value] : named_params) {
+            current_context.variables[name] = value;
         }
         
         ret = execute(*method.block_ast.block(), object);
     } else if(method.function) {
-        ret = method.function(object, params);
+        ret = method.function(object, positional_params);
     }
 
     if(is_constructor) {

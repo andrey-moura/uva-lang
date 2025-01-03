@@ -24,7 +24,7 @@ std::shared_ptr<uva::lang::structure> uva::lang::std_class::create(uva::lang::in
             return nullptr;
         })},
 
-        { "gets", uva::lang::method("gets", method_storage_type::class_method, {}, [interpreter](std::shared_ptr<uva::lang::object> object, std::vector<std::shared_ptr<uva::lang::object>> params) {
+        { "gets", uva::lang::method("gets", method_storage_type::class_method, [interpreter](std::shared_ptr<uva::lang::object> object, std::vector<std::shared_ptr<uva::lang::object>> params) {
             std::string line;
             std::getline(std::cin, line);
 
