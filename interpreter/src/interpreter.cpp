@@ -337,9 +337,11 @@ std::shared_ptr<uva::lang::object> uva::lang::interpreter::execute(uva::lang::pa
             if(params_node) {
                 for(auto& param : params_node->childrens()) {
                     uva::lang::parser::ast_node* value_node = &param;
-                    if(param.childrens().size()) {
+                    if(param.type() == uva::lang::parser::ast_node_type::ast_node_valuedecl && param.childrens().size()) {
                         // Named parameter
-                        value_node = param.child_from_type(uva::lang::parser::ast_node_type::ast_node_valuedecl);
+                        if(auto __value_node = param.child_from_type(uva::lang::parser::ast_node_type::ast_node_valuedecl)) {
+                            value_node = __value_node;
+                        }
                     }
                     std::shared_ptr<uva::lang::object> value = nullptr;
                     
@@ -375,7 +377,11 @@ std::shared_ptr<uva::lang::object> uva::lang::interpreter::execute(uva::lang::pa
                     break;
                     }
 
-                    uva::lang::parser::ast_node* name = param.child_from_type(uva::lang::parser::ast_node_type::ast_node_declname);
+                    uva::lang::parser::ast_node* name = nullptr;
+                    
+                    if(param.type() == uva::lang::parser::ast_node_type::ast_node_valuedecl) {
+                        name = param.child_from_type(uva::lang::parser::ast_node_type::ast_node_declname);
+                    }
 
                     if(name) {
                         named_params[name->token().content()] = value;
