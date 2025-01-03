@@ -1,1 +1,1 @@
-puts("Hello from minimal!");
+puts('Hello from minimal!');
