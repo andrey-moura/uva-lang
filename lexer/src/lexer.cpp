@@ -233,11 +233,29 @@ void uva::lang::lexer::read_next_token()
         return;
     }
 
-    if(c == '\"') {
-        discard();
+    switch(c)
+    {
+        case '\"':
+            discard();
+            extract_and_push_string(start);
+            return;
+        break;
+        case '\'':
+            discard();
 
-        extract_and_push_string(start);
-        return;
+            while(m_source.front() != '\'') {
+                if(m_source.empty()) {
+                    throw std::runtime_error("lexer: unexpected end of file");
+                }
+
+                read();
+            }
+
+            discard();
+
+            push_token(start, token_type::token_literal, std::move(m_buffer), token_kind::token_string);
+            return;
+        break;
     }
 
     if(is_preprocessor(m_source)) {
