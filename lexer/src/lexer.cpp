@@ -196,7 +196,7 @@ void uva::lang::lexer::read_next_token()
         if(c == ':' && m_source.size() >= 1) {
             if(isalpha(m_source[1])) {
                 discard();
-                while(m_source.size() && !isspace(m_source.front()) && m_source.front() != ';') {
+                while(m_source.size() && (isalnum(m_source.front()) || m_source.front() == '_')) { 
                     read();
                 }
                 push_token(start, token_type::token_literal, std::move(m_buffer), token_kind::token_string);
