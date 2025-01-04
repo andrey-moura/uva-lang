@@ -552,6 +552,14 @@ std::shared_ptr<uva::lang::object> uva::lang::interpreter::call(std::shared_ptr<
         throw std::runtime_error("function " + method.name + " expects " + std::to_string(method.positional_params.size()) + " parameters, but " + std::to_string(positional_params.size()) + " were given");
     }
 
+    for(const auto& [name, value] : method.named_params) {
+        auto it = named_params.find(name);
+
+        if(it == named_params.end()) {
+            throw std::runtime_error("function " + method.name + " called without parameter " + name);
+        }
+    }
+
     if(method.block_ast.childrens().size()) {
         for(size_t i = 0; i < method.positional_params.size(); i++) {
             current_context.variables[method.positional_params[i].name] = positional_params[i];
