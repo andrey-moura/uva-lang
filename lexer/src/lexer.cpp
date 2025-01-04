@@ -193,6 +193,16 @@ void uva::lang::lexer::read_next_token()
     // Ordered by less expensive checks first
 
     if(is_delimiter(c)) {
+        if(c == ':' && m_source.size() >= 1) {
+            if(isalpha(m_source[1])) {
+                discard();
+                while(m_source.size() && !isspace(m_source.front()) && m_source.front() != ';') {
+                    read();
+                }
+                push_token(start, token_type::token_literal, std::move(m_buffer), token_kind::token_string);
+                return;
+            }
+        }
         read();
         push_token(start, token_type::token_delimiter, std::move(m_buffer));
         return;
