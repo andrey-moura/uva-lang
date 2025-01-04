@@ -569,6 +569,16 @@ std::shared_ptr<uva::lang::object> uva::lang::interpreter::call(std::shared_ptr<
         ret = object;
     }
 
+    for (auto& [name, value] : current_context.variables) {
+        if(value->base_instance) {
+            if(value.use_count() == 2) {
+                // used by base_instance and current_context.variables
+                value->base_instance = nullptr;
+                // Now the use count is 1, it will be destroyed when the current_context is destroyed
+            }
+        }
+    }
+
     pop_context();
 
     return ret;
