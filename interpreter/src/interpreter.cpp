@@ -16,23 +16,6 @@ uva::lang::interpreter::interpreter()
 
 void uva::lang::interpreter::load(std::shared_ptr<uva::lang::structure> cls)
 {
-    cls->methods["call"] = uva::lang::method("call", uva::lang::method_storage_type::instance_method, {"fn", "params"}, [this, cls](std::shared_ptr<uva::lang::object> object, std::vector<std::shared_ptr<uva::lang::object>> params) {
-        const std::string& method_name = params[0]->as<std::string>();
-
-        auto method_it = cls->methods.find(method_name);
-
-        if(method_it == cls->methods.end()) {
-            throw std::runtime_error("class " + cls->name + " does not have a function called " + method_name);
-        }
-
-        std::vector<std::shared_ptr<uva::lang::object>> method_params = params;
-        if(method_params.size() > 1) {
-            method_params.erase(method_params.begin());
-        }
-
-        return call(cls, object, method_it->second, method_params);
-    });
-
     classes.push_back(cls);
 }
 
@@ -575,7 +558,7 @@ std::shared_ptr<uva::lang::object> uva::lang::interpreter::call(std::shared_ptr<
         
         ret = execute(*method.block_ast.block(), object);
     } else if(method.function) {
-        ret = method.function(object, positional_params);
+        ret = method.function(object, positional_params, named_params);
     }
 
     if(is_constructor) {
@@ -687,6 +670,9 @@ std::shared_ptr<uva::lang::object> uva::lang::interpreter::var_to_object(var v)
     {
     case var::var_type::string:
         return uva::lang::object::instantiate(this, StringClass, std::move(v.as<var::string>()));
+        break;
+    case var::var_type::integer:
+        return uva::lang::object::instantiate(this, IntegerClass, v.as<var::integer>());
         break;
     default:
         throw std::runtime_error("interpreter: unknown var type");

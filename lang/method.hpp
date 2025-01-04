@@ -19,23 +19,12 @@ namespace uva {
         {
             fn_parameter() = default;
             fn_parameter(std::string __name)
+                : name(std::move(__name))
             {
-                name.reserve(__name.size());
-                std::string_view name_view(__name);
-                while(name_view.size() && !name_view.starts_with(':')) {
-                    name.push_back(name_view.front());
-                    name_view.remove_prefix(1);
-                }
-                if(name_view.starts_with(':')) {
-                    name_view.remove_prefix(1);
-                    named = true;
 
-                    if(name_view.size()) {
-                        has_default_value = true;
-                        std::string default_value_str = std::string(name_view);
-                        default_value = var(std::move(default_value_str));
-                    }
-                }
+            }
+            fn_parameter(std::string __name, bool __named, var __default_value)
+                : name(std::move(__name)), named(__named), default_value(std::move(__default_value)), has_default_value(true) {
             }
             std::string name;
             bool has_default_value = false;
@@ -51,7 +40,7 @@ namespace uva {
             method_storage_type storage_type;
             std::vector<fn_parameter> positional_params;
             std::vector<fn_parameter> named_params;
-            std::function<std::shared_ptr<uva::lang::object>(std::shared_ptr<uva::lang::object> object, std::vector<std::shared_ptr<uva::lang::object>> params)> function;
+            std::function<std::shared_ptr<uva::lang::object>(std::shared_ptr<uva::lang::object> object, std::vector<std::shared_ptr<uva::lang::object>> position_params, std::map<std::string, std::shared_ptr<uva::lang::object>> named_params)> function;
 
             method() = default;
 
@@ -60,14 +49,33 @@ namespace uva {
                 init_params(__params);
             };
 
-            method(const std::string& name, method_storage_type __storage_type, std::vector<std::string> __params, std::function<std::shared_ptr<uva::lang::object>(std::shared_ptr<uva::lang::object> object, std::vector<std::shared_ptr<uva::lang::object>> params)> fn)
-                : name(name), function(fn), storage_type(__storage_type) {
+            method(const std::string& name, method_storage_type __storage_type, std::initializer_list<std::string> __params, std::function<std::shared_ptr<uva::lang::object>(std::shared_ptr<uva::lang::object> object, std::vector<std::shared_ptr<uva::lang::object>> params)> fn)
+                : name(name), storage_type(__storage_type) {
                 init_params(__params);
+                function = [fn](std::shared_ptr<uva::lang::object> object, std::vector<std::shared_ptr<uva::lang::object>> positional_params, std::map<std::string, std::shared_ptr<uva::lang::object>> named_params) {
+                    return fn(object, positional_params);
+                };
+            }
+
+            method(const std::string& name, method_storage_type __storage_type, std::vector<fn_parameter> __params, std::function<std::shared_ptr<uva::lang::object>(std::shared_ptr<uva::lang::object> object, std::vector<std::shared_ptr<uva::lang::object>> positional_params, std::map<std::string, std::shared_ptr<uva::lang::object>> named_params)> fn)
+                : name(name), function(fn), storage_type(__storage_type) {
+                positional_params.reserve(__params.size());
+                named_params.reserve(__params.size());
+
+                for(auto& param : __params) {
+                    if(param.named) {
+                        named_params.push_back(std::move(param));
+                    } else {
+                        positional_params.push_back(std::move(param));
+                    }
+                }
             }
 
             method(const std::string& name, method_storage_type __storage_type, std::function<std::shared_ptr<uva::lang::object>(std::shared_ptr<uva::lang::object> object, std::vector<std::shared_ptr<uva::lang::object>> params)> fn)
-                : name(name), function(fn), storage_type(__storage_type) {
-
+                : name(name), storage_type(__storage_type) {
+                function = [fn](std::shared_ptr<uva::lang::object> object, std::vector<std::shared_ptr<uva::lang::object>> positional_params, std::map<std::string, std::shared_ptr<uva::lang::object>> named_params) {
+                    return fn(object, positional_params);
+                };
             }
 
             std::shared_ptr<uva::lang::object> call(std::shared_ptr<uva::lang::object> o);
