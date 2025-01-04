@@ -92,6 +92,7 @@ namespace uva
             }
 
             const std::shared_ptr<uva::lang::object> node_to_object(const uva::lang::parser::ast_node& node, std::shared_ptr<uva::lang::structure> cls = nullptr, std::shared_ptr<uva::lang::object> object = nullptr);
+            std::shared_ptr<uva::lang::object> var_to_object(var v);
 
             void load_extension(uva::lang::extension* extension);
 

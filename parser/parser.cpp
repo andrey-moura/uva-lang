@@ -622,6 +622,13 @@ uva::lang::parser::ast_node uva::lang::parser::parse_keyword_function(uva::lang:
                 } else if(comma.content() == ":") {
                     params_node.childrens().back().token().merge(comma);
                     lexer.consume_token(); // Consume the ':' token
+
+                    const uva::lang::lexer::token& default_value = lexer.see_next();
+
+                    if(default_value.type() == lexer::token_type::token_literal) {
+                        params_node.childrens().back().token().merge(default_value);
+                        lexer.consume_token(); // Consume the default value
+                    }
                 }
             break;
         }

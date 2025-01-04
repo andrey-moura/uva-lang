@@ -552,11 +552,15 @@ std::shared_ptr<uva::lang::object> uva::lang::interpreter::call(std::shared_ptr<
         throw std::runtime_error("function " + method.name + " expects " + std::to_string(method.positional_params.size()) + " parameters, but " + std::to_string(positional_params.size()) + " were given");
     }
 
-    for(const auto& [name, value] : method.named_params) {
-        auto it = named_params.find(name);
+    for(const auto& param : method.named_params) {
+        auto it = named_params.find(param.name);
 
         if(it == named_params.end()) {
-            throw std::runtime_error("function " + method.name + " called without parameter " + name);
+            if(param.has_default_value) {
+                named_params[param.name] = var_to_object(param.default_value);
+            } else {
+                throw std::runtime_error("function " + method.name + " called without parameter " + param.name);
+            }
         }
     }
 
@@ -673,6 +677,21 @@ const std::shared_ptr<uva::lang::object> uva::lang::interpreter::node_to_object(
     }
 
     throw std::runtime_error("interpreter: unknown node type");
+
+    return nullptr;
+}
+
+std::shared_ptr<uva::lang::object> uva::lang::interpreter::var_to_object(var v)
+{
+    switch(v.type)
+    {
+    case var::var_type::string:
+        return uva::lang::object::instantiate(this, StringClass, std::move(v.as<var::string>()));
+        break;
+    default:
+        throw std::runtime_error("interpreter: unknown var type");
+    break;
+    }
 
     return nullptr;
 }

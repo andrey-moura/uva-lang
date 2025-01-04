@@ -19,14 +19,27 @@ namespace uva {
         {
             fn_parameter() = default;
             fn_parameter(std::string __name)
-                : name(std::move(__name))
             {
-                if(name.ends_with(':')) {
+                name.reserve(__name.size());
+                std::string_view name_view(__name);
+                while(name_view.size() && !name_view.starts_with(':')) {
+                    name.push_back(name_view.front());
+                    name_view.remove_prefix(1);
+                }
+                if(name_view.starts_with(':')) {
+                    name_view.remove_prefix(1);
                     named = true;
-                    name.pop_back();
+
+                    if(name_view.size()) {
+                        has_default_value = true;
+                        std::string default_value_str = std::string(name_view);
+                        default_value = var(std::move(default_value_str));
+                    }
                 }
             }
             std::string name;
+            bool has_default_value = false;
+            var default_value;
             bool named = false;
         };
         class method
