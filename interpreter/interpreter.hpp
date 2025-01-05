@@ -109,9 +109,14 @@ namespace uva
 
             std::vector<uva::lang::extension*> extensions;
 
-            void push_context() {
+            void push_context(bool inherit = false) {
                 stack.push_back(std::move(current_context));
                 current_context = interpreter_context();
+
+                if(inherit) {
+                    current_context.variables = stack.back().variables;
+                    current_context.functions = stack.back().functions;
+                }
             }
             void pop_context() { 
                 if(stack.empty()) {
