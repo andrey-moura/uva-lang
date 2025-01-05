@@ -390,7 +390,9 @@ std::shared_ptr<uva::lang::object> uva::lang::interpreter::execute(uva::lang::pa
             if(object) {
                 cls = object->cls;
             }
-            current_context.variables[std::string(var_name)] = node_to_object(source_code.childrens()[1], cls, object);
+            std::shared_ptr<uva::lang::object> value = node_to_object(source_code.childrens()[1], cls, object);
+            current_context.variables[std::string(var_name)] = value;
+            return value;
         }
         break;
         case uva::lang::parser::ast_node_type::ast_node_conditional: {
