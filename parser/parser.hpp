@@ -40,13 +40,14 @@ namespace uva
                 ast_node_arraydecl,
                 ast_node_dictionarydecl,
                 ast_node_vardecl,
-                ast_node_foreach,
 
                 ast_node_decltype,
                 ast_node_declname,
 
                 ast_node_conditional,
                 ast_node_while,
+                ast_node_for,
+                ast_node_foreach,
                 ast_node_break,
                 ast_node_else,
                 ast_node_condition
@@ -156,6 +157,10 @@ namespace uva
                 const ast_node* context() const {
                     return child_from_type(ast_node_type::ast_node_context);
                 }
+
+                const ast_node* fn_object() const {
+                    return child_from_type(ast_node_type::ast_node_fn_object);
+                }
             };
         protected:
             std::filesystem::path current_path;
@@ -203,6 +208,7 @@ namespace uva
             uva::lang::parser::ast_node parse_keyword_function(uva::lang::lexer& lexer);
             uva::lang::parser::ast_node parse_keyword_return(uva::lang::lexer& lexer);
             uva::lang::parser::ast_node parse_keyword_if(uva::lang::lexer& lexer);
+            uva::lang::parser::ast_node parse_keyword_for(uva::lang::lexer& lexer);
             uva::lang::parser::ast_node parse_keyword_foreach(uva::lang::lexer& lexer);
             uva::lang::parser::ast_node parse_keyword_while(uva::lang::lexer& lexer);
             uva::lang::parser::ast_node parse_keyword_break(uva::lang::lexer& lexer);

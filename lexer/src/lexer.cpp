@@ -39,6 +39,7 @@ bool is_operator(const char& c) {
         operators['|'] = true;
         operators['&'] = true;
         operators['.'] = true;
+        operators['!'] = true;
     }
 
     return operators[(uint8_t)c];
@@ -54,6 +55,7 @@ bool is_keyword(const std::string& str) {
             "return",
             "class",
             "if",
+            "for",
             "foreach",
             "new",
             "else",

@@ -478,6 +478,35 @@ std::shared_ptr<uva::lang::object> uva::lang::interpreter::execute(uva::lang::pa
             }
         }
         break;
+        case uva::lang::parser::ast_node_type::ast_node_for: {
+            auto* vardecl = source_code.child_from_type(uva::lang::parser::ast_node_type::ast_node_vardecl);
+            auto* valuedecl = source_code.child_from_type(uva::lang::parser::ast_node_type::ast_node_valuedecl);
+            auto* condition_node = source_code.child_from_type(uva::lang::parser::ast_node_type::ast_node_condition);
+            auto* fn_call = source_code.child_from_type(uva::lang::parser::ast_node_type::ast_node_fn_call);
+
+            std::string var_name(vardecl->decname());
+
+            std::shared_ptr<uva::lang::object> start = execute(*vardecl, object);
+
+            while(true) {
+                std::shared_ptr<uva::lang::object> condition = execute(*condition_node, object);
+
+                if(!condition->is_present()) {
+                    break;
+                }
+
+                push_context(true);
+
+                current_context.variables[var_name] = start;
+
+                execute_all(*source_code.context(), object);
+
+                pop_context();
+
+                execute(*fn_call, object);
+            }
+        }
+        break;
     default:
         throw std::runtime_error(source_code.token().error_message_at_current_position("interpreter: Unexpected token"));
         break;

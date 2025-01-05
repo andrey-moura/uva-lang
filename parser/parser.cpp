@@ -417,23 +417,27 @@ uva::lang::parser::ast_node uva::lang::parser::parse_identifier_or_literal(uva::
                     matching = "]";
                 }
 
-                ast_node right_node = parse_identifier_or_literal(lexer);
+                // ++ and -- are unary operators
+                if(operator_token.content() != "++" && operator_token.content() != "--") {
+                    ast_node right_node = parse_identifier_or_literal(lexer);
 
-                ast_node params_node(ast_node_type::ast_node_fn_params);
-                params_node.add_child(std::move(right_node));
+                    ast_node params_node(ast_node_type::ast_node_fn_params);
+                    params_node.add_child(std::move(right_node));
 
-                if(matching.size()) {
-                    uva::lang::lexer::token& matching_token = lexer.next_token();
+                    if(matching.size()) {
+                        uva::lang::lexer::token& matching_token = lexer.next_token();
 
-                    if(matching_token.content() != matching) {
-                        throw std::runtime_error(matching_token.error_message_at_current_position("No matching '" + matching + "' found for '" + operator_node.token().content() + "'"));
+                        if(matching_token.content() != matching) {
+                            throw std::runtime_error(matching_token.error_message_at_current_position("No matching '" + matching + "' found for '" + operator_node.token().content() + "'"));
+                        }
+
+                        operator_token.merge(matching_token);
                     }
 
-                    operator_token.merge(matching_token);
+                    operator_node.add_child(std::move(params_node));
                 }
 
                 operator_node.add_child(ast_node(std::move(operator_token), ast_node_type::ast_node_declname));
-                operator_node.add_child(std::move(params_node));
 
                 chained_nodes.push_back(std::move(operator_node));
             }
@@ -474,6 +478,7 @@ uva::lang::parser::ast_node uva::lang::parser::parse_keyword(uva::lang::lexer &l
         { "function", &uva::lang::parser::parse_keyword_function },
         { "return",   &uva::lang::parser::parse_keyword_return   },
         { "if",       &uva::lang::parser::parse_keyword_if       },
+        { "for",      &uva::lang::parser::parse_keyword_for      },
         { "foreach",  &uva::lang::parser::parse_keyword_foreach  },
         { "while",    &uva::lang::parser::parse_keyword_while    },
         { "break",    &uva::lang::parser::parse_keyword_break    },
@@ -707,13 +712,79 @@ uva::lang::parser::ast_node uva::lang::parser::parse_keyword_if(uva::lang::lexer
     return if_node;
 }
 
-uva::lang::parser::ast_node uva::lang::parser::parse_keyword_foreach(uva::lang::lexer &lexer)  {
+uva::lang::parser::ast_node uva::lang::parser::parse_keyword_for(uva::lang::lexer &lexer)
+{
+    ast_node for_node(ast_node_type::ast_node_for);
+    for_node.add_child(ast_node(std::move(lexer.next_token()), ast_node_type::ast_node_decltype));
+
+    const uva::lang::lexer::token& parenthesis_token = lexer.next_token();
+
+    if(parenthesis_token.type() != lexer::token_type::token_delimiter || parenthesis_token.content() != "(") {
+        throw std::runtime_error(parenthesis_token.error_message_at_current_position("Expected '(' after 'for'"));
+    }
+
+    const uva::lang::lexer::token& var_token = lexer.see_next();
+
+    if(var_token.type() != lexer::token_type::token_keyword || var_token.content() != "var") {
+        throw std::runtime_error(var_token.error_message_at_current_position("Expected 'var' after '('"));
+    }
+
+    ast_node var_node = parse_keyword_var(lexer);
+
+    const uva::lang::lexer::token& semicolon_token = lexer.next_token();
+
+    if(parenthesis_token.type() != lexer::token_type::token_delimiter || semicolon_token.content() != ";") {
+        throw std::runtime_error(semicolon_token.error_message_at_current_position("Expected ';' after 'for' variable declaration"));
+    }
+
+    ast_node condition_node(ast_node_type::ast_node_condition);
+    ast_node condition_child = parse_identifier_or_literal(lexer);
+
+    if(condition_child.type() != ast_node_type::ast_node_fn_call) {
+        throw std::runtime_error(condition_child.token().error_message_at_current_position("Expected condition after 'for' variable declaration"));
+    }
+
+    condition_node.add_child(std::move(condition_child));
+
+    const uva::lang::lexer::token& semicolon2_token = lexer.next_token();
+
+    if(parenthesis_token.type() != lexer::token_type::token_delimiter || semicolon2_token.content() != ";") {
+        throw std::runtime_error(semicolon2_token.error_message_at_current_position("Expected ';' after 'for' condition"));
+    }
+
+    ast_node increment_node = parse_node(lexer);
+
+    if(increment_node.type() != ast_node_type::ast_node_fn_call) {
+        throw std::runtime_error(increment_node.token().error_message_at_current_position("Expected increment after 'for' condition"));
+    }
+
+    const uva::lang::lexer::token& close_parenthesis_token = lexer.next_token();
+
+    if(close_parenthesis_token.content() != ")") {
+        throw std::runtime_error(close_parenthesis_token.error_message_at_current_position("Expected ')' after 'for' increment"));
+    }
+
+    ast_node for_context = parse_node(lexer);
+
+    if(for_context.type() != ast_node_type::ast_node_context) {
+        throw std::runtime_error(for_context.token().error_message_at_current_position("Expected context after 'for'"));
+    }
+
+    for_node.add_child(std::move(var_node));
+    for_node.add_child(std::move(condition_node));
+    for_node.add_child(std::move(increment_node));
+    for_node.add_child(std::move(for_context));
+
+    return for_node;
+}
+
+uva::lang::parser::ast_node uva::lang::parser::parse_keyword_foreach(uva::lang::lexer &lexer) {
     ast_node foreach_node(ast_node_type::ast_node_foreach);
     foreach_node.add_child(ast_node(std::move(lexer.next_token()), ast_node_type::ast_node_decltype));
 
     const uva::lang::lexer::token& parenthesis_token = lexer.next_token();
 
-    if(parenthesis_token.content() != "(") {
+    if(parenthesis_token.type() != lexer::token_type::token_delimiter || parenthesis_token.content() != "(") {
         throw std::runtime_error(parenthesis_token.error_message_at_current_position("Expected '(' after 'foreach'"));
     }
 
