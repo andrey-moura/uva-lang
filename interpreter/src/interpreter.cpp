@@ -496,11 +496,7 @@ std::shared_ptr<uva::lang::object> uva::lang::interpreter::execute(uva::lang::pa
                 }
 
                 push_context(true);
-
-                current_context.variables[var_name] = start;
-
                 execute_all(*source_code.context(), object);
-
                 pop_context();
 
                 execute(*fn_call, object);

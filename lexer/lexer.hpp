@@ -38,6 +38,27 @@ namespace uva
                 token_float,
                 token_string,
             };
+            enum operator_type {
+                operator_null,
+                operator_plus,
+                operator_minus,
+                operator_multiply,
+                operator_divide,
+                operator_modulo,
+                operator_power,
+                operator_and,
+                operator_or,
+                operator_not,
+                operator_equal,
+                operator_not_equal,
+                operator_less,
+                operator_less_equal,
+                operator_greater,
+                operator_greater_equal,
+                operator_increment,
+                operator_decrement,
+                operator_max
+            };
             struct token_position {
                 size_t line = 0;
                 size_t column = 0;
@@ -48,10 +69,11 @@ namespace uva
                 std::string m_content;
                 token_type m_type;
                 token_kind m_kind;
+                operator_type m_operator;
             public:
                 std::string m_file_name;
             public:
-                token(token_position start, token_position end, std::string content, token_type type, token_kind kind, std::string file_name);
+                token(token_position start, token_position end, std::string content, token_type type, token_kind kind, std::string file_name, operator_type op = operator_type::operator_max);
                 token(token_position start, token_position end, std::string content, token_type type, token_kind kind = token_kind::token_null);
                 token(token&& other);
                 token(const token&) = default;
@@ -73,6 +95,8 @@ namespace uva
                 token_type type() const { return m_type; }
                 /// @brief Return the kind of the token.
                 token_kind kind() const { return m_kind; }
+                /// @brief Return the operator type of the token.
+                operator_type op() const { return m_operator; }
             public:
                 token_position start;
                 token_position end;
@@ -121,7 +145,7 @@ namespace uva
                 }
             }
 
-            void push_token(token_position start, token_type type, std::string content = "", token_kind kind = token_kind::token_null);
+            void push_token(token_position start, token_type type, std::string content = "", token_kind kind = token_kind::token_null, operator_type op = operator_type::operator_max);
             void read_next_token();
             public:
                 /// @brief Tokenize the source code. Equivalent to the constructor.

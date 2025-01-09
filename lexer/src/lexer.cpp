@@ -89,6 +89,40 @@ bool is_preprocessor(std::string_view str) {
     return std::binary_search(preprocessor.begin(), preprocessor.end(), str);
 }
 
+uva::lang::lexer::operator_type operator_type_from_string(std::string_view str) {
+    static std::map<std::string_view, uva::lang::lexer::operator_type> operators;
+
+    if(operators.empty()) {
+        operators = {
+            { "+",  uva::lang::lexer::operator_type::operator_plus          },
+            { "-",  uva::lang::lexer::operator_type::operator_minus         },
+            { "*",  uva::lang::lexer::operator_type::operator_multiply      },
+            { "/",  uva::lang::lexer::operator_type::operator_divide        },
+            { "%",  uva::lang::lexer::operator_type::operator_modulo        },
+            { "^",  uva::lang::lexer::operator_type::operator_power         },
+            { "&&", uva::lang::lexer::operator_type::operator_and           },
+            { "||", uva::lang::lexer::operator_type::operator_or            },
+            { "!",  uva::lang::lexer::operator_type::operator_not           },
+            { "==", uva::lang::lexer::operator_type::operator_equal         },
+            { "!=", uva::lang::lexer::operator_type::operator_not_equal     },
+            { "<",  uva::lang::lexer::operator_type::operator_less          },
+            { "<=", uva::lang::lexer::operator_type::operator_less_equal    },
+            { ">",  uva::lang::lexer::operator_type::operator_greater       },
+            { ">=", uva::lang::lexer::operator_type::operator_greater_equal },
+            { "++", uva::lang::lexer::operator_type::operator_increment     },
+            { "--", uva::lang::lexer::operator_type::operator_decrement     },
+        };
+    }
+
+    auto it = operators.find(str);
+
+    if(it == operators.end()) {
+        return uva::lang::lexer::operator_type::operator_null;
+    }
+
+    return it->second;
+}
+
 uva::lang::lexer::lexer(std::string __file_name, std::string_view __source)
 {
     tokenize(std::move(__file_name), __source);
@@ -143,9 +177,9 @@ const char &uva::lang::lexer::read()
     return c;
 }
 
-void uva::lang::lexer::push_token(token_position start, token_type type, std::string content, token_kind kind)
+void uva::lang::lexer::push_token(token_position start, token_type type, std::string content, token_kind kind, operator_type op)
 {
-    m_tokens.emplace_back(start, m_start, std::move(content), type, kind, m_file_name);
+    m_tokens.emplace_back(start, m_start, std::move(content), type, kind, m_file_name, op);
 }
 
 char unescape(const char& c)
@@ -241,7 +275,9 @@ void uva::lang::lexer::read_next_token()
             read();
         }
 
-        push_token(start, token_type::token_operator, std::move(m_buffer));
+        operator_type op = operator_type_from_string(m_buffer);
+
+        push_token(start, token_type::token_operator, std::move(m_buffer), token_kind::token_null, op);
         return;
     }
 
@@ -393,8 +429,8 @@ void uva::lang::lexer::insert(const std::vector<uva::lang::lexer::token> &tokens
     iterator += tokens.size();
 }
 
-uva::lang::lexer::token::token(token_position start, token_position end, std::string content, token_type type, token_kind kind, std::string file_name)
-    : start(start), end(end), m_content(std::move(content)), m_type(type), m_kind(kind), m_file_name(std::move(file_name))
+uva::lang::lexer::token::token(token_position start, token_position end, std::string content, token_type type, token_kind kind, std::string file_name, operator_type op)
+    : start(start), end(end), m_content(std::move(content)), m_type(type), m_kind(kind), m_file_name(std::move(file_name)), m_operator(op)
 {
 }
 
