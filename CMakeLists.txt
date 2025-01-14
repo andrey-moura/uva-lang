@@ -29,6 +29,8 @@ add_library(uva-extension
     ${CMAKE_CURRENT_LIST_DIR}/extension/src/extension.cpp
 )
 
+target_link_libraries(uva-extension uva-file)
+
 include("${CMAKE_CURRENT_LIST_DIR}/interpreter/CMakeLists.txt")
 include("${CMAKE_CURRENT_LIST_DIR}/lexer/CMakeLists.txt")
 include("${CMAKE_CURRENT_LIST_DIR}/lang/CMakeLists.txt")
