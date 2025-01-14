@@ -6,6 +6,8 @@
 #include "true_class.cpp"
 #include "string_class.cpp"
 #include "integer_class.cpp"
+#include "double_class.cpp"
+#include "float_class.cpp"
 #include "file_class.cpp"
 #include "std_class.cpp"
 #include "array_class.cpp"

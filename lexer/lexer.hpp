@@ -36,6 +36,7 @@ namespace uva
                 token_boolean,
                 token_integer,
                 token_float,
+                token_double,
                 token_string,
             };
             enum operator_type {

@@ -617,6 +617,8 @@ void uva::lang::interpreter::init()
     this->load(TrueClass    = uva::lang::true_class::create(this));
     this->load(StringClass  = uva::lang::string_class::create(this));
     this->load(IntegerClass = uva::lang::integer_class::create(this));
+    this->load(FloatClass   = uva::lang::float_class::create(this));
+    this->load(DoubleClass  = uva::lang::double_class::create(this));
     this->load(FileClass    = uva::lang::file_class::create(this));
     this->load(StdClass     = uva::lang::std_class::create(this));
     this->load(ArrayClass   = uva::lang::array_class::create(this));
@@ -641,7 +643,15 @@ const std::shared_ptr<uva::lang::object> uva::lang::interpreter::node_to_object(
                 std::shared_ptr<uva::lang::object> obj = uva::lang::object::instantiate(this, IntegerClass, std::stoi(node.token().content()));
                 return obj;
             }
+            case lexer::token_kind::token_float: {
+                std::shared_ptr<uva::lang::object> obj = uva::lang::object::instantiate(this, FloatClass, std::stof(node.token().content()));
+                return obj;
+            }
             break;
+            case lexer::token_kind::token_double: {
+                std::shared_ptr<uva::lang::object> obj = uva::lang::object::instantiate(this, DoubleClass, std::stod(node.token().content()));
+                return obj;
+            }
             case lexer::token_kind::token_string: {
                 std::shared_ptr<uva::lang::object> obj = uva::lang::object::instantiate(this, StringClass, std::move(std::string(node.token().content())));
                 return obj;

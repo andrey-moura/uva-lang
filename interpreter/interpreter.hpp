@@ -61,6 +61,12 @@ namespace uva
             /// @brief The global integer class.
             std::shared_ptr<uva::lang::structure> IntegerClass;
 
+            /// @brief The global double class.
+            std::shared_ptr<uva::lang::structure> DoubleClass;
+
+            /// @brief The global float class.
+            std::shared_ptr<uva::lang::structure> FloatClass;
+
             /// @brief The global file class.
             std::shared_ptr<uva::lang::structure> FileClass;
 

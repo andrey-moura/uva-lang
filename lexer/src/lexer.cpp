@@ -258,12 +258,27 @@ void uva::lang::lexer::read_next_token()
     }
 
     if(isdigit(c) || (c == '-' && isdigit(m_source[1]))) {
+        token_kind kind = token_kind::token_integer;
         // if a token starts with a digit or a minus sign followed by a digit, it is a number
         read_while([this](const char& c) {
             return isdigit(c) || (m_buffer.empty() && c == '-');
         });
 
-        push_token(start, token_type::token_literal, std::move(m_buffer), token_kind::token_integer);
+        if(m_source.front() == '.') {
+            read();
+            read_while([](const char& c) {
+                return isdigit(c);
+            });
+
+            kind = token_kind::token_float;
+            
+            if(m_source.front() == 'f') {
+                discard();
+                kind = token_kind::token_double;
+            }
+        }
+
+        push_token(start, token_type::token_literal, std::move(m_buffer), kind);
         return;
     }
 
