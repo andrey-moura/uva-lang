@@ -29,12 +29,16 @@ void uva::lang::extension::import(uva::lang::interpreter* interpreter, std::stri
 
 #if defined(__linux__)
     library_name = "libuvalang-" + library_name;
+#elif defined(_WIN32)
+    library_name = "uvalang-" + library_name;
+#else
+    throw std::runtime_error("unsupported platform");
 #endif
-
     executable_path.replace_filename(library_name);
-
 #if defined(__linux__)
     executable_path.replace_extension(".so");
+#elif defined(_WIN32)
+    executable_path.replace_extension(".dll");
 #else
     throw std::runtime_error("unsupported platform");
 #endif
@@ -55,11 +59,25 @@ void uva::lang::extension::import(uva::lang::interpreter* interpreter, std::stri
     if(!create_extension) {
         throw std::runtime_error(dlerror());
     }
+#elif defined(_WIN32)
+    std::string executable_path_str = executable_path.string();
+    const char* executable_path_c_str = executable_path_str.c_str();
+    HMODULE handle = LoadLibrary(executable_path_c_str);
+
+    if(!handle) {
+        throw std::runtime_error("Failed to load library");
+    }
+
+    uva::lang::extension* (*create_extension)() = (uva::lang::extension*(*)())GetProcAddress(handle, "create_extension");
+
+    if(!create_extension) {
+        throw std::runtime_error("Failed to get create_extension");
+    }
+#else
+    throw std::runtime_error("unsupported platform");
+#endif
 
     uva::lang::extension* extension = create_extension();
 
     interpreter->load_extension(extension);
-#else
-    throw std::runtime_error("unsupported platform");
-#endif
 }
