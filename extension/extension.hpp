@@ -4,6 +4,14 @@
 #include <vector>
 #include <parser/parser.hpp>
 
+#ifdef _WIN32
+    #define UVA_EXTENSION(name) \
+    extern "C" __declspec(dllexport) uva::lang::extension* create_extension()\
+    {\
+        return new name ();\
+    }
+#endif
+
 namespace uva {
     namespace lang {
         class interpreter;
