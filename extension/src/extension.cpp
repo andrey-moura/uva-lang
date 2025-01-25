@@ -8,6 +8,8 @@
 
 #ifdef __linux__
 #   include <dlfcn.h>
+#elif defined(_WIN32)
+#   include <Windows.h>
 #endif
 
 #include <uva/file.hpp>
