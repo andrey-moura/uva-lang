@@ -15,7 +15,6 @@ include("${UVALANG_PARENT_DIRECTORY}/uva/CMakeLists.txt")
 uva_library(core)
 uva_library(file)
 uva_library(console)
-uva_library(uva-tests)
 
 include_directories(${CMAKE_CURRENT_LIST_DIR}/include)
 include_directories(include/fmt/include)
@@ -41,7 +40,12 @@ endif()
 
 target_link_libraries(uva uva-lang uva-core uva-console uva-file)
 
+# Install uva executable
 install(TARGETS uva DESTINATION bin)
+# Install uva-lang library
+install(TARGETS uva-lang DESTINATION lib)
+# Install uva-lang headers
+install(DIRECTORY include DESTINATION include)
 
 set(EXTENSIONS_FOLDER "${UVALANG_PARENT_DIRECTORY}/uvalang-extensions")
 
