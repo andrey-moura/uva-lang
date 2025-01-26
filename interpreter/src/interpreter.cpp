@@ -632,7 +632,7 @@ const std::shared_ptr<uva::lang::object> uva::lang::interpreter::node_to_object(
         switch(node.token().kind())
         {
             case lexer::token_kind::token_boolean: {
-                if(node.token().content() == "true") {
+                if(node.token().m_literal.boolean_value) {
                     return std::make_shared<uva::lang::object>(TrueClass);
                 } else {
                     return std::make_shared<uva::lang::object>(FalseClass);
@@ -640,16 +640,16 @@ const std::shared_ptr<uva::lang::object> uva::lang::interpreter::node_to_object(
             }
             break;
             case lexer::token_kind::token_integer: {
-                std::shared_ptr<uva::lang::object> obj = uva::lang::object::instantiate(this, IntegerClass, std::stoi(node.token().content()));
+                std::shared_ptr<uva::lang::object> obj = uva::lang::object::instantiate(this, IntegerClass, node.token().m_literal.integer_value);
                 return obj;
             }
             case lexer::token_kind::token_float: {
-                std::shared_ptr<uva::lang::object> obj = uva::lang::object::instantiate(this, FloatClass, std::stof(node.token().content()));
+                std::shared_ptr<uva::lang::object> obj = uva::lang::object::instantiate(this, FloatClass, node.token().m_literal.float_value);
                 return obj;
             }
             break;
             case lexer::token_kind::token_double: {
-                std::shared_ptr<uva::lang::object> obj = uva::lang::object::instantiate(this, DoubleClass, std::stod(node.token().content()));
+                std::shared_ptr<uva::lang::object> obj = uva::lang::object::instantiate(this, DoubleClass, node.token().m_literal.double_value);
                 return obj;
             }
             case lexer::token_kind::token_string: {

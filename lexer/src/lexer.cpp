@@ -179,7 +179,33 @@ const char &uva::lang::lexer::read()
 
 void uva::lang::lexer::push_token(token_position start, token_type type, std::string content, token_kind kind, operator_type op)
 {
-    m_tokens.emplace_back(start, m_start, std::move(content), type, kind, m_file_name, op);
+    token t(start, m_start, std::move(content), type, kind, m_file_name, op);
+
+    if(t.type() == token_type::token_literal) {
+        switch(t.kind())
+        {
+        case token_kind::token_integer:
+            t.m_literal.integer_value = std::stoi(t.content());
+            break;
+        case token_kind::token_float:
+            t.m_literal.float_value = std::stof(t.content());
+            break;
+        case token_kind::token_double:
+            t.m_literal.double_value = std::stod(t.content());
+            break;
+        case token_kind::token_boolean:
+            t.m_literal.boolean_value = t.content() == "true";
+            break;
+        case token_kind::token_string:
+        case token_kind::token_null:
+            break;
+        default:
+            throw std::runtime_error("lexer: unknown token kind");
+            break;
+        }
+    }
+
+    m_tokens.emplace_back(std::move(t));
 }
 
 char unescape(const char& c)
@@ -456,7 +482,12 @@ uva::lang::lexer::token::token(token_position start, token_position end, std::st
 }
 
 uva::lang::lexer::token::token(token &&other)
-    : start(other.start), end(other.end), m_content(std::move(other.m_content)), m_type(other.m_type), m_kind(other.m_kind), m_file_name(std::move(other.m_file_name))
+    : start(other.start), end(other.end),
+      m_content(std::move(other.m_content)),
+      m_type(other.m_type), m_kind(other.m_kind),
+      m_file_name(std::move(other.m_file_name)),
+      m_operator(other.m_operator),
+      m_literal(other.m_literal)
 {
 }
 

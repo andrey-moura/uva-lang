@@ -72,6 +72,15 @@ namespace uva
                 token_kind m_kind;
                 operator_type m_operator;
             public:
+                struct {
+                    union {
+                        int integer_value;
+                        double double_value;
+                        float float_value;
+                        bool boolean_value;
+                    };
+                } m_literal;
+            public:
                 std::string m_file_name;
             public:
                 token(token_position start, token_position end, std::string content, token_type type, token_kind kind, std::string file_name, operator_type op = operator_type::operator_max);
