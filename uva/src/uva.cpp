@@ -1,14 +1,14 @@
 #include <filesystem>
 
-#include <parser/parser.hpp>
-#include <lexer/lexer.hpp>
+#include <uva/lang/parser.hpp>
+#include <uva/lang/lexer.hpp>
 //#include <vm/vm.hpp>
 
 #include <console.hpp>
 #include <uva/file.hpp>
-#include <interpreter/interpreter.hpp>
-#include <extension/extension.hpp>
-#include <preprocessor/preprocessor.hpp>
+#include <uva/lang/interpreter.hpp>
+#include <uva/lang/extension.hpp>
+#include <uva/lang/preprocessor.hpp>
 
 using namespace uva;
 

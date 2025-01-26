@@ -15,36 +15,31 @@ include("${UVALANG_PARENT_DIRECTORY}/uva/CMakeLists.txt")
 uva_library(core)
 uva_library(file)
 uva_library(console)
+uva_library(uva-tests)
 
-include_directories(${CMAKE_CURRENT_LIST_DIR})
+include_directories(${CMAKE_CURRENT_LIST_DIR}/include)
 include_directories(include/fmt/include)
 
-add_library(uva-parser
-    ${CMAKE_CURRENT_LIST_DIR}/parser/parser.cpp
+add_library(uva-lang
+    ${CMAKE_CURRENT_LIST_DIR}/src/method.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/src/preprocessor.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/src/extension.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/src/class.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/src/interpreter.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/src/object.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/src/lexer.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/src/parser.cpp
 )
-
-target_link_libraries(uva-parser uva-lexer)
-
-add_library(uva-extension
-    ${CMAKE_CURRENT_LIST_DIR}/extension/src/extension.cpp
-)
-
-target_link_libraries(uva-extension uva-file)
-
-include("${CMAKE_CURRENT_LIST_DIR}/interpreter/CMakeLists.txt")
-include("${CMAKE_CURRENT_LIST_DIR}/lexer/CMakeLists.txt")
-include("${CMAKE_CURRENT_LIST_DIR}/lang/CMakeLists.txt")
-include("${CMAKE_CURRENT_LIST_DIR}/preprocessor/CMakeLists.txt")
 
 add_executable(uva
     ${CMAKE_CURRENT_LIST_DIR}/uva/src/uva.cpp
 )
 
 if(UNIX)
-    target_link_libraries(uva-extension ${CMAKE_DL_LIBS})
+    target_link_libraries(uva-lang ${CMAKE_DL_LIBS})
 endif()
 
-target_link_libraries(uva uva-extension uva-preprocessor uva-interpreter uva-lang uva-core uva-console uva-file)
+target_link_libraries(uva uva-lang uva-core uva-console uva-file)
 
 install(TARGETS uva DESTINATION bin)
 
