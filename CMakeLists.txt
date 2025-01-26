@@ -45,7 +45,7 @@ install(TARGETS uva DESTINATION bin)
 # Install uva-lang library
 install(TARGETS uva-lang DESTINATION lib)
 # Install uva-lang headers
-install(DIRECTORY include DESTINATION include)
+install(DIRECTORY include/uva DESTINATION include)
 
 set(EXTENSIONS_FOLDER "${UVALANG_PARENT_DIRECTORY}/uvalang-extensions")
 
