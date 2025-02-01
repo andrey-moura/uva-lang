@@ -126,29 +126,7 @@ std::shared_ptr<andy::lang::object> andy::lang::interpreter::execute(andy::lang:
                 object_node = object_node->childrens().data();
 
                 if(object_node->type() == andy::lang::parser::ast_node_type::ast_node_declname) {
-                    const std::string& class_or_object_name = object_node->token().content();
-
-                    std::map<std::string, std::shared_ptr<andy::lang::object>>::iterator object_it;
-
-                    if(object) {
-                        object_it = object->instance_variables.find(class_or_object_name);
-
-                        if(object_it != object->instance_variables.end()) {
-                            object_to_call_ptr = &object_it->second;
-                        }
-                    }
-
-                    if(!object_to_call_ptr) {
-                        object_it = current_context.variables.find(class_or_object_name);
-
-                        if(object_it != current_context.variables.end()) {
-                            object_to_call_ptr = &object_it->second;
-                        }
-                    }
-
-                    if(object_to_call_ptr) {
-                        object_to_call = *object_to_call_ptr;
-                    }
+                    object_to_call = node_to_object(*object_node);
 
                     if(object_to_call) {
                         if(is_assignment) {
@@ -180,24 +158,6 @@ std::shared_ptr<andy::lang::object> andy::lang::interpreter::execute(andy::lang:
                                 class_to_call = object_to_call->cls;
                             }
                         }
-                    } else {
-                        for(auto& cls : classes) {
-                            if(cls->name == class_or_object_name) {
-                                auto it = cls->methods.find(function_name);
-
-                                if(it == cls->methods.end()) {
-                                    throw std::runtime_error("class " + class_or_object_name + " does not have a function called " + function_name);
-                                }
-
-                                method_to_call = &it->second;
-                                class_to_call = cls;
-                                break;
-                            }
-                        }
-                    }
-
-                    if(!method_to_call) {
-                        throw std::runtime_error("class or object " + class_or_object_name + " not found");
                     }
                 } else if (object_node->type() == andy::lang::parser::ast_node_type::ast_node_fn_call) {
                     object_to_call = execute(*object_node, object);
@@ -326,37 +286,7 @@ std::shared_ptr<andy::lang::object> andy::lang::interpreter::execute(andy::lang:
                     }
                     std::shared_ptr<andy::lang::object> value = nullptr;
                     
-                    switch (value_node->type())
-                    {
-                    case andy::lang::parser::ast_node_type::ast_node_arraydecl:
-                    case andy::lang::parser::ast_node_type::ast_node_dictionarydecl:
-                    case andy::lang::parser::ast_node_type::ast_node_valuedecl: {
-                        if(value_node->type() == andy::lang::parser::ast_node_type::ast_node_arraydecl || andy::lang::parser::ast_node_type::ast_node_dictionarydecl || param.token().type() == andy::lang::lexer::token_type::token_literal) { 
-                            value = node_to_object(*value_node);
-                        }
-                        else {
-                            throw std::runtime_error("interpreter: Unexpected token in function call parameters");
-                        }
-                    }
-                        break;
-                    case andy::lang::parser::ast_node_type::ast_node_declname: {
-                        // an identifier
-                        auto it = current_context.variables.find(value_node->token().content());
-
-                        if(it != current_context.variables.end()) {
-                            value = it->second;
-                        } else {
-                            throw std::runtime_error("'" + std::string(value_node->token().content()) + "' is undefined");
-                        }
-                    }
-                    break;
-                    case andy::lang::parser::ast_node_type::ast_node_fn_call:
-                        value = execute(*value_node, object);
-                    break;
-                    default:
-                        throw std::runtime_error("interpreter: Unexpected token in function call parameters");
-                    break;
-                    }
+                    value = node_to_object(*value_node);
 
                     andy::lang::parser::ast_node* name = nullptr;
                     
@@ -622,6 +552,7 @@ void andy::lang::interpreter::init()
     this->load(ArrayClass   = andy::lang::array_class::create(this));
     this->load(DictionaryClass = andy::lang::dictionary_class::create(this));
     this->load(NullClass    = andy::lang::null_class::create(this));
+    this->load(SystemClass  = andy::lang::system_class::create(this));
 }
 
 const std::shared_ptr<andy::lang::object> andy::lang::interpreter::node_to_object(const andy::lang::parser::ast_node& node, std::shared_ptr<andy::lang::structure> cls, std::shared_ptr<andy::lang::object> object)
@@ -665,6 +596,24 @@ const std::shared_ptr<andy::lang::object> andy::lang::interpreter::node_to_objec
     } else if(node.type() == andy::lang::parser::ast_node_type::ast_node_fn_call) {
         return execute(node, object);
     } else if(node.type() == andy::lang::parser::ast_node_type::ast_node_declname || node.type() == andy::lang::parser::ast_node_type::ast_node_valuedecl) {
+        auto* fn_object = node.child_from_type(andy::lang::parser::ast_node_type::ast_node_fn_object);
+        if(fn_object) {
+            auto* fn_object_decname = fn_object->child_from_type(andy::lang::parser::ast_node_type::ast_node_declname);
+            const std::string& class_name = fn_object_decname->token().content();
+            const std::string& var_name = node.token().content();
+
+            for(auto& cls : classes) {
+                if(cls->name == class_name) {
+                    auto it = cls->class_variables.find(var_name);
+
+                    if(it != cls->class_variables.end()) {
+                        return it->second;
+                    }
+                }
+            }
+
+            throw std::runtime_error("class " + class_name + " not found");
+        }
         if(object) {
             auto it = object->instance_variables.find(node.token().content());
 
