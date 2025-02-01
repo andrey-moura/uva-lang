@@ -384,6 +384,9 @@ andy::lang::parser::ast_node andy::lang::parser::parse_identifier_or_literal(and
     }
 
     ast_node identifier_or_literal_node(std::move(identifier_or_literal), node_type);
+    if(!chain) {
+        return identifier_or_literal_node;
+    }
 
     // And after this we can have:
     // Operator ('.', '+', etc)
