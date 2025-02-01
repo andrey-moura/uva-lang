@@ -8,7 +8,7 @@
 #include <stdexcept>
 #include <filesystem>
 
-namespace uva
+namespace andy
 {
     namespace lang
     {
@@ -111,13 +111,13 @@ namespace uva
                 token_position start;
                 token_position end;
             public:
-                uva::lang::lexer::token& operator=(const uva::lang::lexer::token& other) = default;
+                andy::lang::lexer::token& operator=(const andy::lang::lexer::token& other) = default;
             };
         protected:
             std::string m_file_name;
             std::string_view m_source;
             std::string m_buffer;
-            std::vector<uva::lang::lexer::token> m_tokens;
+            std::vector<andy::lang::lexer::token> m_tokens;
 
             token_position m_start;
 
@@ -170,15 +170,15 @@ namespace uva
             void consume_token();
             /// @brief Return the next token and increment the iterator.
             /// @return The next token.
-            uva::lang::lexer::token& next_token();
+            andy::lang::lexer::token& next_token();
             /// @brief Return the next token without incrementing the iterator.
-            const uva::lang::lexer::token& see_next();
+            const andy::lang::lexer::token& see_next();
             /// @brief Decrement the iterator and return the next token.
             /// @return The previous token.
-            const uva::lang::lexer::token& previous_token();
+            const andy::lang::lexer::token& previous_token();
             /// @brief The current token.
             /// @return The current token.
-            const uva::lang::lexer::token& current_token() const { return m_tokens[iterator-1]; }
+            const andy::lang::lexer::token& current_token() const { return m_tokens[iterator-1]; }
             bool has_previous_token() const { return iterator > 0; }
             /// @brief Rollback the token iterator. The next call to next_token will return the same token.
             void rollback_token();
@@ -193,13 +193,13 @@ namespace uva
             void erase_eof();
             /// @brief Insert new tokens at the current iterator and update it.
             /// @param tokens The tokens to insert.
-            void insert(const std::vector<uva::lang::lexer::token>& tokens);
+            void insert(const std::vector<andy::lang::lexer::token>& tokens);
             /// @brief The tokens.
             /// @return The tokens.
-            const std::vector<uva::lang::lexer::token>& tokens() const { return m_tokens; }
+            const std::vector<andy::lang::lexer::token>& tokens() const { return m_tokens; }
         protected:
         public:
-            //extern std::vector<std::pair<std::string_view, uva::lang::lexer::cursor_type>> cursor_type_from_string_map;
+            //extern std::vector<std::pair<std::string_view, andy::lang::lexer::cursor_type>> cursor_type_from_string_map;
         };
     };
-}; // namespace uva
+}; // namespace andy

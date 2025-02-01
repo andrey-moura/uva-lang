@@ -1,58 +1,58 @@
-#include <uva/lang/interpreter.hpp>
+#include <andy/lang/interpreter.hpp>
 
 #include <iostream>
 
 #include <uva/file.hpp>
 
-#include <uva/lang/extension.hpp>
-#include <uva/lang/lang.hpp>
+#include <andy/lang/extension.hpp>
+#include <andy/lang/lang.hpp>
 
-uva::lang::interpreter::interpreter()
+andy::lang::interpreter::interpreter()
 {
     init();
 }
 
-void uva::lang::interpreter::load(std::shared_ptr<uva::lang::structure> cls)
+void andy::lang::interpreter::load(std::shared_ptr<andy::lang::structure> cls)
 {
     classes.push_back(cls);
 }
 
-std::shared_ptr<uva::lang::object> uva::lang::interpreter::execute(uva::lang::parser::ast_node source_code, std::shared_ptr<uva::lang::object>& object)
+std::shared_ptr<andy::lang::object> andy::lang::interpreter::execute(andy::lang::parser::ast_node source_code, std::shared_ptr<andy::lang::object>& object)
 {
     switch (source_code.type())
     {
-        case uva::lang::parser::ast_node_type::ast_node_fn_decl: {
+        case andy::lang::parser::ast_node_type::ast_node_fn_decl: {
             
             std::string_view method_name = source_code.decname();
 
             std::vector<std::string> params;
             params.reserve(source_code.childrens().size());
 
-            for(auto& param : source_code.child_from_type(uva::lang::parser::ast_node_type::ast_node_fn_params)->childrens()) {
+            for(auto& param : source_code.child_from_type(andy::lang::parser::ast_node_type::ast_node_fn_params)->childrens()) {
                 params.push_back(param.token().content());
             }
 
-            current_context.functions[std::string(method_name)] = uva::lang::method(std::string(method_name), method_storage_type::instance_method, params, source_code);
+            current_context.functions[std::string(method_name)] = andy::lang::method(std::string(method_name), method_storage_type::instance_method, params, source_code);
         }
         break;
-        case uva::lang::parser::ast_node_type::ast_node_classdecl: {
+        case andy::lang::parser::ast_node_type::ast_node_classdecl: {
             std::string_view class_name = source_code.decname();
 
-            auto cls = std::make_shared<uva::lang::structure>(std::string(class_name));
+            auto cls = std::make_shared<andy::lang::structure>(std::string(class_name));
 
-            auto baseclass_node = source_code.child_from_type(uva::lang::parser::ast_node_type::ast_node_classdecl_base);
+            auto baseclass_node = source_code.child_from_type(andy::lang::parser::ast_node_type::ast_node_classdecl_base);
 
             if (baseclass_node)
             {
                 std::string base_class_name;
-                auto decname_node = baseclass_node->child_from_type(uva::lang::parser::ast_node_type::ast_node_declname);
+                auto decname_node = baseclass_node->child_from_type(andy::lang::parser::ast_node_type::ast_node_declname);
 
                 if(decname_node->childrens().size() == 0) {
                     base_class_name = baseclass_node->decname();
                 } else {
-                    auto object_node = decname_node->child_from_type(uva::lang::parser::ast_node_type::ast_node_fn_object);
+                    auto object_node = decname_node->child_from_type(andy::lang::parser::ast_node_type::ast_node_fn_object);
 
-                    const uva::lang::parser::ast_node& object_node_child = object_node->childrens().front();
+                    const andy::lang::parser::ast_node& object_node_child = object_node->childrens().front();
 
                     base_class_name = object_node_child.token().content() + "." + decname_node->token().content();
                 }
@@ -70,20 +70,20 @@ std::shared_ptr<uva::lang::object> uva::lang::interpreter::execute(uva::lang::pa
             for(auto& class_child : source_code.context()->childrens()) {
                 switch (class_child.type())
                 {
-                case uva::lang::parser::ast_node_type::ast_node_fn_decl: {
+                case andy::lang::parser::ast_node_type::ast_node_fn_decl: {
                     std::string_view method_name = class_child.decname();
 
                     std::vector<std::string> params;
                     params.reserve(class_child.childrens().size());
 
-                    for(auto& param : class_child.child_from_type(uva::lang::parser::ast_node_type::ast_node_fn_params)->childrens()) {
+                    for(auto& param : class_child.child_from_type(andy::lang::parser::ast_node_type::ast_node_fn_params)->childrens()) {
                         params.push_back(param.token().content());
                     }
 
-                    cls->methods[std::string(method_name)] = uva::lang::method(std::string(method_name), method_storage_type::instance_method, params, class_child);
+                    cls->methods[std::string(method_name)] = andy::lang::method(std::string(method_name), method_storage_type::instance_method, params, class_child);
                 }
                 break;
-                case uva::lang::parser::ast_node_type::ast_node_vardecl: {
+                case andy::lang::parser::ast_node_type::ast_node_vardecl: {
                     std::string_view var_name = class_child.decname();
                     cls->instance_variables[std::string(var_name)] = NullClass;
                 }
@@ -96,25 +96,25 @@ std::shared_ptr<uva::lang::object> uva::lang::interpreter::execute(uva::lang::pa
             load(cls);
         }
         break;
-        case uva::lang::parser::ast_node_type::ast_node_valuedecl: {
+        case andy::lang::parser::ast_node_type::ast_node_valuedecl: {
             return node_to_object(source_code);
         }
         break;
-        case uva::lang::parser::ast_node_fn_call: {
-            uva::lang::method* method_to_call = nullptr;
+        case andy::lang::parser::ast_node_fn_call: {
+            andy::lang::method* method_to_call = nullptr;
 
             // This is a pointer to a shared pointer because the object can be changed
-            std::shared_ptr<uva::lang::object>* object_to_call_ptr = nullptr;
+            std::shared_ptr<andy::lang::object>* object_to_call_ptr = nullptr;
             // And we have a shared_ptr in case the object is created, os it still alive in the current context
-            std::shared_ptr<uva::lang::object> object_to_call = nullptr;
+            std::shared_ptr<andy::lang::object> object_to_call = nullptr;
 
-            std::shared_ptr<uva::lang::structure> class_to_call = nullptr;
+            std::shared_ptr<andy::lang::structure> class_to_call = nullptr;
 
             if(auto it = current_context.functions.find(source_code.decname()); it != current_context.functions.end()) {
                 method_to_call = &it->second;
             }
 
-            uva::lang::parser::ast_node* object_node = source_code.child_from_type(uva::lang::parser::ast_node_type::ast_node_fn_object);
+            andy::lang::parser::ast_node* object_node = source_code.child_from_type(andy::lang::parser::ast_node_type::ast_node_fn_object);
 
             const std::string& function_name(source_code.decname());
             bool is_super = function_name == "super";
@@ -125,10 +125,10 @@ std::shared_ptr<uva::lang::object> uva::lang::interpreter::execute(uva::lang::pa
 
                 object_node = object_node->childrens().data();
 
-                if(object_node->type() == uva::lang::parser::ast_node_type::ast_node_declname) {
+                if(object_node->type() == andy::lang::parser::ast_node_type::ast_node_declname) {
                     const std::string& class_or_object_name = object_node->token().content();
 
-                    std::map<std::string, std::shared_ptr<uva::lang::object>>::iterator object_it;
+                    std::map<std::string, std::shared_ptr<andy::lang::object>>::iterator object_it;
 
                     if(object) {
                         object_it = object->instance_variables.find(class_or_object_name);
@@ -152,7 +152,7 @@ std::shared_ptr<uva::lang::object> uva::lang::interpreter::execute(uva::lang::pa
 
                     if(object_to_call) {
                         if(is_assignment) {
-                            const auto& params_node = source_code.child_from_type(uva::lang::parser::ast_node_type::ast_node_fn_params);
+                            const auto& params_node = source_code.child_from_type(andy::lang::parser::ast_node_type::ast_node_fn_params);
 
                             object_to_call = node_to_object(params_node->childrens().front());
                             *object_to_call_ptr = object_to_call;
@@ -199,7 +199,7 @@ std::shared_ptr<uva::lang::object> uva::lang::interpreter::execute(uva::lang::pa
                     if(!method_to_call) {
                         throw std::runtime_error("class or object " + class_or_object_name + " not found");
                     }
-                } else if (object_node->type() == uva::lang::parser::ast_node_type::ast_node_fn_call) {
+                } else if (object_node->type() == andy::lang::parser::ast_node_type::ast_node_fn_call) {
                     object_to_call = execute(*object_node, object);
 
                     if(!object_to_call) {
@@ -214,7 +214,7 @@ std::shared_ptr<uva::lang::object> uva::lang::interpreter::execute(uva::lang::pa
 
                     method_to_call = &it->second;
                     class_to_call = object_to_call->cls;
-                } else if(object_node->type() == uva::lang::parser::ast_node_type::ast_node_valuedecl) {
+                } else if(object_node->type() == andy::lang::parser::ast_node_type::ast_node_valuedecl) {
                     for(auto& cls : classes) {
                         if(cls->name == object_node->token().content()) {
                             class_to_call = cls;
@@ -231,7 +231,7 @@ std::shared_ptr<uva::lang::object> uva::lang::interpreter::execute(uva::lang::pa
 
                         method_to_call = &it->second;
                     } else {
-                        std::shared_ptr<uva::lang::structure> object_class = nullptr;
+                        std::shared_ptr<andy::lang::structure> object_class = nullptr;
 
                         if(object) {
                             object_class = object->cls;
@@ -310,28 +310,28 @@ std::shared_ptr<uva::lang::object> uva::lang::interpreter::execute(uva::lang::pa
                 }
             }
 
-            std::vector<std::shared_ptr<uva::lang::object>> positional_params;
-            std::map<std::string, std::shared_ptr<uva::lang::object>> named_params;
+            std::vector<std::shared_ptr<andy::lang::object>> positional_params;
+            std::map<std::string, std::shared_ptr<andy::lang::object>> named_params;
 
-            uva::lang::parser::ast_node* params_node = source_code.child_from_type(uva::lang::parser::ast_node_type::ast_node_fn_params);
+            andy::lang::parser::ast_node* params_node = source_code.child_from_type(andy::lang::parser::ast_node_type::ast_node_fn_params);
 
             if(params_node) {
                 for(auto& param : params_node->childrens()) {
-                    uva::lang::parser::ast_node* value_node = &param;
-                    if(param.type() == uva::lang::parser::ast_node_type::ast_node_valuedecl && param.childrens().size()) {
+                    andy::lang::parser::ast_node* value_node = &param;
+                    if(param.type() == andy::lang::parser::ast_node_type::ast_node_valuedecl && param.childrens().size()) {
                         // Named parameter
-                        if(auto __value_node = param.child_from_type(uva::lang::parser::ast_node_type::ast_node_valuedecl)) {
+                        if(auto __value_node = param.child_from_type(andy::lang::parser::ast_node_type::ast_node_valuedecl)) {
                             value_node = __value_node;
                         }
                     }
-                    std::shared_ptr<uva::lang::object> value = nullptr;
+                    std::shared_ptr<andy::lang::object> value = nullptr;
                     
                     switch (value_node->type())
                     {
-                    case uva::lang::parser::ast_node_type::ast_node_arraydecl:
-                    case uva::lang::parser::ast_node_type::ast_node_dictionarydecl:
-                    case uva::lang::parser::ast_node_type::ast_node_valuedecl: {
-                        if(value_node->type() == uva::lang::parser::ast_node_type::ast_node_arraydecl || uva::lang::parser::ast_node_type::ast_node_dictionarydecl || param.token().type() == uva::lang::lexer::token_type::token_literal) { 
+                    case andy::lang::parser::ast_node_type::ast_node_arraydecl:
+                    case andy::lang::parser::ast_node_type::ast_node_dictionarydecl:
+                    case andy::lang::parser::ast_node_type::ast_node_valuedecl: {
+                        if(value_node->type() == andy::lang::parser::ast_node_type::ast_node_arraydecl || andy::lang::parser::ast_node_type::ast_node_dictionarydecl || param.token().type() == andy::lang::lexer::token_type::token_literal) { 
                             value = node_to_object(*value_node);
                         }
                         else {
@@ -339,7 +339,7 @@ std::shared_ptr<uva::lang::object> uva::lang::interpreter::execute(uva::lang::pa
                         }
                     }
                         break;
-                    case uva::lang::parser::ast_node_type::ast_node_declname: {
+                    case andy::lang::parser::ast_node_type::ast_node_declname: {
                         // an identifier
                         auto it = current_context.variables.find(value_node->token().content());
 
@@ -350,7 +350,7 @@ std::shared_ptr<uva::lang::object> uva::lang::interpreter::execute(uva::lang::pa
                         }
                     }
                     break;
-                    case uva::lang::parser::ast_node_type::ast_node_fn_call:
+                    case andy::lang::parser::ast_node_type::ast_node_fn_call:
                         value = execute(*value_node, object);
                     break;
                     default:
@@ -358,10 +358,10 @@ std::shared_ptr<uva::lang::object> uva::lang::interpreter::execute(uva::lang::pa
                     break;
                     }
 
-                    uva::lang::parser::ast_node* name = nullptr;
+                    andy::lang::parser::ast_node* name = nullptr;
                     
-                    if(param.type() == uva::lang::parser::ast_node_type::ast_node_valuedecl) {
-                        name = param.child_from_type(uva::lang::parser::ast_node_type::ast_node_declname);
+                    if(param.type() == andy::lang::parser::ast_node_type::ast_node_valuedecl) {
+                        name = param.child_from_type(andy::lang::parser::ast_node_type::ast_node_declname);
                     }
 
                     if(name) {
@@ -372,7 +372,7 @@ std::shared_ptr<uva::lang::object> uva::lang::interpreter::execute(uva::lang::pa
                 }
             }
 
-            std::shared_ptr<uva::lang::object> ret = call(class_to_call, object_to_call, *method_to_call, positional_params, named_params);
+            std::shared_ptr<andy::lang::object> ret = call(class_to_call, object_to_call, *method_to_call, positional_params, named_params);
 
             if(is_super) {
                 object_to_call->base_instance = ret;
@@ -382,29 +382,29 @@ std::shared_ptr<uva::lang::object> uva::lang::interpreter::execute(uva::lang::pa
             return ret;
         }
         break;
-        case uva::lang::parser::ast_node_type::ast_node_vardecl: {
+        case andy::lang::parser::ast_node_type::ast_node_vardecl: {
             std::string_view var_name = source_code.decname();
-            std::shared_ptr<uva::lang::structure> cls = nullptr;
+            std::shared_ptr<andy::lang::structure> cls = nullptr;
             if(object) {
                 cls = object->cls;
             }
-            std::shared_ptr<uva::lang::object> value = node_to_object(source_code.childrens()[1], cls, object);
+            std::shared_ptr<andy::lang::object> value = node_to_object(source_code.childrens()[1], cls, object);
             current_context.variables[std::string(var_name)] = value;
             return value;
         }
         break;
-        case uva::lang::parser::ast_node_type::ast_node_conditional: {
-            std::shared_ptr<uva::lang::object> ret = execute(*source_code.condition(), object);
+        case andy::lang::parser::ast_node_type::ast_node_conditional: {
+            std::shared_ptr<andy::lang::object> ret = execute(*source_code.condition(), object);
 
             if(ret && ret->is_present()) {
-                auto context = source_code.child_from_type(uva::lang::parser::ast_node_type::ast_node_context);
+                auto context = source_code.child_from_type(andy::lang::parser::ast_node_type::ast_node_context);
 
                 ret = execute(*context, object);
             } else {
-                auto e = source_code.child_from_type(uva::lang::parser::ast_node_type::ast_node_else);
+                auto e = source_code.child_from_type(andy::lang::parser::ast_node_type::ast_node_else);
                 
                 if(e) {
-                    auto else_context = e->child_from_type(uva::lang::parser::ast_node_type::ast_node_context);
+                    auto else_context = e->child_from_type(andy::lang::parser::ast_node_type::ast_node_context);
 
                     ret = execute(*else_context, object);
                 }
@@ -413,8 +413,8 @@ std::shared_ptr<uva::lang::object> uva::lang::interpreter::execute(uva::lang::pa
             return ret;
         }
         break;
-        case uva::lang::parser::ast_node_type::ast_node_while: {
-            std::shared_ptr<uva::lang::object> ret = nullptr;
+        case andy::lang::parser::ast_node_type::ast_node_while: {
+            std::shared_ptr<andy::lang::object> ret = nullptr;
 
             while(execute(*source_code.condition(), object)->is_present()) {
                 ret = execute(*source_code.context(), object);
@@ -427,67 +427,67 @@ std::shared_ptr<uva::lang::object> uva::lang::interpreter::execute(uva::lang::pa
             return ret;
         }
         break;
-        case uva::lang::parser::ast_node_type::ast_node_break: {
+        case andy::lang::parser::ast_node_type::ast_node_break: {
             current_context.has_returned = true;
             return nullptr;
         }
-        case uva::lang::parser::ast_node_type::ast_node_context:
+        case andy::lang::parser::ast_node_type::ast_node_context:
             return execute_all(source_code, object);
         break;
-        case uva::lang::parser::ast_node_type::ast_node_condition: {
+        case andy::lang::parser::ast_node_type::ast_node_condition: {
             return node_to_object(source_code.childrens().front());
         }
         break;
-        case uva::lang::parser::ast_node_type::ast_node_fn_return: {
+        case andy::lang::parser::ast_node_type::ast_node_fn_return: {
             if(source_code.childrens().size()) {
                 return node_to_object(source_code.childrens().front());
             } else {
-                return std::make_shared<uva::lang::object>(NullClass);
+                return std::make_shared<andy::lang::object>(NullClass);
             }
         }
         break;
-        case uva::lang::parser::ast_node_type::ast_node_foreach: {
-            auto* valuedecl = source_code.child_from_type(uva::lang::parser::ast_node_type::ast_node_valuedecl);
+        case andy::lang::parser::ast_node_type::ast_node_foreach: {
+            auto* valuedecl = source_code.child_from_type(andy::lang::parser::ast_node_type::ast_node_valuedecl);
 
-            std::shared_ptr<uva::lang::object> array_or_dictionary = node_to_object(*valuedecl);
+            std::shared_ptr<andy::lang::object> array_or_dictionary = node_to_object(*valuedecl);
 
-            auto* vardecl = source_code.child_from_type(uva::lang::parser::ast_node_type::ast_node_vardecl);
+            auto* vardecl = source_code.child_from_type(andy::lang::parser::ast_node_type::ast_node_vardecl);
 
             std::string var_name(vardecl->decname());
 
             if(array_or_dictionary->cls == ArrayClass) {
-                std::vector<std::shared_ptr<uva::lang::object>>& array_values = array_or_dictionary->as<std::vector<std::shared_ptr<uva::lang::object>>>();
+                std::vector<std::shared_ptr<andy::lang::object>>& array_values = array_or_dictionary->as<std::vector<std::shared_ptr<andy::lang::object>>>();
                 for(auto& value : array_values) {
                     current_context.variables[var_name] = value;
-                    execute_all(*source_code.child_from_type(uva::lang::parser::ast_node_type::ast_node_context), object);
+                    execute_all(*source_code.child_from_type(andy::lang::parser::ast_node_type::ast_node_context), object);
                 }
             } else if(array_or_dictionary->cls == DictionaryClass) {
-                uva::lang::dictionary& dictionary_values = array_or_dictionary->as<uva::lang::dictionary>();
+                andy::lang::dictionary& dictionary_values = array_or_dictionary->as<andy::lang::dictionary>();
                 for(auto& [key, value] : dictionary_values) {
-                    std::vector<std::shared_ptr<uva::lang::object>> params = { key, value };
-                    std::shared_ptr<uva::lang::object> params_object = uva::lang::object::instantiate(this, ArrayClass, params);
+                    std::vector<std::shared_ptr<andy::lang::object>> params = { key, value };
+                    std::shared_ptr<andy::lang::object> params_object = andy::lang::object::instantiate(this, ArrayClass, params);
 
                     current_context.variables[var_name] = params_object;
 
-                    execute_all(*source_code.child_from_type(uva::lang::parser::ast_node_type::ast_node_context), object);
+                    execute_all(*source_code.child_from_type(andy::lang::parser::ast_node_type::ast_node_context), object);
                 }
             } else {
                 throw std::runtime_error("foreach should iterate over an array or a dictionary");
             }
         }
         break;
-        case uva::lang::parser::ast_node_type::ast_node_for: {
-            auto* vardecl = source_code.child_from_type(uva::lang::parser::ast_node_type::ast_node_vardecl);
-            auto* valuedecl = source_code.child_from_type(uva::lang::parser::ast_node_type::ast_node_valuedecl);
-            auto* condition_node = source_code.child_from_type(uva::lang::parser::ast_node_type::ast_node_condition);
-            auto* fn_call = source_code.child_from_type(uva::lang::parser::ast_node_type::ast_node_fn_call);
+        case andy::lang::parser::ast_node_type::ast_node_for: {
+            auto* vardecl = source_code.child_from_type(andy::lang::parser::ast_node_type::ast_node_vardecl);
+            auto* valuedecl = source_code.child_from_type(andy::lang::parser::ast_node_type::ast_node_valuedecl);
+            auto* condition_node = source_code.child_from_type(andy::lang::parser::ast_node_type::ast_node_condition);
+            auto* fn_call = source_code.child_from_type(andy::lang::parser::ast_node_type::ast_node_fn_call);
 
             std::string var_name(vardecl->decname());
 
-            std::shared_ptr<uva::lang::object> start = execute(*vardecl, object);
+            std::shared_ptr<andy::lang::object> start = execute(*vardecl, object);
 
             while(true) {
-                std::shared_ptr<uva::lang::object> condition = execute(*condition_node, object);
+                std::shared_ptr<andy::lang::object> condition = execute(*condition_node, object);
 
                 if(!condition->is_present()) {
                     break;
@@ -509,20 +509,20 @@ std::shared_ptr<uva::lang::object> uva::lang::interpreter::execute(uva::lang::pa
     return nullptr;
 }
 
-std::shared_ptr<uva::lang::object> uva::lang::interpreter::execute_all(std::vector<uva::lang::parser::ast_node>::const_iterator begin, std::vector<uva::lang::parser::ast_node>::const_iterator end, std::shared_ptr<uva::lang::object>& object)
+std::shared_ptr<andy::lang::object> andy::lang::interpreter::execute_all(std::vector<andy::lang::parser::ast_node>::const_iterator begin, std::vector<andy::lang::parser::ast_node>::const_iterator end, std::shared_ptr<andy::lang::object>& object)
 {
-    std::shared_ptr<uva::lang::object> result = nullptr;
+    std::shared_ptr<andy::lang::object> result = nullptr;
 
     for(auto it = begin; it != end; it++) {
-        const uva::lang::parser::ast_node& node = *it;
+        const andy::lang::parser::ast_node& node = *it;
 
-        if(node.type() == uva::lang::parser::ast_node_type::ast_node_undefined && node.token().type() == uva::lang::lexer::token_type::token_eof) {
+        if(node.type() == andy::lang::parser::ast_node_type::ast_node_undefined && node.token().type() == andy::lang::lexer::token_type::token_eof) {
             break;
         }
 
         result = execute(*it, object);
 
-        if(it->type() == uva::lang::parser::ast_node_type::ast_node_fn_return) {
+        if(it->type() == andy::lang::parser::ast_node_type::ast_node_fn_return) {
             current_context.has_returned = true;
             current_context.return_value = result;
             return result;
@@ -534,12 +534,12 @@ std::shared_ptr<uva::lang::object> uva::lang::interpreter::execute_all(std::vect
     return nullptr;
 }
 
-std::shared_ptr<uva::lang::object> uva::lang::interpreter::execute_all(uva::lang::parser::ast_node source_code, std::shared_ptr<uva::lang::object>& object)
+std::shared_ptr<andy::lang::object> andy::lang::interpreter::execute_all(andy::lang::parser::ast_node source_code, std::shared_ptr<andy::lang::object>& object)
 {
     return execute_all(source_code.childrens().begin(), source_code.childrens().end(), object);
 }
 
-std::shared_ptr<uva::lang::object> uva::lang::interpreter::call(std::shared_ptr<uva::lang::structure> cls, std::shared_ptr<uva::lang::object> object, const uva::lang::method &method, std::vector<std::shared_ptr<uva::lang::object>> positional_params, std::map<std::string, std::shared_ptr<uva::lang::object>> named_params)
+std::shared_ptr<andy::lang::object> andy::lang::interpreter::call(std::shared_ptr<andy::lang::structure> cls, std::shared_ptr<andy::lang::object> object, const andy::lang::method &method, std::vector<std::shared_ptr<andy::lang::object>> positional_params, std::map<std::string, std::shared_ptr<andy::lang::object>> named_params)
 {
     push_context();
 
@@ -550,11 +550,11 @@ std::shared_ptr<uva::lang::object> uva::lang::interpreter::call(std::shared_ptr<
         // The object is created before the method is called
         // If the object was instantiated in from native code, it will be passed as a parameter
         if(!object) {
-            object = std::make_shared<uva::lang::object>(cls);
+            object = std::make_shared<andy::lang::object>(cls);
         }
     }
 
-    std::shared_ptr<uva::lang::object> ret = nullptr;
+    std::shared_ptr<andy::lang::object> ret = nullptr;
 
     if(method.positional_params.size() != positional_params.size()) {
         throw std::runtime_error("function " + method.name + " expects " + std::to_string(method.positional_params.size()) + " parameters, but " + std::to_string(positional_params.size()) + " were given");
@@ -609,62 +609,62 @@ std::shared_ptr<uva::lang::object> uva::lang::interpreter::call(std::shared_ptr<
     return ret;
 }
 
-void uva::lang::interpreter::init()
+void andy::lang::interpreter::init()
 {
-    this->load(FalseClass   = uva::lang::false_class::create());
-    this->load(TrueClass    = uva::lang::true_class::create(this));
-    this->load(StringClass  = uva::lang::string_class::create(this));
-    this->load(IntegerClass = uva::lang::integer_class::create(this));
-    this->load(FloatClass   = uva::lang::float_class::create(this));
-    this->load(DoubleClass  = uva::lang::double_class::create(this));
-    this->load(FileClass    = uva::lang::file_class::create(this));
-    this->load(StdClass     = uva::lang::std_class::create(this));
-    this->load(ArrayClass   = uva::lang::array_class::create(this));
-    this->load(DictionaryClass = uva::lang::dictionary_class::create(this));
-    this->load(NullClass    = uva::lang::null_class::create(this));
+    this->load(FalseClass   = andy::lang::false_class::create());
+    this->load(TrueClass    = andy::lang::true_class::create(this));
+    this->load(StringClass  = andy::lang::string_class::create(this));
+    this->load(IntegerClass = andy::lang::integer_class::create(this));
+    this->load(FloatClass   = andy::lang::float_class::create(this));
+    this->load(DoubleClass  = andy::lang::double_class::create(this));
+    this->load(FileClass    = andy::lang::file_class::create(this));
+    this->load(StdClass     = andy::lang::std_class::create(this));
+    this->load(ArrayClass   = andy::lang::array_class::create(this));
+    this->load(DictionaryClass = andy::lang::dictionary_class::create(this));
+    this->load(NullClass    = andy::lang::null_class::create(this));
 }
 
-const std::shared_ptr<uva::lang::object> uva::lang::interpreter::node_to_object(const uva::lang::parser::ast_node& node, std::shared_ptr<uva::lang::structure> cls, std::shared_ptr<uva::lang::object> object)
+const std::shared_ptr<andy::lang::object> andy::lang::interpreter::node_to_object(const andy::lang::parser::ast_node& node, std::shared_ptr<andy::lang::structure> cls, std::shared_ptr<andy::lang::object> object)
 {
-    if(node.token().type() == uva::lang::lexer::token_type::token_literal) {
+    if(node.token().type() == andy::lang::lexer::token_type::token_literal) {
         switch(node.token().kind())
         {
             case lexer::token_kind::token_boolean: {
                 if(node.token().m_literal.boolean_value) {
-                    return std::make_shared<uva::lang::object>(TrueClass);
+                    return std::make_shared<andy::lang::object>(TrueClass);
                 } else {
-                    return std::make_shared<uva::lang::object>(FalseClass);
+                    return std::make_shared<andy::lang::object>(FalseClass);
                 }
             }
             break;
             case lexer::token_kind::token_integer: {
-                std::shared_ptr<uva::lang::object> obj = uva::lang::object::instantiate(this, IntegerClass, node.token().m_literal.integer_value);
+                std::shared_ptr<andy::lang::object> obj = andy::lang::object::instantiate(this, IntegerClass, node.token().m_literal.integer_value);
                 return obj;
             }
             case lexer::token_kind::token_float: {
-                std::shared_ptr<uva::lang::object> obj = uva::lang::object::instantiate(this, FloatClass, node.token().m_literal.float_value);
+                std::shared_ptr<andy::lang::object> obj = andy::lang::object::instantiate(this, FloatClass, node.token().m_literal.float_value);
                 return obj;
             }
             break;
             case lexer::token_kind::token_double: {
-                std::shared_ptr<uva::lang::object> obj = uva::lang::object::instantiate(this, DoubleClass, node.token().m_literal.double_value);
+                std::shared_ptr<andy::lang::object> obj = andy::lang::object::instantiate(this, DoubleClass, node.token().m_literal.double_value);
                 return obj;
             }
             case lexer::token_kind::token_string: {
-                std::shared_ptr<uva::lang::object> obj = uva::lang::object::instantiate(this, StringClass, std::move(std::string(node.token().content())));
+                std::shared_ptr<andy::lang::object> obj = andy::lang::object::instantiate(this, StringClass, std::move(std::string(node.token().content())));
                 return obj;
             }
             break;
             case lexer::token_kind::token_null:
-                return std::make_shared<uva::lang::object>(NullClass);
+                return std::make_shared<andy::lang::object>(NullClass);
             break;
             default:    
                 throw std::runtime_error("interpreter: unknown node kind");
             break;
         }
-    } else if(node.type() == uva::lang::parser::ast_node_type::ast_node_fn_call) {
+    } else if(node.type() == andy::lang::parser::ast_node_type::ast_node_fn_call) {
         return execute(node, object);
-    } else if(node.type() == uva::lang::parser::ast_node_type::ast_node_declname || node.type() == uva::lang::parser::ast_node_type::ast_node_valuedecl) {
+    } else if(node.type() == andy::lang::parser::ast_node_type::ast_node_declname || node.type() == andy::lang::parser::ast_node_type::ast_node_valuedecl) {
         if(object) {
             auto it = object->instance_variables.find(node.token().content());
 
@@ -680,28 +680,28 @@ const std::shared_ptr<uva::lang::object> uva::lang::interpreter::node_to_object(
         }
 
         throw std::runtime_error("'" + std::string(node.token().content()) + "' is undefined");
-    } else if(node.type() == uva::lang::parser::ast_node_type::ast_node_arraydecl) {
-        std::vector<std::shared_ptr<uva::lang::object>> array;
+    } else if(node.type() == andy::lang::parser::ast_node_type::ast_node_arraydecl) {
+        std::vector<std::shared_ptr<andy::lang::object>> array;
 
         for(auto& child : node.childrens()) {
             array.push_back(node_to_object(child));
         }
 
-        return uva::lang::object::instantiate(this, ArrayClass, std::move(array));
-    } else if(node.type() == uva::lang::parser::ast_node_type::ast_node_dictionarydecl) {
-        uva::lang::dictionary map;
+        return andy::lang::object::instantiate(this, ArrayClass, std::move(array));
+    } else if(node.type() == andy::lang::parser::ast_node_type::ast_node_dictionarydecl) {
+        andy::lang::dictionary map;
 
         for(auto& child : node.childrens()) {
-            const uva::lang::parser::ast_node* name_node = child.child_from_type(uva::lang::parser::ast_node_type::ast_node_declname);
-            const uva::lang::parser::ast_node* value_node = child.child_from_type(uva::lang::parser::ast_node_type::ast_node_valuedecl);
+            const andy::lang::parser::ast_node* name_node = child.child_from_type(andy::lang::parser::ast_node_type::ast_node_declname);
+            const andy::lang::parser::ast_node* value_node = child.child_from_type(andy::lang::parser::ast_node_type::ast_node_valuedecl);
 
-            std::shared_ptr<uva::lang::object> key   = node_to_object(name_node->childrens().front());
-            std::shared_ptr<uva::lang::object> value = node_to_object(value_node->childrens().front());
+            std::shared_ptr<andy::lang::object> key   = node_to_object(name_node->childrens().front());
+            std::shared_ptr<andy::lang::object> value = node_to_object(value_node->childrens().front());
 
             map.push_back({ key, value });
         }
 
-        return uva::lang::object::instantiate(this, DictionaryClass, std::move(map));
+        return andy::lang::object::instantiate(this, DictionaryClass, std::move(map));
     }
 
     throw std::runtime_error("interpreter: unknown node type");
@@ -709,15 +709,15 @@ const std::shared_ptr<uva::lang::object> uva::lang::interpreter::node_to_object(
     return nullptr;
 }
 
-std::shared_ptr<uva::lang::object> uva::lang::interpreter::var_to_object(var v)
+std::shared_ptr<andy::lang::object> andy::lang::interpreter::var_to_object(var v)
 {
     switch(v.type)
     {
     case var::var_type::string:
-        return uva::lang::object::instantiate(this, StringClass, std::move(v.as<var::string>()));
+        return andy::lang::object::instantiate(this, StringClass, std::move(v.as<var::string>()));
         break;
     case var::var_type::integer:
-        return uva::lang::object::instantiate(this, IntegerClass, v.as<var::integer>());
+        return andy::lang::object::instantiate(this, IntegerClass, v.as<var::integer>());
         break;
     default:
         throw std::runtime_error("interpreter: unknown var type");
@@ -727,13 +727,13 @@ std::shared_ptr<uva::lang::object> uva::lang::interpreter::var_to_object(var v)
     return nullptr;
 }
 
-void uva::lang::interpreter::load_extension(uva::lang::extension* extension)
+void andy::lang::interpreter::load_extension(andy::lang::extension* extension)
 {
     extension->load(this);
     extensions.push_back(extension);
 }
 
-void uva::lang::interpreter::start_extensions()
+void andy::lang::interpreter::start_extensions()
 {
     for(auto& extension : extensions) {
         extension->start(this);

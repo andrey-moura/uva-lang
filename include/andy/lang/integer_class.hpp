@@ -1,10 +1,10 @@
 #pragma once
 
-#include <uva/lang/class.hpp>
-#include <uva/lang/method.hpp>
-#include <uva/lang/object.hpp>
+#include <andy/lang/class.hpp>
+#include <andy/lang/method.hpp>
+#include <andy/lang/object.hpp>
 
-namespace uva
+namespace andy
 {
     namespace lang
     {

@@ -5,9 +5,9 @@
 #include <functional>
 #include <memory>
 
-#include <uva/lang/parser.hpp>
+#include <andy/lang/parser.hpp>
 
-namespace uva {
+namespace andy {
     namespace lang {
         class object;
         class structure;
@@ -36,28 +36,28 @@ namespace uva {
         public:
             std::string name;
             std::string block;
-            uva::lang::parser::ast_node block_ast;
+            andy::lang::parser::ast_node block_ast;
             method_storage_type storage_type;
             std::vector<fn_parameter> positional_params;
             std::vector<fn_parameter> named_params;
-            std::function<std::shared_ptr<uva::lang::object>(std::shared_ptr<uva::lang::object> object, std::vector<std::shared_ptr<uva::lang::object>> position_params, std::map<std::string, std::shared_ptr<uva::lang::object>> named_params)> function;
+            std::function<std::shared_ptr<andy::lang::object>(std::shared_ptr<andy::lang::object> object, std::vector<std::shared_ptr<andy::lang::object>> position_params, std::map<std::string, std::shared_ptr<andy::lang::object>> named_params)> function;
 
             method() = default;
 
-            method(const std::string& __name, method_storage_type __storage_type, std::vector<std::string> __params, uva::lang::parser::ast_node __block)
+            method(const std::string& __name, method_storage_type __storage_type, std::vector<std::string> __params, andy::lang::parser::ast_node __block)
                 : name(__name), block_ast(std::move(__block)), storage_type(__storage_type) {
                 init_params(__params);
             };
 
-            method(const std::string& name, method_storage_type __storage_type, std::initializer_list<std::string> __params, std::function<std::shared_ptr<uva::lang::object>(std::shared_ptr<uva::lang::object> object, std::vector<std::shared_ptr<uva::lang::object>> params)> fn)
+            method(const std::string& name, method_storage_type __storage_type, std::initializer_list<std::string> __params, std::function<std::shared_ptr<andy::lang::object>(std::shared_ptr<andy::lang::object> object, std::vector<std::shared_ptr<andy::lang::object>> params)> fn)
                 : name(name), storage_type(__storage_type) {
                 init_params(__params);
-                function = [fn](std::shared_ptr<uva::lang::object> object, std::vector<std::shared_ptr<uva::lang::object>> positional_params, std::map<std::string, std::shared_ptr<uva::lang::object>> named_params) {
+                function = [fn](std::shared_ptr<andy::lang::object> object, std::vector<std::shared_ptr<andy::lang::object>> positional_params, std::map<std::string, std::shared_ptr<andy::lang::object>> named_params) {
                     return fn(object, positional_params);
                 };
             }
 
-            method(const std::string& name, method_storage_type __storage_type, std::vector<fn_parameter> __params, std::function<std::shared_ptr<uva::lang::object>(std::shared_ptr<uva::lang::object> object, std::vector<std::shared_ptr<uva::lang::object>> positional_params, std::map<std::string, std::shared_ptr<uva::lang::object>> named_params)> fn)
+            method(const std::string& name, method_storage_type __storage_type, std::vector<fn_parameter> __params, std::function<std::shared_ptr<andy::lang::object>(std::shared_ptr<andy::lang::object> object, std::vector<std::shared_ptr<andy::lang::object>> positional_params, std::map<std::string, std::shared_ptr<andy::lang::object>> named_params)> fn)
                 : name(name), function(fn), storage_type(__storage_type) {
                 positional_params.reserve(__params.size());
                 named_params.reserve(__params.size());
@@ -71,15 +71,15 @@ namespace uva {
                 }
             }
 
-            method(const std::string& name, method_storage_type __storage_type, std::function<std::shared_ptr<uva::lang::object>(std::shared_ptr<uva::lang::object> object, std::vector<std::shared_ptr<uva::lang::object>> params)> fn)
+            method(const std::string& name, method_storage_type __storage_type, std::function<std::shared_ptr<andy::lang::object>(std::shared_ptr<andy::lang::object> object, std::vector<std::shared_ptr<andy::lang::object>> params)> fn)
                 : name(name), storage_type(__storage_type) {
-                function = [fn](std::shared_ptr<uva::lang::object> object, std::vector<std::shared_ptr<uva::lang::object>> positional_params, std::map<std::string, std::shared_ptr<uva::lang::object>> named_params) {
+                function = [fn](std::shared_ptr<andy::lang::object> object, std::vector<std::shared_ptr<andy::lang::object>> positional_params, std::map<std::string, std::shared_ptr<andy::lang::object>> named_params) {
                     return fn(object, positional_params);
                 };
             }
 
-            std::shared_ptr<uva::lang::object> call(std::shared_ptr<uva::lang::object> o);
-            std::shared_ptr<uva::lang::object> call(uva::lang::structure* c);
+            std::shared_ptr<andy::lang::object> call(std::shared_ptr<andy::lang::object> o);
+            std::shared_ptr<andy::lang::object> call(andy::lang::structure* c);
 
             protected:
                 void init_params(std::vector<std::string> __params);

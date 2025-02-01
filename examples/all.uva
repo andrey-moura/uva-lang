@@ -1,1 +1,0 @@
-system("for i in examples/*.uva; do if [ $i != examples/all.uva ]; then build/uva $i; fi; done");

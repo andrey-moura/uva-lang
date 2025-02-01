@@ -16,25 +16,25 @@ jobs:
     - name: Install dependencies
       run: sudo apt-get install -y build-essential
     
-    - name: Checkout uva
+    - name: Checkout andy
       uses: actions/checkout@v3
       with:
-        repository: andrey-moura/uva
-        path: 'uva'
+        repository: andrey-moura/andy
+        path: 'andy'
     
-    - name: Checkout uvalang
+    - name: Checkout andylang
       uses: actions/checkout@v3
       with:
         submodules: recursive
-        path: 'uva-lang'
+        path: 'andy-lang'
         
     - name: Set up CMake
       uses: lukka/get-cmake@latest
 
     - name: Configure CMake
       run: cmake -B build .
-      working-directory: uva-lang
+      working-directory: andy-lang
       
     - name: Build project
       run: cmake --build build --config Release --parallel
-      working-directory: uva-lang
+      working-directory: andy-lang

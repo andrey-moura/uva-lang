@@ -1,4 +1,4 @@
-#include <uva/lang/class.hpp>
+#include <andy/lang/class.hpp>
 
 #include <console.hpp>
 
@@ -14,13 +14,13 @@
 #include "null_class.cpp"
 #include "dictionary_class.cpp"
 
-uva::lang::structure::structure(const std::string& __name, std::vector<uva::lang::method> __methods)
+andy::lang::structure::structure(const std::string& __name, std::vector<andy::lang::method> __methods)
     : name(__name)
 {
     uva::console::log_debug("{}#Class created", name);
 }
 
-uva::lang::structure::~structure()
+andy::lang::structure::~structure()
 {
     uva::console::log_debug("{}#Class destroyed", name);
 }

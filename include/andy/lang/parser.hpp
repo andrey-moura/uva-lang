@@ -7,9 +7,9 @@
 
 #include <uva/core.hpp>
 
-#include <uva/lang/lexer.hpp>
+#include <andy/lang/lexer.hpp>
 
-namespace uva
+namespace andy
 {
     namespace lang
     {
@@ -66,12 +66,12 @@ namespace uva
                     : m_type(__type) {
                     
                 }
-                ast_node(uva::lang::lexer::token __token, ast_node_type __type)
+                ast_node(andy::lang::lexer::token __token, ast_node_type __type)
                     : m_token(__token), m_type(__type) {
                     
                 }
             protected:
-                uva::lang::lexer::token m_token;
+                andy::lang::lexer::token m_token;
                 ast_node_type m_type;
                 std::vector<ast_node> m_children;
             public:
@@ -87,17 +87,17 @@ namespace uva
                 {
                     m_type = __type;
                 }
-                void set_token(uva::lang::lexer::token __token)
+                void set_token(andy::lang::lexer::token __token)
                 {
                     m_token = std::move(__token);
                 }
             // Getters
             public:
-                uva::lang::lexer::token& token() {
+                andy::lang::lexer::token& token() {
                     return m_token;
                 }
 
-                const uva::lang::lexer::token& token() const {
+                const andy::lang::lexer::token& token() const {
                     return m_token;
                 }
 
@@ -113,7 +113,7 @@ namespace uva
                     return m_type;
                 }
 
-                const ast_node* child_from_type(const uva::lang::parser::ast_node_type& __type) const {
+                const ast_node* child_from_type(const andy::lang::parser::ast_node_type& __type) const {
                     for(auto& child : m_children) {
                         if(child.type() == __type) {
                             return &child;
@@ -123,7 +123,7 @@ namespace uva
                     return nullptr;
                 }
 
-                ast_node* child_from_type(const uva::lang::parser::ast_node_type& __type) {
+                ast_node* child_from_type(const andy::lang::parser::ast_node_type& __type) {
                     for(auto& child : m_children) {
                         if(child.type() == __type) {
                             return &child;
@@ -133,7 +133,7 @@ namespace uva
                     return nullptr;
                 }
 
-                const uva::lang::lexer::token* child_token_from_type(const uva::lang::parser::ast_node_type& __type) const {
+                const andy::lang::lexer::token* child_token_from_type(const andy::lang::parser::ast_node_type& __type) const {
                     return &child_from_type(__type)->token();
                 }
 
@@ -172,49 +172,49 @@ namespace uva
                 return current_path / path;
             }
         public:
-            uva::lang::parser::ast_node parse_node(uva::lang::lexer& lexer);
-            uva::lang::parser::ast_node parse_all(uva::lang::lexer& lexer);
+            andy::lang::parser::ast_node parse_node(andy::lang::lexer& lexer);
+            andy::lang::parser::ast_node parse_all(andy::lang::lexer& lexer);
 
         // Commons extract functions used by parsers
         protected:
             /// @brief Extract a function call parameters. You must consume the ')' token.
             /// @param lexer The lexer.
             /// @return A function call parameters node.
-            uva::lang::parser::ast_node extract_fn_call_params(uva::lang::lexer& lexer);
+            andy::lang::parser::ast_node extract_fn_call_params(andy::lang::lexer& lexer);
             /// @brief Extract a function call.
             /// @param lexer The lexer.
             /// @return A function call node.
-            uva::lang::parser::ast_node extract_fn_call(uva::lang::lexer& lexer);
+            andy::lang::parser::ast_node extract_fn_call(andy::lang::lexer& lexer);
 
-            uva::lang::parser::ast_node parse_identifier_or_literal(uva::lang::lexer& lexer, bool chain = true);
+            andy::lang::parser::ast_node parse_identifier_or_literal(andy::lang::lexer& lexer, bool chain = true);
         // Parsers functions
         protected:
             /// @brief Parse a keyword.
             /// @param lexer The lexer.
             /// @return A keyword node.
-            uva::lang::parser::ast_node parse_keyword(uva::lang::lexer& lexer);
+            andy::lang::parser::ast_node parse_keyword(andy::lang::lexer& lexer);
             /// @brief Parse a delimiter.
             /// @param lexer The lexer.
             /// @return A delimiter node.
-            uva::lang::parser::ast_node parse_delimiter(uva::lang::lexer& lexer);
+            andy::lang::parser::ast_node parse_delimiter(andy::lang::lexer& lexer);
             /// @brief Parse a context.
             /// @param lexer The lexer.
             /// @return A context node.
-            uva::lang::parser::ast_node parse_eof(uva::lang::lexer& lexer);
+            andy::lang::parser::ast_node parse_eof(andy::lang::lexer& lexer);
             /// @brief Parse a preprocessing directive.
             /// @param lexer The lexer.
             /// @return An exception
-            uva::lang::parser::ast_node parse_preprocessor(uva::lang::lexer& lexer);
+            andy::lang::parser::ast_node parse_preprocessor(andy::lang::lexer& lexer);
         protected:
-            uva::lang::parser::ast_node parse_keyword_class(uva::lang::lexer& lexer);
-            uva::lang::parser::ast_node parse_keyword_var(uva::lang::lexer& lexer);
-            uva::lang::parser::ast_node parse_keyword_function(uva::lang::lexer& lexer);
-            uva::lang::parser::ast_node parse_keyword_return(uva::lang::lexer& lexer);
-            uva::lang::parser::ast_node parse_keyword_if(uva::lang::lexer& lexer);
-            uva::lang::parser::ast_node parse_keyword_for(uva::lang::lexer& lexer);
-            uva::lang::parser::ast_node parse_keyword_foreach(uva::lang::lexer& lexer);
-            uva::lang::parser::ast_node parse_keyword_while(uva::lang::lexer& lexer);
-            uva::lang::parser::ast_node parse_keyword_break(uva::lang::lexer& lexer);
+            andy::lang::parser::ast_node parse_keyword_class(andy::lang::lexer& lexer);
+            andy::lang::parser::ast_node parse_keyword_var(andy::lang::lexer& lexer);
+            andy::lang::parser::ast_node parse_keyword_function(andy::lang::lexer& lexer);
+            andy::lang::parser::ast_node parse_keyword_return(andy::lang::lexer& lexer);
+            andy::lang::parser::ast_node parse_keyword_if(andy::lang::lexer& lexer);
+            andy::lang::parser::ast_node parse_keyword_for(andy::lang::lexer& lexer);
+            andy::lang::parser::ast_node parse_keyword_foreach(andy::lang::lexer& lexer);
+            andy::lang::parser::ast_node parse_keyword_while(andy::lang::lexer& lexer);
+            andy::lang::parser::ast_node parse_keyword_break(andy::lang::lexer& lexer);
         };
     }
-}; // namespace uva
+}; // namespace andy

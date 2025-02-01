@@ -1,10 +1,10 @@
-#include <uva/lang/extension.hpp>
+#include <andy/lang/extension.hpp>
 
 #include <iostream>
 
 #include <uva.hpp>
 
-#include <uva/lang/interpreter.hpp>
+#include <andy/lang/interpreter.hpp>
 
 #ifdef __linux__
 #   include <dlfcn.h>
@@ -14,15 +14,15 @@
 
 #include <uva/file.hpp>
 
-//std::vector<uva::lang::extension*> extensions;
+//std::vector<andy::lang::extension*> extensions;
 
-uva::lang::extension::extension(const std::string &name)
+andy::lang::extension::extension(const std::string &name)
     : m_name(name)
 {
     //extensions.push_back(this);
 }
 
-void uva::lang::extension::import(uva::lang::interpreter* interpreter, std::string_view module)
+void andy::lang::extension::import(andy::lang::interpreter* interpreter, std::string_view module)
 {
     std::filesystem::path executable_path = uva::file::executable_path();
     std::filesystem::path file_path = executable_path;
@@ -30,9 +30,9 @@ void uva::lang::extension::import(uva::lang::interpreter* interpreter, std::stri
     std::string library_name = std::string(module) + "-shared";
 
 #if defined(__linux__)
-    library_name = "libuvalang-" + library_name;
+    library_name = "libandylang-" + library_name;
 #elif defined(_WIN32)
-    library_name = "uvalang-" + library_name;
+    library_name = "andylang-" + library_name;
 #else
     throw std::runtime_error("unsupported platform");
 #endif
@@ -56,7 +56,7 @@ void uva::lang::extension::import(uva::lang::interpreter* interpreter, std::stri
         throw std::runtime_error(dlerror());
     }
 
-    uva::lang::extension* (*create_extension)() = (uva::lang::extension*(*)())dlsym(handle, "create_extension");
+    andy::lang::extension* (*create_extension)() = (andy::lang::extension*(*)())dlsym(handle, "create_extension");
 
     if(!create_extension) {
         throw std::runtime_error(dlerror());
@@ -70,7 +70,7 @@ void uva::lang::extension::import(uva::lang::interpreter* interpreter, std::stri
         throw std::runtime_error("Failed to load library");
     }
 
-    uva::lang::extension* (*create_extension)() = (uva::lang::extension*(*)())GetProcAddress(handle, "create_extension");
+    andy::lang::extension* (*create_extension)() = (andy::lang::extension*(*)())GetProcAddress(handle, "create_extension");
 
     if(!create_extension) {
         throw std::runtime_error("Failed to get create_extension");
@@ -79,7 +79,7 @@ void uva::lang::extension::import(uva::lang::interpreter* interpreter, std::stri
     throw std::runtime_error("unsupported platform");
 #endif
 
-    uva::lang::extension* extension = create_extension();
+    andy::lang::extension* extension = create_extension();
 
     interpreter->load_extension(extension);
 }
