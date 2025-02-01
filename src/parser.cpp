@@ -1,4 +1,4 @@
-#include <uva/lang/parser.hpp>
+#include <andy/lang/parser.hpp>
 
 #include <uva/file.hpp>
 #include <console.hpp>
@@ -7,18 +7,18 @@
 #include <iostream>
 #include <regex>
 
-#include <uva/lang/object.hpp>
-#include <uva/lang/class.hpp>
-#include <uva/lang/method.hpp>
+#include <andy/lang/object.hpp>
+#include <andy/lang/class.hpp>
+#include <andy/lang/method.hpp>
 
-using namespace uva;
+using namespace andy;
 using namespace lang;
 
-uva::lang::parser::parser()
+andy::lang::parser::parser()
 {
 }
 
-uva::lang::parser::ast_node parser::parse_node(uva::lang::lexer &lexer)
+andy::lang::parser::ast_node parser::parse_node(andy::lang::lexer &lexer)
 {
     // We are at the middle of the source code.
     // What we can have in the middle of the source code:
@@ -31,29 +31,29 @@ uva::lang::parser::ast_node parser::parse_node(uva::lang::lexer &lexer)
 
     // We need to see the next token to know what to do.
 
-    const uva::lang::lexer::token& token = lexer.see_next();
+    const andy::lang::lexer::token& token = lexer.see_next();
 
     switch (token.type())
     {
-    case uva::lang::lexer::token_type::token_comment:
+    case andy::lang::lexer::token_type::token_comment:
         // Ignore the comment and return the next node
         lexer.consume_token();
         return parse_node(lexer);
         break;
-    case uva::lang::lexer::token_type::token_identifier:
-    case uva::lang::lexer::token_type::token_literal:
+    case andy::lang::lexer::token_type::token_identifier:
+    case andy::lang::lexer::token_type::token_literal:
         return parse_identifier_or_literal(lexer);
         break;
-    case uva::lang::lexer::token_type::token_delimiter:
+    case andy::lang::lexer::token_type::token_delimiter:
         return parse_delimiter(lexer);
     break;
-    case uva::lang::lexer::token_type::token_keyword:
+    case andy::lang::lexer::token_type::token_keyword:
         return parse_keyword(lexer);
         break;
-    case uva::lang::lexer::token_type::token_eof:
+    case andy::lang::lexer::token_type::token_eof:
         return parse_eof(lexer);
         break;
-    case uva::lang::lexer::token_type::token_preprocessor:
+    case andy::lang::lexer::token_type::token_preprocessor:
         return parse_preprocessor(lexer);
         break;
     default:
@@ -64,12 +64,12 @@ uva::lang::parser::ast_node parser::parse_node(uva::lang::lexer &lexer)
     throw std::runtime_error(token.error_message_at_current_position("Unexpected token"));
 }
 
-uva::lang::parser::ast_node uva::lang::parser::parse_all(uva::lang::lexer &lexer)
+andy::lang::parser::ast_node andy::lang::parser::parse_all(andy::lang::lexer &lexer)
 {
     ast_node root_node(ast_node_type::ast_node_unit);
 
     do {
-        const uva::lang::lexer::token token = lexer.see_next();
+        const andy::lang::lexer::token token = lexer.see_next();
         if(token.is_eof()) {
             break;
         }
@@ -80,10 +80,10 @@ uva::lang::parser::ast_node uva::lang::parser::parse_all(uva::lang::lexer &lexer
     return root_node;
 }
 
-uva::lang::parser::ast_node uva::lang::parser::extract_fn_call(uva::lang::lexer &lexer)
+andy::lang::parser::ast_node andy::lang::parser::extract_fn_call(andy::lang::lexer &lexer)
 {
     // Function call
-    uva::lang::lexer::token token = lexer.next_token(); 
+    andy::lang::lexer::token token = lexer.next_token(); 
 
     ast_node method_node(ast_node_type::ast_node_fn_call);
     method_node.add_child(std::move(ast_node(std::move(token), ast_node_type::ast_node_declname)));
@@ -97,11 +97,11 @@ uva::lang::parser::ast_node uva::lang::parser::extract_fn_call(uva::lang::lexer 
     return method_node;
 }
 
-uva::lang::parser::ast_node uva::lang::parser::extract_fn_call_params(uva::lang::lexer &lexer)
+andy::lang::parser::ast_node andy::lang::parser::extract_fn_call_params(andy::lang::lexer &lexer)
 {
     ast_node params_node(ast_node_type::ast_node_fn_params);
 
-    uva::lang::lexer::token token = lexer.see_next();
+    andy::lang::lexer::token token = lexer.see_next();
 
     while(token.content() != ")") {
         ast_node param_node = parse_identifier_or_literal(lexer);
@@ -143,9 +143,9 @@ after_extracted_param:
     return params_node;
 }
 
-uva::lang::parser::ast_node uva::lang::parser::parse_delimiter(uva::lang::lexer &lexer)
+andy::lang::parser::ast_node andy::lang::parser::parse_delimiter(andy::lang::lexer &lexer)
 {
-    const uva::lang::lexer::token& token = lexer.next_token();
+    const andy::lang::lexer::token& token = lexer.next_token();
 
     if(token.content() == ";") {
         // ; in the middle of the code is considered a whitespace
@@ -154,9 +154,9 @@ uva::lang::parser::ast_node uva::lang::parser::parse_delimiter(uva::lang::lexer 
         ast_node context_node(ast_node_type::ast_node_context);
 
         while(true) {
-            const uva::lang::lexer::token& next_token = lexer.see_next();
+            const andy::lang::lexer::token& next_token = lexer.see_next();
 
-            if(next_token.type() == uva::lang::lexer::token_delimiter) {
+            if(next_token.type() == andy::lang::lexer::token_delimiter) {
                 if(next_token.content() == "}") {
                     lexer.consume_token();
                     break;
@@ -180,25 +180,25 @@ uva::lang::parser::ast_node uva::lang::parser::parse_delimiter(uva::lang::lexer 
     return ast_node(std::move(token), ast_node_type::ast_node_undefined);
 }
 
-uva::lang::parser::ast_node uva::lang::parser::parse_eof(uva::lang::lexer &lexer)
+andy::lang::parser::ast_node andy::lang::parser::parse_eof(andy::lang::lexer &lexer)
 {
-    uva::lang::lexer::token token = lexer.next_token();
+    andy::lang::lexer::token token = lexer.next_token();
     return ast_node(std::move(token), ast_node_type::ast_node_undefined);
 }
 
-uva::lang::parser::ast_node uva::lang::parser::parse_preprocessor(uva::lang::lexer &lexer)
+andy::lang::parser::ast_node andy::lang::parser::parse_preprocessor(andy::lang::lexer &lexer)
 {
-    uva::lang::lexer::token token = lexer.next_token();
+    andy::lang::lexer::token token = lexer.next_token();
 
     // If the directive has not been removed by the preprocessor, it is probably in an invalid location
     throw std::runtime_error(token.error_message_at_current_position("Unexpected '"+ token.content() + "' directive"));
 }
 
-uva::lang::parser::ast_node uva::lang::parser::parse_identifier_or_literal(uva::lang::lexer &lexer, bool chain)
+andy::lang::parser::ast_node andy::lang::parser::parse_identifier_or_literal(andy::lang::lexer &lexer, bool chain)
 {
-    const uva::lang::lexer::token& token = lexer.see_next();
+    const andy::lang::lexer::token& token = lexer.see_next();
 
-    uva::lang::lexer::token identifier_or_literal;
+    andy::lang::lexer::token identifier_or_literal;
 
     // We can have something like:
     // 12345
@@ -208,11 +208,11 @@ uva::lang::parser::ast_node uva::lang::parser::parse_identifier_or_literal(uva::
     // Class::fn()
 
     switch(token.type()) {
-        case uva::lang::lexer::token_type::token_identifier:
-        case uva::lang::lexer::token_type::token_literal:
+        case andy::lang::lexer::token_type::token_identifier:
+        case andy::lang::lexer::token_type::token_literal:
             identifier_or_literal = std::move(lexer.next_token());
             break;
-        case uva::lang::lexer::token_type::token_operator:
+        case andy::lang::lexer::token_type::token_operator:
             // The lexer sees array as operator and we need to handle it here
             if(token.content() == "[") {
                 ast_node array_node(ast_node_type::ast_node_arraydecl);
@@ -226,15 +226,15 @@ uva::lang::parser::ast_node uva::lang::parser::parse_identifier_or_literal(uva::
 
                     array_node.add_child(std::move(value_node));
 
-                    const uva::lang::lexer::token& comma_or_closing = lexer.next_token();
+                    const andy::lang::lexer::token& comma_or_closing = lexer.next_token();
 
-                    if(comma_or_closing.type() == uva::lang::lexer::token_type::token_delimiter && comma_or_closing.content() == ",") {
+                    if(comma_or_closing.type() == andy::lang::lexer::token_type::token_delimiter && comma_or_closing.content() == ",") {
                         if(lexer.see_next().content() == "]") {
                             lexer.consume_token();
                             break;
                         }
                     } else {
-                        if(comma_or_closing.type() == uva::lang::lexer::token_type::token_operator && comma_or_closing.content() == "]") {
+                        if(comma_or_closing.type() == andy::lang::lexer::token_type::token_operator && comma_or_closing.content() == "]") {
                             break;
                         } else {
                             throw std::runtime_error(token.error_message_at_current_position("Expected ',' or ']'"));
@@ -247,7 +247,7 @@ uva::lang::parser::ast_node uva::lang::parser::parse_identifier_or_literal(uva::
                 throw std::runtime_error(token.error_message_at_current_position("Unexpected operator"));
             }
         break;
-        case uva::lang::lexer::token_type::token_delimiter: {
+        case andy::lang::lexer::token_type::token_delimiter: {
             // Can be a map {}
 
             if(token.content() == "{") {
@@ -263,7 +263,7 @@ uva::lang::parser::ast_node uva::lang::parser::parse_identifier_or_literal(uva::
                         throw std::runtime_error(token.error_message_at_current_position("Expected key in map"));
                     }
 
-                    const uva::lang::lexer::token& colon_token = lexer.next_token();
+                    const andy::lang::lexer::token& colon_token = lexer.next_token();
 
                     if(colon_token.content() != ":") {
                         throw std::runtime_error(colon_token.error_message_at_current_position("Expected ':' after key in map"));
@@ -288,7 +288,7 @@ uva::lang::parser::ast_node uva::lang::parser::parse_identifier_or_literal(uva::
 
                     map_node.add_child(std::move(pair_node));
 
-                    const uva::lang::lexer::token& comma_token = lexer.next_token();
+                    const andy::lang::lexer::token& comma_token = lexer.next_token();
 
                     if(comma_token.content() == ",") {
                         if(lexer.see_next().content() == "}") {
@@ -312,18 +312,18 @@ uva::lang::parser::ast_node uva::lang::parser::parse_identifier_or_literal(uva::
             }
         }
         break;
-        case uva::lang::lexer::token_type::token_keyword:
+        case andy::lang::lexer::token_type::token_keyword:
             if(token.content() == "new") {
                 lexer.consume_token(); // Consume the 'new' token
 
-                uva::lang::lexer::token& class_name_token = lexer.next_token();
+                andy::lang::lexer::token& class_name_token = lexer.next_token();
 
                 ast_node object_node(ast_node_type::ast_node_fn_object);
                 object_node.add_child(std::move(ast_node(class_name_token, ast_node_type::ast_node_declname)));
                 ast_node fn_node(ast_node_type::ast_node_fn_call);
                 fn_node.add_child(std::move(ast_node(std::move(token), ast_node_type::ast_node_declname)));
 
-                const uva::lang::lexer::token& parenthesis_token = lexer.next_token();
+                const andy::lang::lexer::token& parenthesis_token = lexer.next_token();
 
                 if(parenthesis_token.content() != "(") {
                     throw std::runtime_error(parenthesis_token.error_message_at_current_position("Expected '('"));
@@ -348,16 +348,16 @@ uva::lang::parser::ast_node uva::lang::parser::parse_identifier_or_literal(uva::
     // '(' (function call)
 
     if(const auto& next_token = lexer.see_next();
-        (next_token.type() == uva::lang::lexer::token_type::token_delimiter && next_token.content() == "(")
-        || (next_token.type() == uva::lang::lexer::token_type::token_operator && (next_token.content() == "!" || next_token.content() == "?"))) {
+        (next_token.type() == andy::lang::lexer::token_type::token_delimiter && next_token.content() == "(")
+        || (next_token.type() == andy::lang::lexer::token_type::token_operator && (next_token.content() == "!" || next_token.content() == "?"))) {
         
         // Function call
 
-        if(identifier_or_literal.type() == uva::lang::lexer::token_type::token_literal) {
+        if(identifier_or_literal.type() == andy::lang::lexer::token_type::token_literal) {
             throw std::runtime_error(identifier_or_literal.error_message_at_current_position("Illegal invocation of literal as function"));
         }
 
-        if(next_token.type() == uva::lang::lexer::token_type::token_operator) {
+        if(next_token.type() == andy::lang::lexer::token_type::token_operator) {
             identifier_or_literal.merge(next_token);
             lexer.consume_token(); // Consume the '!' or '?' token
         }
@@ -377,7 +377,7 @@ uva::lang::parser::ast_node uva::lang::parser::parse_identifier_or_literal(uva::
 
     ast_node_type node_type;
 
-    if(identifier_or_literal.type() == uva::lang::lexer::token_type::token_literal) {
+    if(identifier_or_literal.type() == andy::lang::lexer::token_type::token_literal) {
         node_type = ast_node_type::ast_node_valuedecl;
     } else {
         node_type = ast_node_type::ast_node_declname;
@@ -391,12 +391,12 @@ uva::lang::parser::ast_node uva::lang::parser::parse_identifier_or_literal(uva::
     // And it can be chained like:
     // my_var.fn1().fn2().fn3()
 
-    std::vector<uva::lang::parser::ast_node> chained_nodes;
+    std::vector<andy::lang::parser::ast_node> chained_nodes;
 
     while(true) {
-        const uva::lang::lexer::token& next_token = lexer.see_next();
+        const andy::lang::lexer::token& next_token = lexer.see_next();
 
-        if(next_token.type() == uva::lang::lexer::token_type::token_operator) {
+        if(next_token.type() == andy::lang::lexer::token_type::token_operator) {
             if(next_token.content() == "]") {
                 // Already handled in the array declaration
                 break;
@@ -409,7 +409,7 @@ uva::lang::parser::ast_node uva::lang::parser::parse_identifier_or_literal(uva::
             } else {
                 ast_node operator_node(ast_node_type::ast_node_fn_call);
 
-                uva::lang::lexer::token& operator_token = lexer.next_token();
+                andy::lang::lexer::token& operator_token = lexer.next_token();
 
                 std::string matching;
 
@@ -425,7 +425,7 @@ uva::lang::parser::ast_node uva::lang::parser::parse_identifier_or_literal(uva::
                     params_node.add_child(std::move(right_node));
 
                     if(matching.size()) {
-                        uva::lang::lexer::token& matching_token = lexer.next_token();
+                        andy::lang::lexer::token& matching_token = lexer.next_token();
 
                         if(matching_token.content() != matching) {
                             throw std::runtime_error(matching_token.error_message_at_current_position("No matching '" + matching + "' found for '" + operator_node.token().content() + "'"));
@@ -468,20 +468,20 @@ uva::lang::parser::ast_node uva::lang::parser::parse_identifier_or_literal(uva::
     return chained_nodes[chained_nodes.size() - 1];
 }
 
-uva::lang::parser::ast_node uva::lang::parser::parse_keyword(uva::lang::lexer &lexer)
+andy::lang::parser::ast_node andy::lang::parser::parse_keyword(andy::lang::lexer &lexer)
 {
-    const uva::lang::lexer::token& token = lexer.see_next();
+    const andy::lang::lexer::token& token = lexer.see_next();
 
-    const std::map<std::string, uva::lang::parser::ast_node(uva::lang::parser::*)(uva::lang::lexer&)> keyword_parsers = {
-        { "class",    &uva::lang::parser::parse_keyword_class    },
-        { "var",      &uva::lang::parser::parse_keyword_var      },
-        { "function", &uva::lang::parser::parse_keyword_function },
-        { "return",   &uva::lang::parser::parse_keyword_return   },
-        { "if",       &uva::lang::parser::parse_keyword_if       },
-        { "for",      &uva::lang::parser::parse_keyword_for      },
-        { "foreach",  &uva::lang::parser::parse_keyword_foreach  },
-        { "while",    &uva::lang::parser::parse_keyword_while    },
-        { "break",    &uva::lang::parser::parse_keyword_break    },
+    const std::map<std::string, andy::lang::parser::ast_node(andy::lang::parser::*)(andy::lang::lexer&)> keyword_parsers = {
+        { "class",    &andy::lang::parser::parse_keyword_class    },
+        { "var",      &andy::lang::parser::parse_keyword_var      },
+        { "function", &andy::lang::parser::parse_keyword_function },
+        { "return",   &andy::lang::parser::parse_keyword_return   },
+        { "if",       &andy::lang::parser::parse_keyword_if       },
+        { "for",      &andy::lang::parser::parse_keyword_for      },
+        { "foreach",  &andy::lang::parser::parse_keyword_foreach  },
+        { "while",    &andy::lang::parser::parse_keyword_while    },
+        { "break",    &andy::lang::parser::parse_keyword_break    },
     };
 
     auto keyword_parser = keyword_parsers.find(token.content());
@@ -493,12 +493,12 @@ uva::lang::parser::ast_node uva::lang::parser::parse_keyword(uva::lang::lexer &l
     return (this->*keyword_parser->second)(lexer);
 }
 
-uva::lang::parser::ast_node uva::lang::parser::parse_keyword_class(uva::lang::lexer &lexer) {
+andy::lang::parser::ast_node andy::lang::parser::parse_keyword_class(andy::lang::lexer &lexer) {
     ast_node class_node(ast_node_type::ast_node_classdecl);
 
     class_node.add_child(std::move(ast_node(std::move(lexer.next_token()), ast_node_type::ast_node_decltype)));
 
-    const uva::lang::lexer::token& identifier_token = lexer.see_next();
+    const andy::lang::lexer::token& identifier_token = lexer.see_next();
 
     if(identifier_token.type() != lexer::token_type::token_identifier) {
         throw std::runtime_error(identifier_token.error_message_at_current_position("Expected class name after 'class'"));
@@ -506,12 +506,12 @@ uva::lang::parser::ast_node uva::lang::parser::parse_keyword_class(uva::lang::le
 
     class_node.add_child(std::move(ast_node(std::move(lexer.next_token()), ast_node_type::ast_node_declname)));
 
-    const uva::lang::lexer::token& extends_or_context_token = lexer.see_next();
+    const andy::lang::lexer::token& extends_or_context_token = lexer.see_next();
 
     if(extends_or_context_token.content() == "extends" || extends_or_context_token.content() == ":" || extends_or_context_token.content() == "<") {
         lexer.next_token(); // Consume the extends token
 
-        const uva::lang::lexer::token& baseclass_token = lexer.see_next();
+        const andy::lang::lexer::token& baseclass_token = lexer.see_next();
 
         if(baseclass_token.type() != lexer::token_type::token_identifier) {
             throw std::runtime_error(baseclass_token.error_message_at_current_position("Expected identifier as base class name"));
@@ -524,7 +524,7 @@ uva::lang::parser::ast_node uva::lang::parser::parse_keyword_class(uva::lang::le
 
         class_node.add_child(base_class_node);
 
-        const uva::lang::lexer::token& context_token = lexer.see_next();
+        const andy::lang::lexer::token& context_token = lexer.see_next();
 
         if(context_token.content() != "{") {
             throw std::runtime_error(context_token.error_message_at_current_position("Expected '{' after base class name"));
@@ -544,10 +544,10 @@ uva::lang::parser::ast_node uva::lang::parser::parse_keyword_class(uva::lang::le
     return class_node;
 }
 
-uva::lang::parser::ast_node uva::lang::parser::parse_keyword_var(uva::lang::lexer &lexer){
+andy::lang::parser::ast_node andy::lang::parser::parse_keyword_var(andy::lang::lexer &lexer){
     ast_node var_node(std::move(lexer.next_token()), ast_node_type::ast_node_vardecl);
 
-    uva::lang::lexer::token identifier_token = std::move(lexer.next_token());
+    andy::lang::lexer::token identifier_token = std::move(lexer.next_token());
 
     if(identifier_token.type() != lexer::token_type::token_identifier) {
         throw std::runtime_error(identifier_token.error_message_at_current_position("Expected variable name after 'var'"));
@@ -555,7 +555,7 @@ uva::lang::parser::ast_node uva::lang::parser::parse_keyword_var(uva::lang::lexe
 
     var_node.add_child(std::move(ast_node(std::move(identifier_token), ast_node_type::ast_node_declname)));
 
-    const uva::lang::lexer::token& equal_token = lexer.next_token();
+    const andy::lang::lexer::token& equal_token = lexer.next_token();
 
     if(equal_token.type() != lexer::token_type::token_operator || equal_token.content() != "=") {
         throw std::runtime_error(equal_token.error_message_at_current_position("Expected '=' after variable name"));
@@ -568,11 +568,11 @@ uva::lang::parser::ast_node uva::lang::parser::parse_keyword_var(uva::lang::lexe
     return var_node;
 }
 
-uva::lang::parser::ast_node uva::lang::parser::parse_keyword_function(uva::lang::lexer &lexer) {
+andy::lang::parser::ast_node andy::lang::parser::parse_keyword_function(andy::lang::lexer &lexer) {
     ast_node method_node(ast_node_type::ast_node_fn_decl);
     method_node.add_child(ast_node(std::move(lexer.next_token()), ast_node_type::ast_node_decltype));
 
-    const uva::lang::lexer::token& identifier_token = lexer.see_next();
+    const andy::lang::lexer::token& identifier_token = lexer.see_next();
 
     switch(identifier_token.type())
     {
@@ -594,7 +594,7 @@ uva::lang::parser::ast_node uva::lang::parser::parse_keyword_function(uva::lang:
 
     method_node.add_child(std::move(ast_node(std::move(lexer.next_token()), ast_node_type::ast_node_declname)));
 
-    const uva::lang::lexer::token& parenthesis_token = lexer.see_next();
+    const andy::lang::lexer::token& parenthesis_token = lexer.see_next();
 
     if(parenthesis_token.content() != "(") {
         throw std::runtime_error(parenthesis_token.error_message_at_current_position("Expected '(' after method name"));
@@ -605,7 +605,7 @@ uva::lang::parser::ast_node uva::lang::parser::parse_keyword_function(uva::lang:
     ast_node params_node(ast_node_type::ast_node_fn_params);
 
     while(true) {
-        const uva::lang::lexer::token& identifier_or_parenthesis = lexer.see_next();
+        const andy::lang::lexer::token& identifier_or_parenthesis = lexer.see_next();
 
         if(identifier_or_parenthesis.type() == lexer::token_type::token_identifier) {
             params_node.add_child(ast_node(std::move(lexer.next_token()), ast_node_type::ast_node_declname));
@@ -617,7 +617,7 @@ uva::lang::parser::ast_node uva::lang::parser::parse_keyword_function(uva::lang:
             throw std::runtime_error(identifier_or_parenthesis.error_message_at_current_position("Expected parameter name"));
         }
 
-        const uva::lang::lexer::token& comma = lexer.see_next();
+        const andy::lang::lexer::token& comma = lexer.see_next();
 
         switch(comma.type())
         {
@@ -628,7 +628,7 @@ uva::lang::parser::ast_node uva::lang::parser::parse_keyword_function(uva::lang:
                     params_node.childrens().back().token().merge(comma);
                     lexer.consume_token(); // Consume the ':' token
 
-                    const uva::lang::lexer::token& default_value = lexer.see_next();
+                    const andy::lang::lexer::token& default_value = lexer.see_next();
 
                     if(default_value.type() == lexer::token_type::token_literal) {
                         params_node.childrens().back().token().merge(default_value);
@@ -652,7 +652,7 @@ uva::lang::parser::ast_node uva::lang::parser::parse_keyword_function(uva::lang:
     return method_node;
 }
 
-uva::lang::parser::ast_node uva::lang::parser::parse_keyword_return(uva::lang::lexer &lexer) {
+andy::lang::parser::ast_node andy::lang::parser::parse_keyword_return(andy::lang::lexer &lexer) {
     ast_node return_node(std::move(lexer.next_token()), ast_node_type::ast_node_fn_return);
 
     return_node.add_child(std::move(parse_identifier_or_literal(lexer)));
@@ -660,11 +660,11 @@ uva::lang::parser::ast_node uva::lang::parser::parse_keyword_return(uva::lang::l
     return return_node;
 }
 
-uva::lang::parser::ast_node uva::lang::parser::parse_keyword_if(uva::lang::lexer &lexer){
+andy::lang::parser::ast_node andy::lang::parser::parse_keyword_if(andy::lang::lexer &lexer){
     ast_node if_node(ast_node_type::ast_node_conditional);
     if_node.add_child(ast_node(std::move(lexer.next_token()), ast_node_type::ast_node_decltype));
 
-    const uva::lang::lexer::token& parenthesis_token = lexer.next_token();
+    const andy::lang::lexer::token& parenthesis_token = lexer.next_token();
 
     if(parenthesis_token.content() != "(") {
         throw std::runtime_error(parenthesis_token.error_message_at_current_position("Expected '(' after 'if'"));
@@ -675,7 +675,7 @@ uva::lang::parser::ast_node uva::lang::parser::parse_keyword_if(uva::lang::lexer
 
     if_node.add_child(std::move(condition_node));
 
-    const uva::lang::lexer::token& close_parenthesis_token = lexer.next_token();
+    const andy::lang::lexer::token& close_parenthesis_token = lexer.next_token();
 
     if(close_parenthesis_token.content() != ")") {
         throw std::runtime_error(close_parenthesis_token.error_message_at_current_position("Expected ')' after 'if' condition"));
@@ -691,9 +691,9 @@ uva::lang::parser::ast_node uva::lang::parser::parse_keyword_if(uva::lang::lexer
 
     // Check if there is an else
 
-    const uva::lang::lexer::token& token = lexer.see_next();
+    const andy::lang::lexer::token& token = lexer.see_next();
 
-    if(token.type() == uva::lang::lexer::token_type::token_keyword && token.content() == "else") {
+    if(token.type() == andy::lang::lexer::token_type::token_keyword && token.content() == "else") {
         lexer.next_token(); // Consume the else token
 
         ast_node else_node(ast_node_type::ast_node_else);
@@ -712,18 +712,18 @@ uva::lang::parser::ast_node uva::lang::parser::parse_keyword_if(uva::lang::lexer
     return if_node;
 }
 
-uva::lang::parser::ast_node uva::lang::parser::parse_keyword_for(uva::lang::lexer &lexer)
+andy::lang::parser::ast_node andy::lang::parser::parse_keyword_for(andy::lang::lexer &lexer)
 {
     ast_node for_node(ast_node_type::ast_node_for);
     for_node.add_child(ast_node(std::move(lexer.next_token()), ast_node_type::ast_node_decltype));
 
-    const uva::lang::lexer::token& parenthesis_token = lexer.next_token();
+    const andy::lang::lexer::token& parenthesis_token = lexer.next_token();
 
     if(parenthesis_token.type() != lexer::token_type::token_delimiter || parenthesis_token.content() != "(") {
         throw std::runtime_error(parenthesis_token.error_message_at_current_position("Expected '(' after 'for'"));
     }
 
-    const uva::lang::lexer::token& var_token = lexer.see_next();
+    const andy::lang::lexer::token& var_token = lexer.see_next();
 
     if(var_token.type() != lexer::token_type::token_keyword || var_token.content() != "var") {
         throw std::runtime_error(var_token.error_message_at_current_position("Expected 'var' after '('"));
@@ -731,7 +731,7 @@ uva::lang::parser::ast_node uva::lang::parser::parse_keyword_for(uva::lang::lexe
 
     ast_node var_node = parse_keyword_var(lexer);
 
-    const uva::lang::lexer::token& semicolon_token = lexer.next_token();
+    const andy::lang::lexer::token& semicolon_token = lexer.next_token();
 
     if(parenthesis_token.type() != lexer::token_type::token_delimiter || semicolon_token.content() != ";") {
         throw std::runtime_error(semicolon_token.error_message_at_current_position("Expected ';' after 'for' variable declaration"));
@@ -746,7 +746,7 @@ uva::lang::parser::ast_node uva::lang::parser::parse_keyword_for(uva::lang::lexe
 
     condition_node.add_child(std::move(condition_child));
 
-    const uva::lang::lexer::token& semicolon2_token = lexer.next_token();
+    const andy::lang::lexer::token& semicolon2_token = lexer.next_token();
 
     if(parenthesis_token.type() != lexer::token_type::token_delimiter || semicolon2_token.content() != ";") {
         throw std::runtime_error(semicolon2_token.error_message_at_current_position("Expected ';' after 'for' condition"));
@@ -758,7 +758,7 @@ uva::lang::parser::ast_node uva::lang::parser::parse_keyword_for(uva::lang::lexe
         throw std::runtime_error(increment_node.token().error_message_at_current_position("Expected increment after 'for' condition"));
     }
 
-    const uva::lang::lexer::token& close_parenthesis_token = lexer.next_token();
+    const andy::lang::lexer::token& close_parenthesis_token = lexer.next_token();
 
     if(close_parenthesis_token.content() != ")") {
         throw std::runtime_error(close_parenthesis_token.error_message_at_current_position("Expected ')' after 'for' increment"));
@@ -825,17 +825,17 @@ uva::lang::parser::ast_node uva::lang::parser::parse_keyword_for(uva::lang::lexe
     return for_node;
 }
 
-uva::lang::parser::ast_node uva::lang::parser::parse_keyword_foreach(uva::lang::lexer &lexer) {
+andy::lang::parser::ast_node andy::lang::parser::parse_keyword_foreach(andy::lang::lexer &lexer) {
     ast_node foreach_node(ast_node_type::ast_node_foreach);
     foreach_node.add_child(ast_node(std::move(lexer.next_token()), ast_node_type::ast_node_decltype));
 
-    const uva::lang::lexer::token& parenthesis_token = lexer.next_token();
+    const andy::lang::lexer::token& parenthesis_token = lexer.next_token();
 
     if(parenthesis_token.type() != lexer::token_type::token_delimiter || parenthesis_token.content() != "(") {
         throw std::runtime_error(parenthesis_token.error_message_at_current_position("Expected '(' after 'foreach'"));
     }
 
-    const uva::lang::lexer::token& var_token = lexer.next_token();
+    const andy::lang::lexer::token& var_token = lexer.next_token();
 
     if(var_token.content() != "var") {
         throw std::runtime_error(var_token.error_message_at_current_position("Expected 'var' after '('"));
@@ -844,7 +844,7 @@ uva::lang::parser::ast_node uva::lang::parser::parse_keyword_foreach(uva::lang::
     ast_node var_node(ast_node_type::ast_node_vardecl);
     var_node.add_child(ast_node(std::move(var_token), ast_node_type::ast_node_decltype));
 
-    const uva::lang::lexer::token& identifier_token = lexer.next_token();
+    const andy::lang::lexer::token& identifier_token = lexer.next_token();
 
     if(identifier_token.type() != lexer::token_type::token_identifier) {
         throw std::runtime_error(identifier_token.error_message_at_current_position("Expected variable name after 'var'"));
@@ -854,13 +854,13 @@ uva::lang::parser::ast_node uva::lang::parser::parse_keyword_foreach(uva::lang::
 
     foreach_node.add_child(std::move(var_node));
 
-    const uva::lang::lexer::token& in_token = lexer.next_token();
+    const andy::lang::lexer::token& in_token = lexer.next_token();
 
     if(in_token.content() != "in" && in_token.content() != ":" && in_token.content() != "of") {
         throw std::runtime_error(in_token.error_message_at_current_position("Expected 'in', ':' or 'of after variable name"));
     }
 
-    const uva::lang::lexer::token& identifier2_token = lexer.next_token();
+    const andy::lang::lexer::token& identifier2_token = lexer.next_token();
 
     if(identifier2_token.type() != lexer::token_type::token_identifier) {
         throw std::runtime_error(identifier2_token.error_message_at_current_position("Expected identifier after 'in'"));
@@ -868,7 +868,7 @@ uva::lang::parser::ast_node uva::lang::parser::parse_keyword_foreach(uva::lang::
 
     foreach_node.add_child(ast_node(std::move(identifier2_token), ast_node_type::ast_node_valuedecl));
 
-    const uva::lang::lexer::token& close_parenthesis_token = lexer.next_token();
+    const andy::lang::lexer::token& close_parenthesis_token = lexer.next_token();
 
     if(close_parenthesis_token.content() != ")") {
         throw std::runtime_error(close_parenthesis_token.error_message_at_current_position("Expected ')' after 'foreach' declaration"));
@@ -885,12 +885,12 @@ uva::lang::parser::ast_node uva::lang::parser::parse_keyword_foreach(uva::lang::
     return foreach_node;
 }
 
-uva::lang::parser::ast_node uva::lang::parser::parse_keyword_while(uva::lang::lexer &lexer)
+andy::lang::parser::ast_node andy::lang::parser::parse_keyword_while(andy::lang::lexer &lexer)
 {
     ast_node while_node(ast_node_type::ast_node_while);
     while_node.add_child(ast_node(std::move(lexer.next_token()), ast_node_type::ast_node_decltype));
 
-    const uva::lang::lexer::token& parenthesis_token = lexer.next_token();
+    const andy::lang::lexer::token& parenthesis_token = lexer.next_token();
 
     if(parenthesis_token.content() != "(") {
         throw std::runtime_error(parenthesis_token.error_message_at_current_position("Expected '(' after 'while'"));
@@ -901,7 +901,7 @@ uva::lang::parser::ast_node uva::lang::parser::parse_keyword_while(uva::lang::le
 
     while_node.add_child(std::move(condition_node));
 
-    const uva::lang::lexer::token& close_parenthesis_token = lexer.next_token();
+    const andy::lang::lexer::token& close_parenthesis_token = lexer.next_token();
 
     if(close_parenthesis_token.content() != ")") {
         throw std::runtime_error(close_parenthesis_token.error_message_at_current_position("Expected ')' after 'while' condition"));
@@ -918,7 +918,7 @@ uva::lang::parser::ast_node uva::lang::parser::parse_keyword_while(uva::lang::le
     return while_node;
 }
 
-uva::lang::parser::ast_node uva::lang::parser::parse_keyword_break(uva::lang::lexer &lexer)
+andy::lang::parser::ast_node andy::lang::parser::parse_keyword_break(andy::lang::lexer &lexer)
 {
     ast_node break_node(ast_node_type::ast_node_break);
     break_node.add_child(ast_node(std::move(lexer.next_token()), ast_node_type::ast_node_decltype));

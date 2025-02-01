@@ -1,13 +1,13 @@
-#include <uva/lang/lang.hpp>
+#include <andy/lang/lang.hpp>
 
-#include <uva/lang/interpreter.hpp>
-#include <uva/lang/array_class.hpp>
+#include <andy/lang/interpreter.hpp>
+#include <andy/lang/array_class.hpp>
 
-std::shared_ptr<uva::lang::structure> uva::lang::array_class::create(uva::lang::interpreter* interpreter)
+std::shared_ptr<andy::lang::structure> andy::lang::array_class::create(andy::lang::interpreter* interpreter)
 {
-    auto ArrayClass = std::make_shared<uva::lang::structure>("Array");
-    ArrayClass->object_to_var = [](std::shared_ptr<const uva::lang::object> obj) {
-        std::vector<std::shared_ptr<uva::lang::object>> objects = obj->as<std::vector<std::shared_ptr<uva::lang::object>>>();
+    auto ArrayClass = std::make_shared<andy::lang::structure>("Array");
+    ArrayClass->object_to_var = [](std::shared_ptr<const andy::lang::object> obj) {
+        std::vector<std::shared_ptr<andy::lang::object>> objects = obj->as<std::vector<std::shared_ptr<andy::lang::object>>>();
 
         var::array_type result;
         result.reserve(objects.size());
@@ -20,10 +20,10 @@ std::shared_ptr<uva::lang::structure> uva::lang::array_class::create(uva::lang::
     };
 
     ArrayClass->methods = {
-        {"to_string", uva::lang::method("to_string", method_storage_type::instance_method, [interpreter](std::shared_ptr<uva::lang::object> object, std::vector<std::shared_ptr<uva::lang::object>> params) {
+        {"to_string", andy::lang::method("to_string", method_storage_type::instance_method, [interpreter](std::shared_ptr<andy::lang::object> object, std::vector<std::shared_ptr<andy::lang::object>> params) {
             std::string result = "[";
 
-            std::vector<std::shared_ptr<uva::lang::object>>& items = object->as<std::vector<std::shared_ptr<uva::lang::object>>>();
+            std::vector<std::shared_ptr<andy::lang::object>>& items = object->as<std::vector<std::shared_ptr<andy::lang::object>>>();
 
             for(auto& item : items) {
                 if(result.size() > 1) {
@@ -35,14 +35,14 @@ std::shared_ptr<uva::lang::structure> uva::lang::array_class::create(uva::lang::
 
             result += "]";
 
-            return uva::lang::object::instantiate(interpreter, interpreter->StringClass, std::move(result));
+            return andy::lang::object::instantiate(interpreter, interpreter->StringClass, std::move(result));
         })},
 
-        {"join", uva::lang::method("join", method_storage_type::instance_method, {"separator"}, [interpreter](std::shared_ptr<uva::lang::object> object, std::vector<std::shared_ptr<uva::lang::object>> params) {
+        {"join", andy::lang::method("join", method_storage_type::instance_method, {"separator"}, [interpreter](std::shared_ptr<andy::lang::object> object, std::vector<std::shared_ptr<andy::lang::object>> params) {
             const std::string& separator = params[0]->as<std::string>();
             std::string result;
 
-            std::vector<std::shared_ptr<uva::lang::object>>& items = object->as<std::vector<std::shared_ptr<uva::lang::object>>>();
+            std::vector<std::shared_ptr<andy::lang::object>>& items = object->as<std::vector<std::shared_ptr<andy::lang::object>>>();
 
             for(auto& item : items) {
                 if(result.size()) {
@@ -52,27 +52,27 @@ std::shared_ptr<uva::lang::structure> uva::lang::array_class::create(uva::lang::
                 result += item->cls->methods["to_string"].call(item)->as<std::string>();
             }
 
-            return uva::lang::object::instantiate(interpreter, interpreter->StringClass, std::move(result));
+            return andy::lang::object::instantiate(interpreter, interpreter->StringClass, std::move(result));
         })},
 
-        {"front", uva::lang::method("front", method_storage_type::instance_method, [interpreter](std::shared_ptr<uva::lang::object> object, std::vector<std::shared_ptr<uva::lang::object>> params) {
-            std::vector<std::shared_ptr<uva::lang::object>>& items = object->as<std::vector<std::shared_ptr<uva::lang::object>>>();
+        {"front", andy::lang::method("front", method_storage_type::instance_method, [interpreter](std::shared_ptr<andy::lang::object> object, std::vector<std::shared_ptr<andy::lang::object>> params) {
+            std::vector<std::shared_ptr<andy::lang::object>>& items = object->as<std::vector<std::shared_ptr<andy::lang::object>>>();
 
             if(items.empty()) {
-                return std::make_shared<uva::lang::object>(interpreter->NullClass);
+                return std::make_shared<andy::lang::object>(interpreter->NullClass);
             }
 
             return items.front();
         })},
 
-        {"size", uva::lang::method("size", method_storage_type::instance_method, [interpreter](std::shared_ptr<uva::lang::object> object, std::vector<std::shared_ptr<uva::lang::object>> params) {
-            std::vector<std::shared_ptr<uva::lang::object>>& items = object->as<std::vector<std::shared_ptr<uva::lang::object>>>();
+        {"size", andy::lang::method("size", method_storage_type::instance_method, [interpreter](std::shared_ptr<andy::lang::object> object, std::vector<std::shared_ptr<andy::lang::object>> params) {
+            std::vector<std::shared_ptr<andy::lang::object>>& items = object->as<std::vector<std::shared_ptr<andy::lang::object>>>();
 
-            return uva::lang::object::instantiate(interpreter, interpreter->IntegerClass, items.size());
+            return andy::lang::object::instantiate(interpreter, interpreter->IntegerClass, items.size());
         })},
 
-        {"pop_front!", uva::lang::method("pop_front!", method_storage_type::instance_method, [interpreter](std::shared_ptr<uva::lang::object> object, std::vector<std::shared_ptr<uva::lang::object>> params) {
-            std::vector<std::shared_ptr<uva::lang::object>>& items = object->as<std::vector<std::shared_ptr<uva::lang::object>>>();
+        {"pop_front!", andy::lang::method("pop_front!", method_storage_type::instance_method, [interpreter](std::shared_ptr<andy::lang::object> object, std::vector<std::shared_ptr<andy::lang::object>> params) {
+            std::vector<std::shared_ptr<andy::lang::object>>& items = object->as<std::vector<std::shared_ptr<andy::lang::object>>>();
 
             if(items.size()) {
                 items.erase(items.begin());

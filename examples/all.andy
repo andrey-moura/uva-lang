@@ -1,0 +1,1 @@
+system("for i in examples/*.andy; do if [ $i != examples/all.andy ]; then build/andy $i; fi; done");

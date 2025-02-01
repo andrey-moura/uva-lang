@@ -1,13 +1,13 @@
-#include <uva/lang/method.hpp>
-#include <uva/lang/object.hpp>
-#include <uva/lang/class.hpp>
+#include <andy/lang/method.hpp>
+#include <andy/lang/object.hpp>
+#include <andy/lang/class.hpp>
 
-std::shared_ptr<uva::lang::object> uva::lang::method::call(std::shared_ptr<uva::lang::object> o)
+std::shared_ptr<andy::lang::object> andy::lang::method::call(std::shared_ptr<andy::lang::object> o)
 {
-    return function(o, std::vector<std::shared_ptr<uva::lang::object>>(), std::map<std::string, std::shared_ptr<uva::lang::object>>());
+    return function(o, std::vector<std::shared_ptr<andy::lang::object>>(), std::map<std::string, std::shared_ptr<andy::lang::object>>());
 }
 
-void uva::lang::method::init_params(std::vector<std::string> __params)
+void andy::lang::method::init_params(std::vector<std::string> __params)
 {
     for(auto& param : __params) {
         fn_parameter fn_param(std::move(param));

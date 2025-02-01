@@ -1,6 +1,6 @@
 #include <filesystem>
 
-#include <uva/lang/preprocessor.hpp>
+#include <andy/lang/preprocessor.hpp>
 
 #include <uva.hpp>
 
@@ -52,31 +52,31 @@ std::vector<std::string> list_files_with_wildcard(const std::filesystem::path& b
     return files;
 }
 
-std::map<std::string, void(uva::lang::preprocessor::*)(const std::filesystem::path&, uva::lang::lexer&), std::less<>> preprocessor_directives = {
-    { "#include", &uva::lang::preprocessor::process_include },
+std::map<std::string, void(andy::lang::preprocessor::*)(const std::filesystem::path&, andy::lang::lexer&), std::less<>> preprocessor_directives = {
+    { "#include", &andy::lang::preprocessor::process_include },
 };
 
-uva::lang::preprocessor::preprocessor()
+andy::lang::preprocessor::preprocessor()
 {
 }
 
-uva::lang::preprocessor::~preprocessor()
+andy::lang::preprocessor::~preprocessor()
 {
 }
 
-void uva::lang::preprocessor::process(const std::filesystem::path &__file_name, uva::lang::lexer &__lexer)
+void andy::lang::preprocessor::process(const std::filesystem::path &__file_name, andy::lang::lexer &__lexer)
 {
     // Now we have a rule defined: The preprocessors must be at the beginning of the file.
     // The preprocessor will stop executing when it finds a token that is not a preprocessor (and is not a comment).
 
-    uva::lang::lexer::token token = __lexer.next_token();
+    andy::lang::lexer::token token = __lexer.next_token();
 
     while(!token.is_eof()) {
         switch(token.type()) {
-            case uva::lang::lexer::token_type::token_comment:
+            case andy::lang::lexer::token_type::token_comment:
                 // Do nothing
             break;
-            case uva::lang::lexer::token_type::token_preprocessor: {
+            case andy::lang::lexer::token_type::token_preprocessor: {
                 if(auto it = preprocessor_directives.find(token.content()); it != preprocessor_directives.end()) {
                     (this->*it->second)(__file_name, __lexer);
                 } else {
@@ -92,11 +92,11 @@ void uva::lang::preprocessor::process(const std::filesystem::path &__file_name, 
     __lexer.reset();
 }
 
-void uva::lang::preprocessor::process_include(const std::filesystem::path &__file_name, uva::lang::lexer &__lexer)
+void andy::lang::preprocessor::process_include(const std::filesystem::path &__file_name, andy::lang::lexer &__lexer)
 {
     // Moves becase it will be removed
-    uva::lang::lexer::token directive       = std::move(__lexer.current_token());
-    uva::lang::lexer::token file_name_token = std::move(__lexer.see_next());
+    andy::lang::lexer::token directive       = std::move(__lexer.current_token());
+    andy::lang::lexer::token file_name_token = std::move(__lexer.see_next());
 
     if(file_name_token.type() != lexer::token_type::token_literal || file_name_token.kind() != lexer::token_kind::token_string) {
         throw std::runtime_error(file_name_token.error_message_at_current_position("Expected string literal after include directive"));
@@ -114,7 +114,7 @@ void uva::lang::preprocessor::process_include(const std::filesystem::path &__fil
     
     for(const std::string& file : files) {
         std::string file_content = uva::file::read_all_text<char>(file);
-        uva::lang::lexer l(file, file_content);
+        andy::lang::lexer l(file, file_content);
 
         process(file, l);
 

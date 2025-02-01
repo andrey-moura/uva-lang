@@ -7,7 +7,7 @@
 
 #include <uva/var.hpp>
 
-namespace uva
+namespace andy
 {
     namespace lang {
         class object;
@@ -17,16 +17,16 @@ namespace uva
         class object : public std::enable_shared_from_this<object>
         {
         public:
-            object(std::shared_ptr<uva::lang::structure> c);
+            object(std::shared_ptr<andy::lang::structure> c);
             ~object();
         public:
-            std::shared_ptr<uva::lang::structure> cls;
+            std::shared_ptr<andy::lang::structure> cls;
             std::shared_ptr<object> base_instance = nullptr;
             std::shared_ptr<object> derived_instance = nullptr;
 
-            std::map<std::string, std::shared_ptr<uva::lang::object>> instance_variables;
+            std::map<std::string, std::shared_ptr<andy::lang::object>> instance_variables;
             // #ifdef __UVA_DEBUG__
-            // uva::lang::object* debug_object = this;
+            // andy::lang::object* debug_object = this;
 
             // __attribute__((noinline)) __attribute__((used)) std::string debug_string()
             // {
@@ -41,7 +41,7 @@ namespace uva
             // The object destructor ptr.
             void (*native_destructor)(object* obj) = nullptr;
             
-            void initialize(uva::lang::interpreter* interpreter);
+            void initialize(andy::lang::interpreter* interpreter);
         public:
             /// @brief Initialize the object with a value.
             /// @tparam T The type of the value.
@@ -49,9 +49,9 @@ namespace uva
             /// @param value The pointer to the value. This will be deleted when the object is destroyed.
             /// @return Returns a shared pointer to the object.
             template<typename T>
-            static std::shared_ptr<uva::lang::object> instantiate(uva::lang::interpreter* interpreter, std::shared_ptr<uva::lang::structure> cls, T* value)
+            static std::shared_ptr<andy::lang::object> instantiate(andy::lang::interpreter* interpreter, std::shared_ptr<andy::lang::structure> cls, T* value)
             {
-                auto obj = std::make_shared<uva::lang::object>(cls);
+                auto obj = std::make_shared<andy::lang::object>(cls);
                 obj->set_native_ptr<T>(obj.get(), value);
 
                 obj->initialize(interpreter);
@@ -65,9 +65,9 @@ namespace uva
             /// @param value The value.
             /// @return Returns a shared pointer to the object.
             template<typename T>
-            static std::enable_if<!std::is_pointer<T>::value, std::shared_ptr<uva::lang::object>>::type instantiate(uva::lang::interpreter* interpreter, std::shared_ptr<uva::lang::structure> cls, T value)
+            static std::enable_if<!std::is_pointer<T>::value, std::shared_ptr<andy::lang::object>>::type instantiate(andy::lang::interpreter* interpreter, std::shared_ptr<andy::lang::structure> cls, T value)
             {
-                auto obj = std::make_shared<uva::lang::object>(cls);
+                auto obj = std::make_shared<andy::lang::object>(cls);
 
                 obj->set_native<T>(std::move(value));
 

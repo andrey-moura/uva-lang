@@ -1,18 +1,18 @@
 #include <filesystem>
 
-#include <uva/lang/parser.hpp>
-#include <uva/lang/lexer.hpp>
+#include <andy/lang/parser.hpp>
+#include <andy/lang/lexer.hpp>
 //#include <vm/vm.hpp>
 
 #include <console.hpp>
 #include <uva/file.hpp>
-#include <uva/lang/interpreter.hpp>
-#include <uva/lang/extension.hpp>
-#include <uva/lang/preprocessor.hpp>
+#include <andy/lang/interpreter.hpp>
+#include <andy/lang/extension.hpp>
+#include <andy/lang/preprocessor.hpp>
 
-using namespace uva;
+using namespace andy;
 
-std::shared_ptr<uva::lang::object> application;
+std::shared_ptr<andy::lang::object> application;
 
 #ifdef __UVA_DEBUG__
     #define try if(true)
@@ -23,15 +23,15 @@ std::shared_ptr<uva::lang::object> application;
 
 int main(int argc, char** argv) {
     try {
-        std::filesystem::path uva_executable_path = argv[0];
-        //vm_instance = std::make_shared<uva::lang::vm>();
+        std::filesystem::path andy_executable_path = argv[0];
+        //vm_instance = std::make_shared<andy::lang::vm>();
 
         std::filesystem::path file_path;
 
         if(argc > 1) {
             file_path = std::filesystem::absolute(argv[1]);
         } else {
-            file_path = std::filesystem::absolute("application.uva");
+            file_path = std::filesystem::absolute("application.andy");
         }
 
         if(!std::filesystem::exists(file_path)) {
@@ -46,17 +46,17 @@ int main(int argc, char** argv) {
 
         std::string source = uva::file::read_all_text<char>(file_path);
 
-        uva::lang::lexer l(file_path.string(), source);
+        andy::lang::lexer l(file_path.string(), source);
 
-        uva::lang::preprocessor preprocessor;
+        andy::lang::preprocessor preprocessor;
         preprocessor.process(file_path.string(), l);
 
-        uva::lang::parser p;
-        uva::lang::parser::ast_node root_node = p.parse_all(l);
+        andy::lang::parser p;
+        andy::lang::parser::ast_node root_node = p.parse_all(l);
 
-        uva::lang::interpreter interpreter;
-        std::shared_ptr<uva::lang::object> tmp;
-        std::shared_ptr<uva::lang::object> ret = interpreter.execute_all(root_node, tmp);
+        andy::lang::interpreter interpreter;
+        std::shared_ptr<andy::lang::object> tmp;
+        std::shared_ptr<andy::lang::object> ret = interpreter.execute_all(root_node, tmp);
 
         interpreter.start_extensions();
 

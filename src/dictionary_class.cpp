@@ -1,12 +1,12 @@
-#include <uva/lang/lang.hpp>
+#include <andy/lang/lang.hpp>
 
-#include <uva/lang/interpreter.hpp>
+#include <andy/lang/interpreter.hpp>
 
-std::shared_ptr<uva::lang::structure> uva::lang::dictionary_class::create(uva::lang::interpreter* interpreter)
+std::shared_ptr<andy::lang::structure> andy::lang::dictionary_class::create(andy::lang::interpreter* interpreter)
 {
-    auto DictionaryClass = std::make_shared<uva::lang::structure>("Dictionary");
-    DictionaryClass->object_to_var = [](std::shared_ptr<const uva::lang::object> obj) {
-        uva::lang::dictionary data = obj->as<uva::lang::dictionary>();
+    auto DictionaryClass = std::make_shared<andy::lang::structure>("Dictionary");
+    DictionaryClass->object_to_var = [](std::shared_ptr<const andy::lang::object> obj) {
+        andy::lang::dictionary data = obj->as<andy::lang::dictionary>();
 
         var::dictionary_type result;
 
@@ -17,19 +17,19 @@ std::shared_ptr<uva::lang::structure> uva::lang::dictionary_class::create(uva::l
         return var(std::move(result));
     };
     DictionaryClass->methods = {
-        {"present?", uva::lang::method("present?", method_storage_type::instance_method, [interpreter](std::shared_ptr<uva::lang::object> object, std::vector<std::shared_ptr<uva::lang::object>> params) {
+        {"present?", andy::lang::method("present?", method_storage_type::instance_method, [interpreter](std::shared_ptr<andy::lang::object> object, std::vector<std::shared_ptr<andy::lang::object>> params) {
             const std::string& value = object->as<std::string>();
 
             if(value.empty()) {
-                return std::make_shared<uva::lang::object>(interpreter->FalseClass);
+                return std::make_shared<andy::lang::object>(interpreter->FalseClass);
             }
 
-            return std::make_shared<uva::lang::object>(interpreter->TrueClass);
+            return std::make_shared<andy::lang::object>(interpreter->TrueClass);
         })},
-        {"[]", uva::lang::method("[]", method_storage_type::instance_method, {"key"}, [interpreter](std::shared_ptr<uva::lang::object> object, std::vector<std::shared_ptr<uva::lang::object>> params) {
-            std::shared_ptr<uva::lang::object> key = params[0];
+        {"[]", andy::lang::method("[]", method_storage_type::instance_method, {"key"}, [interpreter](std::shared_ptr<andy::lang::object> object, std::vector<std::shared_ptr<andy::lang::object>> params) {
+            std::shared_ptr<andy::lang::object> key = params[0];
 
-            auto& dictionary = object->as<uva::lang::dictionary>();
+            auto& dictionary = object->as<andy::lang::dictionary>();
 
             auto operator_it = key->cls->methods.find("==");
 
@@ -40,7 +40,7 @@ std::shared_ptr<uva::lang::structure> uva::lang::dictionary_class::create(uva::l
                 }
             }
 
-            return std::make_shared<uva::lang::object>(interpreter->NullClass);
+            return std::make_shared<andy::lang::object>(interpreter->NullClass);
         })},
     };
     

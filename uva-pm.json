@@ -1,7 +1,7 @@
 {
     "dependencies": [
-        "uva-core",
-        "uva-file",
-        "uva-console"
+        "andy-core",
+        "andy-file",
+        "andy-console"
     ]
 }

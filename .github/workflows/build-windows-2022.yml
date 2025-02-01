@@ -19,19 +19,19 @@ jobs:
         repository: andrey-moura/uva
         path: 'uva'
     
-    - name: Checkout uvalang
+    - name: Checkout andy-lang
       uses: actions/checkout@v3
       with:
         submodules: recursive
-        path: 'uva-lang'
+        path: 'andy-lang'
         
     - name: Set up CMake
       uses: lukka/get-cmake@latest
 
     - name: Configure CMake
       run: cmake -B build .
-      working-directory: uva-lang
+      working-directory: andy-lang
       
     - name: Build project
       run: cmake --build build --config Release --parallel
-      working-directory: uva-lang
+      working-directory: andy-lang

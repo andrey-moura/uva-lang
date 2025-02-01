@@ -1,8 +1,8 @@
 #pragma once
 
-#include <uva/lang/class.hpp>
-#include <uva/lang/method.hpp>
-#include <uva/lang/object.hpp>
+#include <andy/lang/class.hpp>
+#include <andy/lang/method.hpp>
+#include <andy/lang/object.hpp>
 
 #include "false_class.hpp"
 #include "true_class.hpp"
