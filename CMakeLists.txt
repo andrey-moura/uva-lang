@@ -3,7 +3,10 @@ cmake_minimum_required(VERSION 3.10)
 
 set(CMAKE_CXX_STANDARD 20)
 
-project(andy-lang)
+file(READ "${CMAKE_SOURCE_DIR}/VERSION" ANDYLANG_PROJECT_VERSION)
+string(STRIP "${ANDYLANG_PROJECT_VERSION}" ANDYLANG_PROJECT_VERSION)
+
+project(andy-lang VERSION ${ANDYLANG_PROJECT_VERSION})
 
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
@@ -46,6 +49,38 @@ install(TARGETS andy DESTINATION bin)
 install(TARGETS andy-lang DESTINATION lib)
 # Install andy-lang headers
 install(DIRECTORY include/andy DESTINATION include)
+
+install(EXPORT andy-langTargets
+    FILE andy-langTargets.cmake
+    NAMESPACE andy-lang::
+    DESTINATION lib/cmake/andy-lang
+)
+
+include(CMakePackageConfigHelpers)
+
+message(STATUS "PROJECT_VERSION: ${ANDYLANG_PROJECT_VERSION}")
+
+write_basic_package_version_file(
+    ${CMAKE_BINARY_DIR}/andy-langConfigVersion.cmake
+    VERSION ${ANDYLANG_PROJECT_VERSION}
+    COMPATIBILITY SameMajorVersion
+)
+
+configure_file(
+    ${CMAKE_SOURCE_DIR}/cmake/andy-langConfig.cmake.in
+    ${CMAKE_BINARY_DIR}/andy-langConfig.cmake
+    @ONLY
+)
+
+install(FILES
+    ${CMAKE_BINARY_DIR}/andy-langConfig.cmake
+    ${CMAKE_BINARY_DIR}/andy-langConfigVersion.cmake
+    DESTINATION lib/cmake/andy-lang
+)
+
+install(TARGETS andy-lang
+    EXPORT andy-langTargets
+)
 
 set(EXTENSIONS_FOLDER "${ANDYLANG_PARENT_DIRECTORY}/andylang-extensions")
 
