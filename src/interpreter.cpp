@@ -103,8 +103,6 @@ std::shared_ptr<andy::lang::object> andy::lang::interpreter::execute(andy::lang:
         case andy::lang::parser::ast_node_fn_call: {
             andy::lang::method* method_to_call = nullptr;
 
-            // This is a pointer to a shared pointer because the object can be changed
-            std::shared_ptr<andy::lang::object>* object_to_call_ptr = nullptr;
             // And we have a shared_ptr in case the object is created, os it still alive in the current context
             std::shared_ptr<andy::lang::object> object_to_call = nullptr;
 
@@ -132,8 +130,8 @@ std::shared_ptr<andy::lang::object> andy::lang::interpreter::execute(andy::lang:
                         if(is_assignment) {
                             const auto& params_node = source_code.child_from_type(andy::lang::parser::ast_node_type::ast_node_fn_params);
 
-                            object_to_call = node_to_object(params_node->childrens().front());
-                            *object_to_call_ptr = object_to_call;
+                            std::shared_ptr<andy::lang::object> new_object = node_to_object(params_node->childrens().front());
+                            *object_to_call = std::move(*new_object);
 
                             return object;
                         } else {

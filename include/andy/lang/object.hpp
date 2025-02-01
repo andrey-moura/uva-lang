@@ -40,8 +40,30 @@ namespace andy
             uint8_t native[MAX_NATIVE_SIZE] = {0};
             // The object destructor ptr.
             void (*native_destructor)(object* obj) = nullptr;
+            // The object move ptr.
+            void (*native_move)(object* obj, object&& other) = nullptr;
             
             void initialize(andy::lang::interpreter* interpreter);
+        public:
+            object& operator=(object&& other)
+            {
+                cls = other.cls;
+                base_instance = other.base_instance;
+                derived_instance = other.derived_instance;
+                instance_variables = std::move(other.instance_variables);
+
+                if(other.native_ptr) {
+                    native_ptr = other.native_ptr;
+                    native_destructor = other.native_destructor;
+                } else if(native_move) {
+                    native_move(this, std::move(other));
+                } else {
+                    std::memcpy(native, other.native, MAX_NATIVE_SIZE);
+                }
+                other.native_destructor = nullptr;
+
+                return *this;
+            }
         public:
             /// @brief Initialize the object with a value.
             /// @tparam T The type of the value.
@@ -117,16 +139,25 @@ namespace andy
             template <typename T>
             static void set_destructor(object* obj) {
                 if constexpr(!std::is_arithmetic<T>::value) {
-                obj->native_destructor = [](object* obj) {
-                    obj->log_native_destructor();
+                    obj->native_destructor = [](object* obj) {
+                        obj->log_native_destructor();
 
-                    if(obj->native_ptr) {
-                        delete (T*)obj->native_ptr;
+                        if(obj->native_ptr) {
+                            delete (T*)obj->native_ptr;
                         } else {
                             ((T*)(&obj->native))->~T();
                         }
-                    }
-                };
+                    };
+                }
+
+                if constexpr(!std::is_arithmetic<T>::value) {
+                    obj->native_move = [](object* obj, object&& other) {
+                        if(!obj->native_ptr) {
+                            new ((T*)(&obj->native)) T(std::move(*((T*)(&other.native))));
+                            // Let the destructor of the other object to be called
+                        }
+                    };
+                }
             }
 
             void log_native_destructor();
