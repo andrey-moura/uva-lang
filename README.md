@@ -2,9 +2,9 @@
     <img src="resources/uva.svg" alt="Alt Text" style="width:200px; height:200px;">
 </p>
 
-# The uva programming language
+# The Andy programming language
 
-Uva is an interpreted object-oriented multi-purpose programming language
+Andy is an interpreted object-oriented multi-purpose programming language
 
 ## Table of Contents
 * [Examples](#Examples)
@@ -17,7 +17,7 @@ Uva is an interpreted object-oriented multi-purpose programming language
 If you want to run examples, try:
 
 ```sh
-    uva examples/minimal.uva
+    andy examples/minimal.andy
 ```
 
 This file has the content:
@@ -44,9 +44,9 @@ Windows Server 2022 | [![Windows Server 2022](https://github.com/andrey-moura/uv
 On Linux or Windows Developer Command Prompt
 
 ```sh
-    git clone https://github.com/andrey-moura/uva
-    git clone https://github.com/andrey-moura/uva-lang
-    cd uva-lang
+    git clone https://github.com/andrey-moura/andy
+    git clone https://github.com/andrey-moura/andy-lang
+    cd andy-lang
     cmake -B build .
     cmake --build build --config Release --parallel
 ```
