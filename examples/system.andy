@@ -1,1 +1,9 @@
-system("echo Hello from system!");
+if(System.Linux?)
+{
+    puts("Hello from Linux!");
+}
+
+if(System.Windows?)
+{
+    puts("Hello from Windows!");
+}

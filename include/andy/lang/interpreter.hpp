@@ -79,6 +79,9 @@ namespace andy
             /// @brief The global dictionary class.
             std::shared_ptr<andy::lang::structure> DictionaryClass;
 
+            /// @brief The global system class.
+            std::shared_ptr<andy::lang::structure> SystemClass;
+
             std::shared_ptr<andy::lang::object> call(
                 std::shared_ptr<andy::lang::structure> cls,
                 std::shared_ptr<andy::lang::object>    object,
