@@ -1,9 +1,9 @@
 if(System.Linux?)
 {
-    puts("Hello from Linux!");
+    puts('Hello from Linux!');
 }
 
 if(System.Windows?)
 {
-    puts("Hello from Windows!");
+    puts('Hello from Windows!');
 }
