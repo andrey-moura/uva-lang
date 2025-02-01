@@ -44,7 +44,7 @@ Windows Server 2022 | [![Windows Server 2022](https://github.com/andrey-moura/an
 On Linux or Windows Developer Command Prompt
 
 ```sh
-    git clone https://github.com/andrey-moura/andy
+    git clone https://github.com/andrey-moura/uva
     git clone https://github.com/andrey-moura/andy-lang
     cd andy-lang
     cmake -B build .
