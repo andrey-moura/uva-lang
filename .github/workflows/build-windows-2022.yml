@@ -13,13 +13,13 @@ jobs:
     runs-on: windows-2022
 
     steps:
-    - name: Checkout andy
+    - name: Checkout uva
       uses: actions/checkout@v3
       with:
-        repository: andrey-moura/andy
-        path: 'andy'
+        repository: andrey-moura/uva
+        path: 'uva'
     
-    - name: Checkout andylang
+    - name: Checkout andy-lang
       uses: actions/checkout@v3
       with:
         submodules: recursive
