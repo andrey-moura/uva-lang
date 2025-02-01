@@ -1,7 +1,5 @@
 #include <andy/lang/lang.hpp>
 
-#include <iostream>
-
 #include <andy/lang/interpreter.hpp>
 #include <andy/lang/extension.hpp>
 
