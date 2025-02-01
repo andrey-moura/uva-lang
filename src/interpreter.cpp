@@ -608,44 +608,6 @@ const std::shared_ptr<andy::lang::object> andy::lang::interpreter::try_object_fr
     return nullptr;
 }
 
-const std::shared_ptr<andy::lang::object> andy::lang::interpreter::try_object_from_declname(const andy::lang::parser::ast_node& node, std::shared_ptr<andy::lang::structure> cls, std::shared_ptr<andy::lang::object> object)
-{
-    auto* fn_object = node.child_from_type(andy::lang::parser::ast_node_type::ast_node_fn_object);
-
-    if(fn_object) {
-        auto* fn_object_decname = fn_object->child_from_type(andy::lang::parser::ast_node_type::ast_node_declname);
-        const std::string& class_name = fn_object_decname->token().content();
-        const std::string& var_name = node.token().content();
-
-        for(auto& cls : classes) {
-            if(cls->name == class_name) {
-                auto it = cls->class_variables.find(var_name);
-
-                if(it != cls->class_variables.end()) {
-                    return it->second;
-                }
-            }
-        }
-
-        throw std::runtime_error("class " + class_name + " not found");
-    }
-    if(object) {
-        auto it = object->instance_variables.find(node.token().content());
-
-        if(it != object->instance_variables.end()) {
-            return it->second;
-        }
-    }
-
-    auto it = current_context.variables.find(node.token().content());
-
-    if(it != current_context.variables.end()) {
-        return it->second;
-    }
-
-    return nullptr;
-}
-
 const std::shared_ptr<andy::lang::object> andy::lang::interpreter::node_to_object(const andy::lang::parser::ast_node& node, std::shared_ptr<andy::lang::structure> cls, std::shared_ptr<andy::lang::object> object)
 {
     if(node.token().type() == andy::lang::lexer::token_type::token_literal) {
