@@ -96,7 +96,7 @@ namespace andy
 
                 return nullptr;
             }
-
+            const std::shared_ptr<andy::lang::object> try_object_from_declname(const andy::lang::parser::ast_node& node, std::shared_ptr<andy::lang::structure> cls = nullptr, std::shared_ptr<andy::lang::object> object = nullptr);
             const std::shared_ptr<andy::lang::object> node_to_object(const andy::lang::parser::ast_node& node, std::shared_ptr<andy::lang::structure> cls = nullptr, std::shared_ptr<andy::lang::object> object = nullptr);
             std::shared_ptr<andy::lang::object> var_to_object(var v);
 
