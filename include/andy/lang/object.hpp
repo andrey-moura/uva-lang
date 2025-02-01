@@ -116,14 +116,12 @@ namespace andy
         private:
             template <typename T>
             static void set_destructor(object* obj) {
+                if constexpr(!std::is_arithmetic<T>::value) {
                 obj->native_destructor = [](object* obj) {
                     obj->log_native_destructor();
 
                     if(obj->native_ptr) {
                         delete (T*)obj->native_ptr;
-                    } else {
-                        if constexpr(std::is_arithmetic<T>::value) {
-                            // Do nothing
                         } else {
                             ((T*)(&obj->native))->~T();
                         }
