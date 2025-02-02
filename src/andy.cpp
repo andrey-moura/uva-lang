@@ -34,16 +34,16 @@ int main(int argc, char** argv) {
             std::string_view arg = argv[1];
 
             if(arg == "--help") {
-                std::println("Usage: {} [file]", argv[0]);
-                std::println("");
-                std::println("Options: ");
+                std::cout << "Usage: " << argv[0] << " [file]" << std::endl;
+                std::cout << std::endl;
+                std::cout << "Options: " << std::endl;
                 uva::console::print_warning("  --help");
-                std::println("     Display this information");
+                std::cout << "     Display this information" << std::endl;
                 uva::console::print_warning("  --version");
-                std::println("  Display the version of the andy language");
+                std::cout << "  Display the version of the andy language" << std::endl;
                 return 0;
             } else if(arg == "--version") {
-                std::println(ANDYLANG_VERSION);
+                std::cout << ANDYLANG_VERSION;
                 return 0;
             } else {
                 arg.remove_prefix(2);
