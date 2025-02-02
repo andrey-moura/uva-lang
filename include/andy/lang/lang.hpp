@@ -16,3 +16,4 @@
 #include "null_class.hpp"
 #include "dictionary_class.hpp"
 #include "system_class.hpp"
+#include "path_class.hpp"
