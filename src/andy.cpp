@@ -43,7 +43,7 @@ int main(int argc, char** argv) {
                 std::cout << "  Display the version of the andy language" << std::endl;
                 return 0;
             } else if(arg == "--version") {
-                std::cout << ANDYLANG_VERSION;
+                std::cout << ANDYLANG_VERSION << std::endl;
                 return 0;
             } else {
                 arg.remove_prefix(2);
