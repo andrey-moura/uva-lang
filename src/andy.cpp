@@ -9,6 +9,7 @@
 #include <andy/lang/interpreter.hpp>
 #include <andy/lang/extension.hpp>
 #include <andy/lang/preprocessor.hpp>
+#include <andy/lang/config.hpp>
 
 using namespace andy;
 
@@ -43,6 +44,18 @@ int main(int argc, char** argv) {
             } else if(arg == "--version") {
                 std::println(ANDYLANG_VERSION);
                 return 0;
+            } else {
+                arg.remove_prefix(2);
+                file_path = andy::lang::config::src_dir() / "utility" / arg;
+                file_path.replace_extension(".andy");
+
+                if(!std::filesystem::exists(file_path)) {
+                    throw std::runtime_error("utility does not exist");
+                }
+
+                if(!std::filesystem::is_regular_file(file_path)) {
+                    throw std::runtime_error("utility is not a regular file");
+                }
             }
         }
 
