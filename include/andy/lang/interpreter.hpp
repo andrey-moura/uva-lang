@@ -85,6 +85,8 @@ namespace andy
             /// @brief The global path class.
             std::shared_ptr<andy::lang::structure> PathClass;
 
+            /// @brief The global andy config class.
+            std::shared_ptr<andy::lang::structure> AndyConfigClass;
 
             std::shared_ptr<andy::lang::object> call(
                 std::shared_ptr<andy::lang::structure> cls,

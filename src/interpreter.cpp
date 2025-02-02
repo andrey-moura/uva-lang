@@ -567,6 +567,7 @@ void andy::lang::interpreter::init()
     this->load(NullClass    = andy::lang::null_class::create(this));
     this->load(SystemClass  = andy::lang::system_class::create(this));
     this->load(PathClass    = andy::lang::path_class::create(this));
+    this->load(AndyConfigClass = andy::lang::andy_config_class::create(this));
 }
 
 const std::shared_ptr<andy::lang::object> andy::lang::interpreter::try_object_from_declname(const andy::lang::parser::ast_node& node, std::shared_ptr<andy::lang::structure> cls, std::shared_ptr<andy::lang::object> object)

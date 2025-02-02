@@ -15,6 +15,7 @@
 #include "dictionary_class.cpp"
 #include "system_class.cpp"
 #include "path_class.cpp"
+#include "andy_config_class.cpp"
 
 andy::lang::structure::structure(const std::string& __name, std::vector<andy::lang::method> __methods)
     : name(__name)

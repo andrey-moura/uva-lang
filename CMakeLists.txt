@@ -31,6 +31,7 @@ add_library(andy-lang
     ${CMAKE_CURRENT_LIST_DIR}/src/object.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/lexer.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/parser.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/src/config.cpp
 )
 
 add_executable(andy
@@ -42,6 +43,9 @@ if(UNIX)
 endif()
 
 target_link_libraries(andy andy-lang uva-core uva-console uva-file)
+
+add_definitions(-DANDYLANG_PROJECT_DIR="${CMAKE_CURRENT_LIST_DIR}")
+add_definitions(-DANDYLANG_BUILD_DIR="${CMAKE_BINARY_DIR}")
 
 # Install andy executable
 install(TARGETS andy DESTINATION bin)
@@ -57,8 +61,6 @@ install(EXPORT andy-langTargets
 )
 
 include(CMakePackageConfigHelpers)
-
-message(STATUS "PROJECT_VERSION: ${ANDYLANG_PROJECT_VERSION}")
 
 write_basic_package_version_file(
     ${CMAKE_BINARY_DIR}/andy-langConfigVersion.cmake
