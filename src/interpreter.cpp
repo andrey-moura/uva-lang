@@ -554,7 +554,7 @@ std::shared_ptr<andy::lang::object> andy::lang::interpreter::call(std::shared_pt
 
 void andy::lang::interpreter::init()
 {
-    this->load(FalseClass   = andy::lang::false_class::create());
+    this->load(FalseClass   = andy::lang::false_class::create(this));
     this->load(TrueClass    = andy::lang::true_class::create(this));
     this->load(StringClass  = andy::lang::string_class::create(this));
     this->load(IntegerClass = andy::lang::integer_class::create(this));
