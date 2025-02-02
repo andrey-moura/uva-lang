@@ -97,7 +97,19 @@ namespace andy
 
                 return obj;
             }
+            /// @brief Creates the object with a value.
+            /// @tparam T The type of the value.
+            /// @param cls The class of the object.
+            /// @param value The value.
+            /// @return Returns a shared pointer to the object.
+            template<typename T>
+            static std::enable_if<!std::is_pointer<T>::value, std::shared_ptr<andy::lang::object>>::type create(andy::lang::interpreter* interpreter, std::shared_ptr<andy::lang::structure> cls, T value)
+            {
+                auto obj = std::make_shared<andy::lang::object>(cls);
+                obj->set_native<T>(std::move(value));
 
+                return obj;
+            }
             template<typename T>
             void set_native(T value) {
                 if(native_destructor) {
@@ -106,6 +118,8 @@ namespace andy
 
                 bool should_destroy = false;
 
+                // Under GCC, even if the constexpr is false, the code still generates warning when 
+                // sizoef(T) > MAX_NATIVE_SIZE. So we need silence the warning.
                 if constexpr(sizeof(T) <= MAX_NATIVE_SIZE) {
                     if constexpr(std::is_arithmetic<T>::value) {
                         // Boolean, integer, float, etc.
@@ -118,7 +132,6 @@ namespace andy
                     this->native_ptr = new T(std::move(value));
                     should_destroy = true;
                 }
-
                 set_destructor<T>(this);
             }
 
