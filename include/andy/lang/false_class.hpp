@@ -10,7 +10,7 @@ namespace andy
     {
         namespace false_class
         {
-            std::shared_ptr<structure> create();
+            std::shared_ptr<structure> create(interpreter* interpreter);
         }
     }
 };

@@ -206,6 +206,7 @@ andy::lang::parser::ast_node andy::lang::parser::parse_identifier_or_literal(and
     // my_var
     // Class::var
     // Class::fn()
+    // !value
 
     switch(token.type()) {
         case andy::lang::lexer::token_type::token_identifier:
@@ -243,6 +244,18 @@ andy::lang::parser::ast_node andy::lang::parser::parse_identifier_or_literal(and
                 }
 
                 return array_node;
+            } else if (token.content() == "!") {
+                identifier_or_literal = std::move(lexer.next_token());
+
+                ast_node unary_op(ast_node_type::ast_node_fn_call);
+                unary_op.add_child(std::move(ast_node(std::move(identifier_or_literal), ast_node_type::ast_node_declname)));
+
+                ast_node object_node(ast_node_type::ast_node_fn_object);
+                object_node.add_child(parse_identifier_or_literal(lexer));
+
+                unary_op.add_child(std::move(object_node));
+
+                return unary_op;
             } else {
                 throw std::runtime_error(token.error_message_at_current_position("Unexpected operator"));
             }
