@@ -29,17 +29,34 @@ int main(int argc, char** argv) {
         std::filesystem::path file_path;
 
         if(argc > 1) {
-            file_path = std::filesystem::absolute(argv[1]);
-        } else {
-            file_path = std::filesystem::absolute("application.andy");
+            std::string_view arg = argv[1];
+
+            if(arg == "--help") {
+                std::println("Usage: {} [file]", argv[0]);
+                std::println("");
+                std::println("Options: ");
+                uva::console::print_warning("  --help");
+                std::println("     Display this information");
+                uva::console::print_warning("  --version");
+                std::println("  Display the version of the andy language");
+                return 0;
+            }
         }
 
-        if(!std::filesystem::exists(file_path)) {
-            throw std::runtime_error("input file does not exist");
-        }
+        if(file_path.empty()) {
+            if(argc > 1) {
+                file_path = std::filesystem::absolute(argv[1]);
+            } else {
+                file_path = std::filesystem::absolute("application.andy");
+            }
 
-        if(!std::filesystem::is_regular_file(file_path)) {
-            throw std::runtime_error("input file is not a regular file");
+            if(!std::filesystem::exists(file_path)) {
+                throw std::runtime_error("input file does not exist");
+            }
+
+            if(!std::filesystem::is_regular_file(file_path)) {
+                throw std::runtime_error("input file is not a regular file");
+            }
         }
 
         //std::filesystem::current_path(file_path.parent_path());
