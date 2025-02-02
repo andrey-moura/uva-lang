@@ -17,3 +17,4 @@
 #include "dictionary_class.hpp"
 #include "system_class.hpp"
 #include "path_class.hpp"
+#include "andy_config_class.hpp"
