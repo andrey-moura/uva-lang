@@ -1,5 +1,5 @@
-#include <filesystem>
 #include <iostream>
+#include <filesystem>
 
 #include <andy/lang/parser.hpp>
 #include <andy/lang/lexer.hpp>
