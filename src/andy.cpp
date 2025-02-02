@@ -40,6 +40,9 @@ int main(int argc, char** argv) {
                 uva::console::print_warning("  --version");
                 std::println("  Display the version of the andy language");
                 return 0;
+            } else if(arg == "--version") {
+                std::println(ANDYLANG_VERSION);
+                return 0;
             }
         }
 
