@@ -46,6 +46,7 @@ target_link_libraries(andy andy-lang uva-core uva-console uva-file)
 
 add_definitions(-DANDYLANG_PROJECT_DIR="${CMAKE_CURRENT_LIST_DIR}")
 add_definitions(-DANDYLANG_BUILD_DIR="${CMAKE_BINARY_DIR}")
+add_definitions(-DANDYLANG_VERSION="${ANDYLANG_PROJECT_VERSION}")
 
 # Install andy executable
 install(TARGETS andy DESTINATION bin)
