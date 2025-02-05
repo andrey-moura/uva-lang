@@ -91,6 +91,9 @@ file(GLOB EXTENSIONS "${EXTENSIONS_FOLDER}/*")
 
 foreach(EXTENSION ${EXTENSIONS})
     if(IS_DIRECTORY ${EXTENSION})
+        # Get name from extension from the folder
+        get_filename_component(EXTENSION_NAME ${EXTENSION} NAME)
         include("${EXTENSION}/CMakeLists.txt")
+        target_link_libraries(andy-lang ${EXTENSION_NAME})
     endif()
 endforeach()
