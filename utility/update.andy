@@ -1,0 +1,12 @@
+var src = AndyConfig.src_dir;
+var temp_file = Path.temp / 'andy-update.txt';
+
+puts(src);
+
+Path.set_current(src);
+
+system('sudo git checkout master');
+system('sudo git pull');
+system('sudo cmake -B build .');
+system('sudo cmake --build build --config Release --parallel');
+system('sudo sudo cmake --install build');
