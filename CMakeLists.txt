@@ -38,16 +38,6 @@ add_executable(andy
     ${CMAKE_CURRENT_LIST_DIR}/src/andy.cpp
 )
 
-find_package(Clang)
-
-include_directories(${CLANG_INCLUDE_DIRS})
-
-add_executable(andy-cpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/cpp_interop.cpp
-)
-
-target_link_libraries(andy-cpp uva-file uva-console andy-lang /usr/lib/llvm-10/lib/libclang.so)
-
 if(UNIX)
     target_link_libraries(andy-lang ${CMAKE_DL_LIBS})
 endif()
