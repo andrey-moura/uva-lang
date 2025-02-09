@@ -13,7 +13,7 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 # Get the parent directory
 get_filename_component(ANDYLANG_PARENT_DIRECTORY ${CMAKE_CURRENT_LIST_DIR} DIRECTORY)
 
-include("${ANDYLANG_PARENT_DIRECTORY}/uva/CMakeLists.txt")
+find_package(andy REQUIRED)
 
 uva_library(core)
 uva_library(file)
