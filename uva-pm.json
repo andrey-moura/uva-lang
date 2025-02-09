@@ -1,7 +1,0 @@
-{
-    "dependencies": [
-        "andy-core",
-        "andy-file",
-        "andy-console"
-    ]
-}
