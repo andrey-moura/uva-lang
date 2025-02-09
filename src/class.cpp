@@ -1,6 +1,6 @@
 #include <andy/lang/class.hpp>
 
-#include <console.hpp>
+#include <uva/console.hpp>
 
 #include "false_class.cpp"
 #include "true_class.cpp"

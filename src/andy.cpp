@@ -4,8 +4,7 @@
 #include <andy/lang/parser.hpp>
 #include <andy/lang/lexer.hpp>
 //#include <vm/vm.hpp>
-
-#include <console.hpp>
+#include <uva/console.hpp>
 #include <uva/file.hpp>
 #include <andy/lang/interpreter.hpp>
 #include <andy/lang/extension.hpp>

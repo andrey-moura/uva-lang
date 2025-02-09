@@ -1,7 +1,7 @@
 #include <andy/lang/parser.hpp>
 
 #include <uva/file.hpp>
-#include <console.hpp>
+#include <uva/console.hpp>
 
 #include <exception>
 #include <iostream>

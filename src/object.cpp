@@ -4,7 +4,7 @@
 #include <andy/lang/method.hpp>
 #include <andy/lang/interpreter.hpp>
 
-#include <console.hpp>
+#include <uva/console.hpp>
 
 andy::lang::object::object(std::shared_ptr<andy::lang::structure> c)
     : cls(c)
