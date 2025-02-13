@@ -13,7 +13,7 @@ namespace andy
         class object;
         class structure;
         class interpreter;
-        constexpr size_t MAX_NATIVE_SIZE = 32;
+        constexpr size_t max_native_size = 32;
         class object : public std::enable_shared_from_this<object>
         {
         public:
@@ -37,7 +37,7 @@ namespace andy
             // A pointer to the native object
             void* native_ptr = nullptr;
             // The native object
-            uint8_t native[MAX_NATIVE_SIZE] = {0};
+            uint8_t native[max_native_size] = {0};
             // The object destructor ptr.
             void (*native_destructor)(object* obj) = nullptr;
             // The object move ptr.
@@ -58,7 +58,7 @@ namespace andy
                 } else if(native_move) {
                     native_move(this, std::move(other));
                 } else {
-                    std::memcpy(native, other.native, MAX_NATIVE_SIZE);
+                    std::memcpy(native, other.native, max_native_size);
                 }
                 other.native_destructor = nullptr;
 
@@ -119,8 +119,8 @@ namespace andy
                 bool should_destroy = false;
 
                 // Under GCC, even if the constexpr is false, the code still generates warning when 
-                // sizoef(T) > MAX_NATIVE_SIZE. So we need silence the warning.
-                if constexpr(sizeof(T) <= MAX_NATIVE_SIZE) {
+                // sizoef(T) > max_native_size. So we need silence the warning.
+                if constexpr(sizeof(T) <= max_native_size) {
                     if constexpr(std::is_arithmetic<T>::value) {
                         // Boolean, integer, float, etc.
                         *((T*)(&this->native)) = value;
