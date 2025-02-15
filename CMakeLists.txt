@@ -49,7 +49,7 @@ add_library(andy-lang
     ${CMAKE_CURRENT_LIST_DIR}/src/config.cpp
 )
 
-target_link_libraries(andy-lang PRIVATE uva-file uva-core uva-console)
+target_link_libraries(andy-lang uva-file uva-core uva-console)
 
 add_executable(andy
     ${CMAKE_CURRENT_LIST_DIR}/src/andy.cpp
@@ -64,11 +64,11 @@ if(BUILD_ANDY_CPP)
         ${CMAKE_CURRENT_LIST_DIR}/src/andyc++.cpp
     )
 
-    # target_link_libraries(andyc++ uva-file uva-console andy-lang libclang)
+    target_link_libraries(andyc++ uva-file uva-console andy-lang libclang)
 endif()
 
 if(UNIX)
-    # target_link_libraries(andy-lang ${CMAKE_DL_LIBS})
+    target_link_libraries(andy-lang ${CMAKE_DL_LIBS})
     target_link_options(andy PRIVATE -Wl,--export-dynamic)
 endif()
 
