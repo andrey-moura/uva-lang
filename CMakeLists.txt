@@ -23,7 +23,7 @@ if(CLONE_AND_INCLUDE_DEPENDENCIES)
     foreach(ANDYLANG_DEPENDENCY ${ANDYLANG_DEPENDENCIES})
         if(NOT EXISTS ${GIT_OUTPUT}/${ANDYLANG_DEPENDENCY})
             execute_process(
-                COMMAND git clone https://www.github.com/andrey-moura/${ANDYLANG_DEPENDENCY} ${GIT_OUTPUT}/${ANDYLANG_DEPENDENCY}
+                COMMAND git clone https://www.github.com/andrey-moura/${ANDYLANG_DEPENDENCY} ${GIT_OUTPUT}/${ANDYLANG_DEPENDENCY} --recursive
                 WORKING_DIRECTORY ${GIT_OUTPUT}
             )
         endif()
