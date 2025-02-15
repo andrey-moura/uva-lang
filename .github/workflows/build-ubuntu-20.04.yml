@@ -23,12 +23,6 @@ jobs:
         submodules: recursive
         path: 'andy'
     
-    - name: Checkout andy-lang
-      uses: actions/checkout@v3
-      with:
-        submodules: recursive
-        path: 'andy-lang'
-        
     - name: Set up CMake
       uses: lukka/get-cmake@latest
 
@@ -43,6 +37,46 @@ jobs:
     - name: Install andy
       run: sudo cmake --install build --config Release
       working-directory: andy
+
+
+    - name: Configure CMake for andy-core
+      run: cmake -B build .
+      working-directory: andy-core
+      
+    - name: Build project for andy-core
+      run: cmake --build build --config Release --parallel
+      working-directory: andy-core
+
+    - name: Install andy-core
+      run: sudo cmake --install build --config Release
+      working-directory: andy-core
+
+
+    - name: Configure CMake for andy-file
+      run: cmake -B build .
+      working-directory: andy-file
+      
+    - name: Build project for andy-file
+      run: cmake --build build --config Release --parallel
+      working-directory: andy-file
+
+    - name: Install andy-file
+      run: sudo cmake --install build --config Release
+      working-directory: andy-file
+
+
+    - name: Configure CMake for andy-console
+      run: cmake -B build .
+      working-directory: andy-console
+      
+    - name: Build project for andy-file
+      run: cmake --build build --config Release --parallel
+      working-directory: andy-console
+
+    - name: Install andy-console
+      run: sudo cmake --install build --config Release
+      working-directory: andy-console
+  
 
     - name: Configure CMake for andy-lang
       run: cmake -B build .
