@@ -8,10 +8,31 @@ string(STRIP "${ANDYLANG_PROJECT_VERSION}" ANDYLANG_PROJECT_VERSION)
 
 project(andy-lang VERSION ${ANDYLANG_PROJECT_VERSION})
 
+option(BUILD_ANDY_CPP "Build andyc++" OFF)
+option(CLONE_AND_INCLUDE_DEPENDENCIES "Clone and include dependencies" OFF)
+
 # Get the parent directory
 get_filename_component(ANDYLANG_PARENT_DIRECTORY ${CMAKE_CURRENT_LIST_DIR} DIRECTORY)
 
-find_package(andy REQUIRED)
+if(CLONE_AND_INCLUDE_DEPENDENCIES)
+    file(MAKE_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/dependencies)
+    set(GIT_OUTPUT ${CMAKE_CURRENT_LIST_DIR}/dependencies)
+
+    set(ANDYLANG_DEPENDENCIES "andy;andy-core;andy-file;andy-console")
+
+    foreach(ANDYLANG_DEPENDENCY ${ANDYLANG_DEPENDENCIES})
+        if(NOT EXISTS ${GIT_OUTPUT}/${ANDYLANG_DEPENDENCY})
+            execute_process(
+                COMMAND git clone https://www.github.com/andrey-moura/${ANDYLANG_DEPENDENCY} ${GIT_OUTPUT}/${ANDYLANG_DEPENDENCY}
+                WORKING_DIRECTORY ${GIT_OUTPUT}
+            )
+        endif()
+        MESSAGE(STATUS "Adding dependency ${GIT_OUTPUT}/${ANDYLANG_DEPENDENCY}")
+        include(${GIT_OUTPUT}/${ANDYLANG_DEPENDENCY}/CMakeLists.txt)
+    endforeach()
+else()
+    find_package(andy REQUIRED)
+endif()
 
 include_directories(${CMAKE_CURRENT_LIST_DIR}/include)
 include_directories(include/fmt/include)
@@ -28,13 +49,11 @@ add_library(andy-lang
     ${CMAKE_CURRENT_LIST_DIR}/src/config.cpp
 )
 
-target_link_libraries(andy-lang uva-file uva-core uva-console)
+target_link_libraries(andy-lang PRIVATE uva-file uva-core uva-console)
 
 add_executable(andy
     ${CMAKE_CURRENT_LIST_DIR}/src/andy.cpp
 )
-
-option(BUILD_ANDY_CPP "Build andyc++" OFF)
 
 if(BUILD_ANDY_CPP)
     find_package(Clang REQUIRED)
@@ -45,15 +64,15 @@ if(BUILD_ANDY_CPP)
         ${CMAKE_CURRENT_LIST_DIR}/src/andyc++.cpp
     )
 
-    target_link_libraries(andyc++ uva-file uva-console andy-lang libclang)
+    # target_link_libraries(andyc++ uva-file uva-console andy-lang libclang)
 endif()
 
 if(UNIX)
-    target_link_libraries(andy-lang ${CMAKE_DL_LIBS})
+    # target_link_libraries(andy-lang ${CMAKE_DL_LIBS})
     target_link_options(andy PRIVATE -Wl,--export-dynamic)
 endif()
 
-target_link_libraries(andy andy-lang)
+target_link_libraries(andy PRIVATE andy-lang)
 
 add_definitions(-DANDYLANG_PROJECT_DIR="${CMAKE_CURRENT_LIST_DIR}")
 add_definitions(-DANDYLANG_BUILD_DIR="${CMAKE_BINARY_DIR}")
