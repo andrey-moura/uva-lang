@@ -41,7 +41,7 @@ jobs:
       working-directory: andy
 
     - name: Install andy
-      run: cmake --install build --config Release
+      run: sudo cmake --install build --config Release
       working-directory: andy
 
     - name: Configure CMake for andy-lang
@@ -53,7 +53,7 @@ jobs:
       working-directory: andy-lang
 
     - name: Install andy-lang
-      run: cmake --install build --config Release
+      run: sudo cmake --install build --config Release
       working-directory: andy-lang
 
     - name: Check andy-lang version
