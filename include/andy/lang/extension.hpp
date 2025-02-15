@@ -2,6 +2,8 @@
 
 #include <string>
 #include <vector>
+
+#include <uva.hpp>
 #include <andy/lang/parser.hpp>
 
 #ifdef _WIN32
@@ -23,7 +25,7 @@ namespace andy {
         class interpreter;
         class extension {
         public:
-            extension(const std::string& name);
+            ANDY_EXPORT_SYMBOL extension(const std::string& name);
         public:
             static void import(andy::lang::interpreter* interpreter, std::string_view module);
         public:

@@ -8,16 +8,10 @@ string(STRIP "${ANDYLANG_PROJECT_VERSION}" ANDYLANG_PROJECT_VERSION)
 
 project(andy-lang VERSION ${ANDYLANG_PROJECT_VERSION})
 
-set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-
 # Get the parent directory
 get_filename_component(ANDYLANG_PARENT_DIRECTORY ${CMAKE_CURRENT_LIST_DIR} DIRECTORY)
 
 find_package(andy REQUIRED)
-
-uva_library(core)
-uva_library(file)
-uva_library(console)
 
 include_directories(${CMAKE_CURRENT_LIST_DIR}/include)
 include_directories(include/fmt/include)
@@ -34,15 +28,31 @@ add_library(andy-lang
     ${CMAKE_CURRENT_LIST_DIR}/src/config.cpp
 )
 
+target_link_libraries(andy-lang uva-file uva-core uva-console)
+
 add_executable(andy
     ${CMAKE_CURRENT_LIST_DIR}/src/andy.cpp
 )
 
 if(UNIX)
+    target_link_options(andy PRIVATE -Wl,--export-dynamic)
+endif()
+
+find_package(Clang)
+
+include_directories(${CLANG_INCLUDE_DIRS})
+
+add_executable(andyc++
+    ${CMAKE_CURRENT_LIST_DIR}/src/andyc++.cpp
+)
+
+target_link_libraries(andyc++ uva-file uva-console andy-lang /usr/lib/llvm-10/lib/libclang.so)
+
+if(UNIX)
     target_link_libraries(andy-lang ${CMAKE_DL_LIBS})
 endif()
 
-target_link_libraries(andy andy-lang uva-core uva-console uva-file)
+target_link_libraries(andy andy-lang)
 
 add_definitions(-DANDYLANG_PROJECT_DIR="${CMAKE_CURRENT_LIST_DIR}")
 add_definitions(-DANDYLANG_BUILD_DIR="${CMAKE_BINARY_DIR}")

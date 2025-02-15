@@ -36,6 +36,8 @@ namespace andy
             interpreter();
             ~interpreter() = default;
         public:
+            std::filesystem::path input_file_path;
+        public:
             /// @brief Load a class into the vm. The class is kept alive by the vm untill it is destroyed.
             /// @param cls The class to be loaded. It is kept alive by the vm untill it is destroyed. It is globally accessible.
             void load(std::shared_ptr<andy::lang::structure> cls);

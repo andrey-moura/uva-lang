@@ -90,6 +90,7 @@ int main(int argc, char** argv) {
         andy::lang::parser::ast_node root_node = p.parse_all(l);
 
         andy::lang::interpreter interpreter;
+        interpreter.input_file_path = file_path;
         std::shared_ptr<andy::lang::object> tmp;
         std::shared_ptr<andy::lang::object> ret = interpreter.execute_all(root_node, tmp);
 

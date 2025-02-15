@@ -54,6 +54,7 @@ std::vector<std::string> list_files_with_wildcard(const std::filesystem::path& b
 
 std::map<std::string, void(andy::lang::preprocessor::*)(const std::filesystem::path&, andy::lang::lexer&), std::less<>> preprocessor_directives = {
     { "#include", &andy::lang::preprocessor::process_include },
+    { "#compile", &andy::lang::preprocessor::process_compile }
 };
 
 andy::lang::preprocessor::preprocessor()
@@ -122,4 +123,53 @@ void andy::lang::preprocessor::process_include(const std::filesystem::path &__fi
 
         __lexer.insert(l.tokens());
     }
+}
+
+void andy::lang::preprocessor::process_compile(const std::filesystem::path &__file_name, andy::lang::lexer &__lexer)
+{
+    // Moves becase it will be removed
+    andy::lang::lexer::token directive       = std::move(__lexer.current_token());
+    andy::lang::lexer::token file_name_token = std::move(__lexer.see_next());
+
+    __lexer.erase_tokens(2); // Remove the directive and the file name token
+
+    if(file_name_token.type() != lexer::token_type::token_literal || file_name_token.kind() != lexer::token_kind::token_string) {
+        throw std::runtime_error(file_name_token.error_message_at_current_position("Expected string literal after compile directive"));
+    }
+
+    const std::string& file_path_string = file_name_token.content();
+
+    std::filesystem::path file_path = __file_name.parent_path();
+
+    file_path /= file_path_string;
+
+    if(!std::filesystem::exists(file_path)) {
+        throw std::runtime_error(file_name_token.error_message_at_current_position("Compile: folder '" + file_path.string() + "' not found"));
+    }
+
+    if(!std::filesystem::is_directory(file_path)) {
+        throw std::runtime_error(file_name_token.error_message_at_current_position("Compile: file is not a directory"));
+    }
+
+    file_path /= "CMakeLists.txt";
+
+    if(!std::filesystem::exists(file_path)) {
+        throw std::runtime_error(file_name_token.error_message_at_current_position("Compile: Directory does not contain a CMakelists.txt file"));
+    }
+
+    std::filesystem::path current_path = std::filesystem::current_path();
+
+    std::filesystem::current_path(file_path.parent_path());
+
+    std::filesystem::path temp_file = std::filesystem::temp_directory_path() / "andy_temp_compile.txt";
+
+    if(system(("cmake -B build . > " + temp_file.string()).c_str())) {
+        throw std::runtime_error(file_name_token.error_message_at_current_position("Compile: CMake failed."));
+    }
+
+    if(system(("cmake --build build --config Debug > " + temp_file.string()).c_str())) {
+        throw std::runtime_error(file_name_token.error_message_at_current_position("Compile: Build failed."));
+    }
+
+    std::filesystem::current_path(current_path);
 }

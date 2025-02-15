@@ -1,0 +1,38 @@
+#include <andy/lang/lang.hpp>
+#include <andy/lang/interpreter.hpp>
+
+namespace andy
+{
+    namespace lang
+    {
+        namespace api
+        {
+            /// @brief Creates the object with a value and automatically determines the class.
+            /// @tparam T The type of the value.
+            /// @param interpreter The interpreter.
+            /// @param value The value.
+            /// @return Returns a shared pointer to the object.
+            template<typename T>
+            inline std::shared_ptr<andy::lang::object> to_object(andy::lang::interpreter* interpreter, T value)
+            {
+                if constexpr(std::is_same_v<T, int>) {
+                    auto obj = std::make_shared<andy::lang::object>(interpreter->IntegerClass);
+                    obj->set_native<int>(value);
+                    return obj;
+                } else if constexpr(std::is_same_v<T, std::string>) {
+                    auto obj = std::make_shared<andy::lang::object>(interpreter->StringClass);
+                    obj->set_native<std::string>(std::move(value));
+                    return obj;
+                } else if constexpr(std::is_same_v<T, double>) {
+                    auto obj = std::make_shared<andy::lang::object>(interpreter->DoubleClass);
+                    obj->set_native<double>(value);
+                    return obj;
+                } else if constexpr(std::is_same_v<T, float>) {
+                    auto obj = std::make_shared<andy::lang::object>(interpreter->DoubleClass);
+                    obj->set_native<double>(value);
+                    return obj;
+                }
+            }
+        };
+    };
+};
