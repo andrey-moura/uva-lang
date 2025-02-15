@@ -34,20 +34,18 @@ add_executable(andy
     ${CMAKE_CURRENT_LIST_DIR}/src/andy.cpp
 )
 
-find_package(LLVM QUIET)
+option(BUILD_ANDY_CPP "Build andyc++" OFF)
 
-if(LLVM_FOUND)
-    find_package(Clang QUIET)
+if(BUILD_ANDY_CPP)
+    find_package(Clang REQUIRED)
 
-    if(Clang_FOUND)
-        include_directories(${CLANG_INCLUDE_DIRS})
+    include_directories(${CLANG_INCLUDE_DIRS})
 
-        add_executable(andyc++
-            ${CMAKE_CURRENT_LIST_DIR}/src/andyc++.cpp
-        )
+    add_executable(andyc++
+        ${CMAKE_CURRENT_LIST_DIR}/src/andyc++.cpp
+    )
 
-        target_link_libraries(andyc++ uva-file uva-console andy-lang libclang)
-    endif()
+    target_link_libraries(andyc++ uva-file uva-console andy-lang libclang)
 endif()
 
 if(UNIX)
