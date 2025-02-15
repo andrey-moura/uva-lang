@@ -34,22 +34,25 @@ add_executable(andy
     ${CMAKE_CURRENT_LIST_DIR}/src/andy.cpp
 )
 
-if(UNIX)
-    target_link_options(andy PRIVATE -Wl,--export-dynamic)
+find_package(LLVM QUIET)
+
+if(LLVM_FOUND)
+    find_package(Clang QUIET)
+
+    if(Clang_FOUND)
+        include_directories(${CLANG_INCLUDE_DIRS})
+
+        add_executable(andyc++
+            ${CMAKE_CURRENT_LIST_DIR}/src/andyc++.cpp
+        )
+
+        target_link_libraries(andyc++ uva-file uva-console andy-lang libclang)
+    endif()
 endif()
-
-find_package(Clang QUIET)
-
-include_directories(${CLANG_INCLUDE_DIRS})
-
-add_executable(andyc++
-    ${CMAKE_CURRENT_LIST_DIR}/src/andyc++.cpp
-)
-
-target_link_libraries(andyc++ uva-file uva-console andy-lang libclang)
 
 if(UNIX)
     target_link_libraries(andy-lang ${CMAKE_DL_LIBS})
+    target_link_options(andy PRIVATE -Wl,--export-dynamic)
 endif()
 
 target_link_libraries(andy andy-lang)
