@@ -40,10 +40,22 @@ jobs:
       run: cmake --build build --config Release --parallel
       working-directory: andy
 
+    - name: Install andy
+      run: cmake --install build --config Release
+      working-directory: andy
+
     - name: Configure CMake for andy-lang
       run: cmake -B build .
       working-directory: andy-lang
       
     - name: Build project for andy-lang
       run: cmake --build build --config Release --parallel
+      working-directory: andy-lang
+
+    - name: Install andy-lang
+      run: cmake --install build --config Release
+      working-directory: andy-lang
+
+    - name: Check andy-lang version
+      run: andy-lang --version
       working-directory: andy-lang
