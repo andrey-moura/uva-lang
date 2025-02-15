@@ -15,7 +15,8 @@ jobs:
     steps:
     - name: Install dependencies
       run: sudo apt-get install -y build-essential
-    
+
+  
     - name: Checkout andy
       uses: actions/checkout@v3
       with:
@@ -39,6 +40,12 @@ jobs:
       working-directory: andy
 
 
+    - name: Checkout andy-core
+      uses: actions/checkout@v3
+      with:
+        repository: andrey-moura/andy-core
+        path: 'andy-core'
+
     - name: Configure CMake for andy-core
       run: cmake -B build .
       working-directory: andy-core
@@ -50,6 +57,13 @@ jobs:
     - name: Install andy-core
       run: sudo cmake --install build --config Release
       working-directory: andy-core
+
+
+    - name: Checkout andy-file
+      uses: actions/checkout@v3
+      with:
+        repository: andrey-moura/andy-file
+        path: 'andy-file'
 
 
     - name: Configure CMake for andy-file
@@ -65,6 +79,13 @@ jobs:
       working-directory: andy-file
 
 
+    - name: Checkout andy-console
+      uses: actions/checkout@v3
+      with:
+        repository: andrey-moura/andy-console
+        path: 'andy-console'
+
+
     - name: Configure CMake for andy-console
       run: cmake -B build .
       working-directory: andy-console
@@ -77,6 +98,11 @@ jobs:
       run: sudo cmake --install build --config Release
       working-directory: andy-console
   
+
+    - name: Checkout andy-lang
+      uses: actions/checkout@v3
+      with:
+        path: 'andy-lang'
 
     - name: Configure CMake for andy-lang
       run: cmake -B build .
