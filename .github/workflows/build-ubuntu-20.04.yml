@@ -117,5 +117,5 @@ jobs:
       working-directory: andy-lang
 
     - name: Check andy-lang version
-      run: andy-lang --version
+      run: andy --version
       working-directory: andy-lang
