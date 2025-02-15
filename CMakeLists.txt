@@ -38,15 +38,18 @@ if(UNIX)
     target_link_options(andy PRIVATE -Wl,--export-dynamic)
 endif()
 
-find_package(Clang)
+find_library(CLANG_BASIC_LIB clangBasic)
 
-include_directories(${CLANG_INCLUDE_DIRS})
-
-add_executable(andyc++
-    ${CMAKE_CURRENT_LIST_DIR}/src/andyc++.cpp
-)
-
-target_link_libraries(andyc++ uva-file uva-console andy-lang /usr/lib/llvm-10/lib/libclang.so)
+if(NOT CLANG_BASIC_LIB)
+    find_package(Clang)
+    include_directories(${CLANG_INCLUDE_DIRS})
+    
+    add_executable(andyc++
+        ${CMAKE_CURRENT_LIST_DIR}/src/andyc++.cpp
+    )
+    
+    target_link_libraries(andyc++ uva-file uva-console andy-lang libclang)    
+endif()
 
 if(UNIX)
     target_link_libraries(andy-lang ${CMAKE_DL_LIBS})
