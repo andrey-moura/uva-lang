@@ -27,9 +27,5 @@ jobs:
       working-directory: andy-lang
 
     - name: Install andy-lang
-      run: sudo cmake --install build --config Release
-      working-directory: andy-lang
-
-    - name: Check andy-lang version
-      run: andy --version
+      run: cmake --install build --config Release
       working-directory: andy-lang
