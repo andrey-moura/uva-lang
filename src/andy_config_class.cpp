@@ -10,11 +10,10 @@ std::shared_ptr<andy::lang::structure> andy::lang::andy_config_class::create(and
 {
     auto AndyConfigClass = std::make_shared<andy::lang::structure>("AndyConfig");
 
-    std::filesystem::path src_dir = andy::lang::config::src_dir();
-
-    std::shared_ptr<andy::lang::object> src_dir_obj = andy::lang::object::create(interpreter, interpreter->PathClass, std::move(src_dir));
-
-    AndyConfigClass->class_variables["src_dir"] = src_dir_obj;
-    
+    AndyConfigClass->class_variables["src_dir"]  = andy::lang::object::create(interpreter, interpreter->PathClass, std::move(andy::lang::config::src_dir()));
+    AndyConfigClass->class_variables["version"]  = andy::lang::object::create(interpreter, interpreter->StringClass, std::string(andy::lang::config::version));
+    AndyConfigClass->class_variables["build"]    = andy::lang::object::create(interpreter, interpreter->StringClass, std::string(andy::lang::config::build));
+    AndyConfigClass->class_variables["cpp"]      = andy::lang::object::create(interpreter, interpreter->StringClass, std::string(andy::lang::config::cpp));
+    AndyConfigClass->class_variables["compiler"] = andy::lang::object::create(interpreter, interpreter->StringClass, std::string(andy::lang::config::compiler));
     return AndyConfigClass;
 }
