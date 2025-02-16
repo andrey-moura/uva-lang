@@ -62,6 +62,8 @@ void andy::lang::extension::import(andy::lang::interpreter* interpreter, std::st
     std::string module_path_str = module_path.string();
     const char* module_path_c_str = module_path_str.c_str();
 
+    andy::lang::extension* (*create_extension)();
+
 #ifdef __linux__
     void* handle = dlopen(module_path_c_str, RTLD_LAZY | RTLD_GLOBAL);
 
@@ -69,7 +71,7 @@ void andy::lang::extension::import(andy::lang::interpreter* interpreter, std::st
         throw std::runtime_error(dlerror());
     }
 
-    andy::lang::extension* (*create_extension)() = (andy::lang::extension*(*)())dlsym(handle, "create_extension");
+    create_extension = (andy::lang::extension*(*)())dlsym(handle, "create_extension");
 
     if(!create_extension) {
         throw std::runtime_error(dlerror());
@@ -81,7 +83,7 @@ void andy::lang::extension::import(andy::lang::interpreter* interpreter, std::st
         throw std::runtime_error("Failed to load library");
     }
 
-    andy::lang::extension* (*create_extension)() = (andy::lang::extension*(*)())GetProcAddress(handle, "create_extension");
+    create_extension = (andy::lang::extension*(*)())GetProcAddress(handle, "create_extension");
 
     if(!create_extension) {
         throw std::runtime_error("Failed to load symbol");
