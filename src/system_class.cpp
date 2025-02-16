@@ -13,6 +13,9 @@ std::shared_ptr<andy::lang::structure> andy::lang::system_class::create(andy::la
         {"Linux?", andy::lang::method("Linux?", method_storage_type::instance_method, [interpreter](std::shared_ptr<andy::lang::object> object, std::vector<std::shared_ptr<andy::lang::object>> params) {
             return std::make_shared<andy::lang::object>(interpreter->FalseClass);
         })},
+        {"WebAssembly?", andy::lang::method("WebAssembly?", method_storage_type::instance_method, [interpreter](std::shared_ptr<andy::lang::object> object, std::vector<std::shared_ptr<andy::lang::object>> params) {
+            return std::make_shared<andy::lang::object>(interpreter->FalseClass);
+        })},
     };
 #ifdef _WIN32
         SystemClass->class_variables["OS"] = andy::lang::object::instantiate(interpreter, interpreter->StringClass, std::move(std::string("Windows")));
@@ -22,6 +25,11 @@ std::shared_ptr<andy::lang::structure> andy::lang::system_class::create(andy::la
 #elif __linux__
         SystemClass->class_variables["OS"] = andy::lang::object::instantiate(interpreter, interpreter->StringClass, std::move(std::string("Linux")));
         SystemClass->methods["Linux?"] = andy::lang::method("Linux?", method_storage_type::instance_method, [interpreter](std::shared_ptr<andy::lang::object> object, std::vector<std::shared_ptr<andy::lang::object>> params) {
+            return std::make_shared<andy::lang::object>(interpreter->TrueClass);
+        });
+#elif __wasm__
+        SystemClass->class_variables["OS"] = andy::lang::object::instantiate(interpreter, interpreter->StringClass, std::move(std::string("WebAssembly")));
+        SystemClass->methods["WebAssembly?"] = andy::lang::method("WebAssembly?", method_storage_type::instance_method, [interpreter](std::shared_ptr<andy::lang::object> object, std::vector<std::shared_ptr<andy::lang::object>> params) {
             return std::make_shared<andy::lang::object>(interpreter->TrueClass);
         });
 #else

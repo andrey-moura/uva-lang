@@ -14,6 +14,8 @@ namespace andy
 #endif
 #ifdef __linux__
                 src_dir = std::filesystem::path("/usr/local/src/andy-lang");
+#elif defined(__wasm__)
+                src_dir = std::filesystem::path("/");
 #else
                 throw std::runtime_error("unsupported OS");
 #endif
