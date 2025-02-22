@@ -57,9 +57,9 @@ Download andy-lang.org/releases/andy-lang-installer/latest and run it.
 On Linux or Windows Developer Command Prompt
 
 ```sh
-    git clone https://github.com/andrey-moura/andy-lang
+    git clone https://github.com/andrey-moura/andy-lang --recursive
     cd andy-lang
-    cmake -B build . -DCLONE_AND_INCLUDE_DEPENDENCIES=true 
+    cmake -B build .
     cmake --build build --config Release --parallel
 ```
 

@@ -20,9 +20,10 @@ jobs:
       uses: actions/checkout@v3
       with:
         path: 'andy-lang'
+        submodules: 'recursive'
 
     - name: Configure CMake for andy-lang
-      run: cmake -DCLONE_AND_INCLUDE_DEPENDENCIES=ON -B build .
+      run: cmake -B build .
       working-directory: andy-lang
       
     - name: Build project for andy-lang
