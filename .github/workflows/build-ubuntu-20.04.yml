@@ -26,7 +26,7 @@ jobs:
       working-directory: andy-lang
       
     - name: Build project for andy-lang
-      run: cmake --build build --config Release --parallel
+      run: cmake --build build --config Release --parallel --target andy
       working-directory: andy-lang
 
     - name: Install andy-lang
