@@ -9,7 +9,7 @@ string(STRIP "${ANDYLANG_PROJECT_VERSION}" ANDYLANG_PROJECT_VERSION)
 project(andy-lang VERSION ${ANDYLANG_PROJECT_VERSION})
 
 option(BUILD_ANDY_CPP "Build andyc++" OFF)
-option(CLONE_AND_INCLUDE_DEPENDENCIES "Clone and include dependencies" OFF)
+option(CLONE_AND_INCLUDE_DEPENDENCIES "Clone and include dependencies" on)
 
 # Get the parent directory
 get_filename_component(ANDYLANG_PARENT_DIRECTORY ${CMAKE_CURRENT_LIST_DIR} DIRECTORY)
@@ -18,7 +18,7 @@ if(CLONE_AND_INCLUDE_DEPENDENCIES)
     file(MAKE_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/dependencies)
     set(GIT_OUTPUT ${CMAKE_CURRENT_LIST_DIR}/dependencies)
 
-    set(ANDYLANG_DEPENDENCIES "andy;andy-core;andy-file;andy-console")
+    set(ANDYLANG_DEPENDENCIES "andy;andy-tests;andy-core;andy-file;andy-console")
 
     foreach(ANDYLANG_DEPENDENCY ${ANDYLANG_DEPENDENCIES})
         if(NOT EXISTS ${GIT_OUTPUT}/${ANDYLANG_DEPENDENCY})
@@ -127,3 +127,5 @@ foreach(EXTENSION ${EXTENSIONS})
         target_link_libraries(andy-lang ${EXTENSION_NAME})
     endif()
 endforeach()
+
+andy_tests_configure(andy)

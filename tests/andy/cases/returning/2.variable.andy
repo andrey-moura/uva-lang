@@ -1,0 +1,3 @@
+var variable = 2;
+
+return variable;
