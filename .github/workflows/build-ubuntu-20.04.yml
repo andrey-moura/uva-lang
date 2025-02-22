@@ -30,7 +30,7 @@ jobs:
       working-directory: andy-lang
 
     - name: Install andy-lang
-      run: sudo cmake --install build --config Release
+      run: sudo cmake --install build --config Release --component andy
       working-directory: andy-lang
 
     - name: Check andy-lang version
