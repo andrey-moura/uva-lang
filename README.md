@@ -59,7 +59,7 @@ On Linux or Windows Developer Command Prompt
     git clone https://github.com/andrey-moura/andy-lang
     cd andy-lang
     cmake -B build . -DCLONE_AND_INCLUDE_DEPENDENCIES=true 
-    cmake --build build --config Release --parallel --target andy
+    cmake --build build --config Release --parallel
 ```
 
 After building, run as sudo on Linux or with an Administrator Command Prompt on Windows
