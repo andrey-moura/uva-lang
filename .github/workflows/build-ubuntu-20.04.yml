@@ -26,11 +26,11 @@ jobs:
       working-directory: andy-lang
       
     - name: Build project for andy-lang
-      run: cmake --build build --config Release --parallel --target andy
+      run: cmake --build build --config Release --parallel
       working-directory: andy-lang
 
     - name: Install andy-lang
-      run: sudo cmake --install build --config Release --component andy
+      run: sudo cmake --install build --config Release
       working-directory: andy-lang
 
     - name: Check andy-lang version
