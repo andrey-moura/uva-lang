@@ -45,11 +45,12 @@ Windows Server 2022 | [![Windows Server 2022](https://github.com/andrey-moura/an
 ### Installation from andy-lang.org
 #### Under Linux
 ```sh
-    wget --content-disposition www.andy-lang.org/releases/andy-lang/latest
+    wget --content-disposition andy-lang.org/releases/andy-lang/latest
     sudo dpkg -i andy-lang-x.x.x.deb
 ```
 #### Under Windows
-Go to andy-lang.org and download the installation wizard.
+
+Download andy-lang.org/releases/andy-lang-installer/latest and run it.
 
 ## Building
 
