@@ -13,29 +13,16 @@ option(CLONE_AND_INCLUDE_DEPENDENCIES "Clone and include dependencies" on)
 
 # Get the parent directory
 get_filename_component(ANDYLANG_PARENT_DIRECTORY ${CMAKE_CURRENT_LIST_DIR} DIRECTORY)
-
-if(CLONE_AND_INCLUDE_DEPENDENCIES)
-    file(MAKE_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/dependencies)
-    set(GIT_OUTPUT ${CMAKE_CURRENT_LIST_DIR}/dependencies)
-
-    set(ANDYLANG_DEPENDENCIES "andy;andy-tests;andy-core;andy-file;andy-console")
-
-    foreach(ANDYLANG_DEPENDENCY ${ANDYLANG_DEPENDENCIES})
-        if(NOT EXISTS ${GIT_OUTPUT}/${ANDYLANG_DEPENDENCY})
-            execute_process(
-                COMMAND git clone https://www.github.com/andrey-moura/${ANDYLANG_DEPENDENCY} ${GIT_OUTPUT}/${ANDYLANG_DEPENDENCY} --recursive
-                WORKING_DIRECTORY ${GIT_OUTPUT}
-            )
-        endif()
-        MESSAGE(STATUS "Adding dependency ${GIT_OUTPUT}/${ANDYLANG_DEPENDENCY}")
-        include(${GIT_OUTPUT}/${ANDYLANG_DEPENDENCY}/CMakeLists.txt)
-    endforeach()
-else()
-    find_package(andy REQUIRED)
-endif()
-
 include_directories(${CMAKE_CURRENT_LIST_DIR}/include)
-include_directories(include/fmt/include)
+
+# Fild all folders under modules
+file(GLOB MODULES "${CMAKE_CURRENT_LIST_DIR}/modules/*")
+foreach(MODULE ${MODULES})
+    if(IS_DIRECTORY ${MODULE})
+        # Get name from module from the folder
+        include("${MODULE}/CMakeLists.txt")
+    endif()
+endforeach()
 
 add_library(andy-lang
     ${CMAKE_CURRENT_LIST_DIR}/src/method.cpp

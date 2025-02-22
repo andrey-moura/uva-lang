@@ -1,0 +1,15 @@
+[submodule "modules/andy"]
+	path = modules/andy
+	url = https://github.com/andrey-moura/andy.git
+[submodule "modules/andy-core"]
+	path = modules/andy-core
+	url = https://github.com/andrey-moura/andy-core.git
+[submodule "modules/andy-console"]
+	path = modules/andy-console
+	url = https://github.com/andrey-moura/andy-console.git
+[submodule "modules/andy-tests"]
+	path = modules/andy-tests
+	url = https://github.com/andrey-moura/andy-tests.git
+[submodule "modules/andy-file"]
+	path = modules/andy-file
+	url = https://github.com/andrey-moura/andy-file.git
